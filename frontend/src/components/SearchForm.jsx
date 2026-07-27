@@ -1,0 +1,53 @@
+function SearchForm({ term, setTerm, media, setMedia, searchMedia, loading }) {
+  return (
+    <div className="search-form">
+      <div className="row g-3">
+        {/* Search Input */}
+        <div className="col-md-6">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search iTunes..."
+            value={term}
+            onChange={e => setTerm(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') searchMedia(0);
+            }}
+          />
+        </div>
+
+        {/* Media Selector */}
+        <div className="col-md-3">
+          <select
+            className="form-select"
+            value={media}
+            onChange={e => setMedia(e.target.value)}
+          >
+            <option value="all">ALL</option>
+            <option value="movie">Movie</option>
+            <option value="podcast">Podcast</option>
+            <option value="music">Music</option>
+            <option value="audiobook">Audiobook</option>
+            <option value="short film">Short Film</option>
+            <option value="tv show">TV Show</option>
+            <option value="software">Software</option>
+            <option value="ebook">Ebook</option>
+          </select>
+        </div>
+
+        {/* Search Button */}
+        <div className="col-md-3">
+          <button
+            className="btn btn-primary search-button"
+            onClick={() => searchMedia(0)}
+            disabled={loading}
+          >
+            {loading ? 'Searching...' : 'Search'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default SearchForm;

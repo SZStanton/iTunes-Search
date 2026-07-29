@@ -61,4 +61,3 @@ A full-stack app for searching the iTunes catalogue, filtering by media type, an
 
 - Persist favourites across sessions (currently session-only)
 - Sort results by release date or name
-- Preview audio/video clips directly from search results

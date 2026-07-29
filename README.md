@@ -42,7 +42,7 @@ A full-stack app for searching the iTunes catalogue, filtering by media type, an
 4. Run the backend
 
    ```bash
-   npm run server
+   npm run start
    ```
 
 5. Run the frontend

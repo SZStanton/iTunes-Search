@@ -1,60 +1,64 @@
 # iTunes Search App
 
-## Description
+A full-stack app for searching the iTunes catalogue, filtering by media type, and saving favourites. This project demonstrates consuming a third-party REST API, combined with a JWT-secured Node/Express backend for managing user favourites.
 
-This full-stack application allows user to search the iTunes Store using the iTunes Search API.
+## Screenshots
 
-Users can:
+<table>
+  <tr>
+    <td><img src="screenshots/search-results.png" width="300" alt="Search results and favourites"/></td>
+    <td><img src="screenshots/media-filter.png" width="300" alt="Media type filter"/></td>
+  </tr>
+</table>
 
-- Search for media content
-- Filter by media type
-- Add items to favourites
-- Remove items from favourites
+## Features
 
-The favourites list is only stored while the application is running.
+- Search the iTunes API by keyword
+- Filter results by media type (Movie, Music, Podcast, Audiobook, Short Film, TV Show, Software, Ebook)
+- Add/remove items from a favourites list
+- Paginated search results
 
-## Technologies
+## Tech Stack
 
-### Frontend
-
-- React
-- Vite
-- Bootstrap
-
-### Backend
-
-- Node.js
-- Express
-- JWT
+**Frontend:** React, Vite, Bootstrap
+**Backend:** Node.js, Express, JWT
 
 ## Installation
 
-Install frontend dependencies:
+1. Clone the repository
 
-```bash
-npm i
-```
+   ```bash
+   git clone https://github.com/SZStanton/iTunes-Search
+   ```
 
-Install backend dependencies:
+2. Navigate into the project folder and install dependencies for both frontend and backend
 
-```bash
-cd server
-npm i
-```
+   ```bash
+   npm install
+   ```
 
-## Run the Application
+3. Set up your environment variables (`.env`) with your JWT secret
 
-Start the backend:
+4. Run the backend
 
-```bash
-cd server
-npm start
-```
+   ```bash
+   npm run server
+   ```
 
-Start the frontend:
+5. Run the frontend
 
-```bash
-npm run dev
-```
+   ```bash
+   npm run dev
+   ```
 
-Created for the Full Stack with React and Express Capstone Project.
+6. Open the app in your browser
+
+   ```bash
+   http://localhost:5173/
+   ```
+
+## Future Improvements
+
+- Persist favourites across sessions (currently session-only)
+- Sort results by release date or name
+- Preview audio/video clips directly from search results

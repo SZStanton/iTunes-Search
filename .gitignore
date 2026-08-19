@@ -1,0 +1,63 @@
+# Delete whichever language section does not apply.
+
+# ---- Node / Vite ----
+node_modules/
+dist/
+dist-ssr/
+build/
+coverage/
+*.tsbuildinfo
+.vite/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# SQLite. Comment this out if a seeded database is meant to be committed.
+*.db
+*.sqlite
+*.sqlite3
+
+# ---- Environment ----
+.env
+.env.local
+.env.*.local
+
+# ---- Hosting ----
+.vercel/
+.netlify/
+
+# ---- Editor ----
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Logs ----
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---- Local route sweep, needs server/.env and Atlas, so never committed ----
+scripts/
+
+# ---- Claude Code: local context, never committed ----
+# CLAUDE.md and reference/ hold notes and personal details that stay on my
+# machine. Check these are here before the first commit on any project.
+CLAUDE.md
+.claude/
+reference/
+Claude_Template

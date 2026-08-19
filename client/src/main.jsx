@@ -2,9 +2,6 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import './index.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-// Loaded here rather than in App.jsx, or the login page renders unstyled
-import './App.css';
 import App from './App.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import SignedOutOnly from './components/SignedOutOnly.jsx';

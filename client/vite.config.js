@@ -1,9 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 
 // Vite config for React frontend
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
 
   server: {
     // proxy API requests to the Express backend

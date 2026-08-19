@@ -13,7 +13,14 @@ async function apiFetch(path, options) {
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.message || `Request failed: ${res.status}`);
+    const error = new Error(body.message || `Request failed: ${res.status}`);
+
+    // The API answers a failed validation with errors keyed by field, and a
+    // form needs those next to the inputs rather than one message at the top
+    error.status = res.status;
+    error.errors = body.errors ?? {};
+
+    throw error;
   }
 
   return res.json();

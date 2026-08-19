@@ -11,6 +11,89 @@
   font-weight: bold;
 }
 
+/* Header */
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.app-header .app-title {
+  margin-bottom: 0;
+}
+
+.app-account {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.app-email {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+/* Login and register */
+.auth-page {
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-form,
+.auth-alternatives {
+  width: 100%;
+  max-width: 380px;
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.auth-alternatives {
+  margin-top: 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.auth-form .btn {
+  width: 100%;
+}
+
+.form-field {
+  margin-bottom: 1rem;
+}
+
+.form-message {
+  background-color: #f8d7da;
+  color: #842029;
+  border: 1px solid #f5c2c7;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-hint {
+  color: #6c757d;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.route-checking {
+  padding: 2rem;
+  text-align: center;
+  color: #6c757d;
+}
+
 /* Search Form */
 .search-form {
   background-color: white;

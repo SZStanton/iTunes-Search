@@ -1,15 +1,4 @@
-function SearchForm({
-  term,
-  setTerm,
-  media,
-  setMedia,
-  searchMedia,
-  loading,
-  // The search needs a token, and it arrives a moment after the page does
-  ready = true,
-}) {
-  const busy = loading || !ready;
-
+function SearchForm({ term, setTerm, media, setMedia, searchMedia, loading }) {
   return (
     <div className="search-form">
       <div className="row g-3">
@@ -22,7 +11,7 @@ function SearchForm({
             value={term}
             onChange={e => setTerm(e.target.value)}
             onKeyDown={e => {
-              if (e.key === 'Enter' && !busy) searchMedia();
+              if (e.key === 'Enter' && !loading) searchMedia();
             }}
           />
         </div>
@@ -51,7 +40,7 @@ function SearchForm({
           <button
             className="btn btn-primary search-button"
             onClick={() => searchMedia()}
-            disabled={busy}
+            disabled={loading}
           >
             {loading ? 'Searching...' : 'Search'}
           </button>

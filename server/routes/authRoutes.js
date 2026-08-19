@@ -3,7 +3,9 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import authenticateToken from '../middleware/auth.js';
+import { apiLimiter, authLimiter } from '../middleware/rateLimits.js';
 import { resetDemoData } from '../config/demoSeed.js';
+import { jwtSecret } from '../config/jwtSecret.js';
 import { expiryFromNow, touchAccount } from '../config/retention.js';
 import { loginSchema, registerSchema } from '../validation/authSchemas.js';
 import { fieldErrors } from '../validation/fieldErrors.js';
@@ -14,9 +16,7 @@ const TOKEN_LIFE = '7d';
 const SALT_ROUNDS = 10;
 
 function signToken(user) {
-  const secret = process.env.JWT_SECRET || 'dev-secret-key';
-
-  return jwt.sign({ sub: user.id }, secret, { expiresIn: TOKEN_LIFE });
+  return jwt.sign({ sub: user.id }, jwtSecret(), { expiresIn: TOKEN_LIFE });
 }
 
 function accountResponse(user) {
@@ -24,7 +24,7 @@ function accountResponse(user) {
 }
 
 //== REGISTER ==
-router.post('/register', async (req, res) => {
+router.post('/register', authLimiter, async (req, res) => {
   const parsed = registerSchema.safeParse(req.body);
 
   if (!parsed.success) {
@@ -62,7 +62,7 @@ router.post('/register', async (req, res) => {
 });
 
 //== LOGIN ==
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
 
   if (!parsed.success) {
@@ -91,7 +91,7 @@ router.post('/login', async (req, res) => {
 
 //== DEMO ==
 // One click on the login page, so nobody has to hand over an email to look round
-router.post('/demo', async (req, res) => {
+router.post('/demo', authLimiter, async (req, res) => {
   const user = await User.findOne({ isDemo: true });
 
   if (!user) {
@@ -108,7 +108,7 @@ router.post('/demo', async (req, res) => {
 
 //== WHO AM I ==
 // The client holds a token across reloads, and this says whether it still works
-router.get('/me', authenticateToken, (req, res) => {
+router.get('/me', apiLimiter, authenticateToken, (req, res) => {
   res.json({ user: { id: req.user.id, email: req.user.email } });
 });
 

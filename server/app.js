@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import authenticateToken from './middleware/auth.js';
-import { apiLimiter, authLimiter } from './middleware/rateLimits.js';
+import { apiLimiter } from './middleware/rateLimits.js';
 import authRoutes from './routes/authRoutes.js';
 import favouriteRoutes from './routes/favouriteRoutes.js';
 import itunesRoutes from './routes/itunesRoutes.js';
@@ -38,8 +38,10 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Auth Routes, register and login are open, everything past them is not
-app.use('/api/auth', authLimiter, authRoutes);
+// Auth Routes, register and login are open, everything past them is not. The
+// limiter is applied per route inside, since /me runs on every page load and
+// must not share a bucket sized for password guessing
+app.use('/api/auth', authRoutes);
 
 // API Routes, protect itunes search routes with JWT middleware
 app.use('/api/itunes', apiLimiter, authenticateToken, itunesRoutes);

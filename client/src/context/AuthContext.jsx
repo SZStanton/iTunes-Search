@@ -28,9 +28,10 @@ function AuthProvider({ children }) {
   const [checked, setChecked] = useState(false);
 
   // A stored token is only a guess until the server agrees, so the app waits.
-  // Derived rather than its own state, or the effect below has to set it before
-  // it has done anything
-  const checking = Boolean(token) && !checked;
+  // Having the account already is what ends the wait, which is why 'user' is in
+  // here: a fresh login sets both at once and must not wait for a check that
+  // will never run
+  const checking = Boolean(token) && !user && !checked;
 
   const saveSession = useCallback(session => {
     try {
@@ -70,8 +71,12 @@ function AuthProvider({ children }) {
         });
 
         if (!cancelled) setUser(data.user);
-      } catch {
-        if (!cancelled) logout();
+      } catch (err) {
+        // Only the server saying no means the token is bad. A timeout while the
+        // free tier wakes up must not sign someone out and lose their token
+        const rejected = err.status === 401 || err.status === 403;
+
+        if (!cancelled && rejected) logout();
       } finally {
         if (!cancelled) setChecked(true);
       }

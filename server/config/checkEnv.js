@@ -6,7 +6,10 @@ const PUBLISHED_SECRETS = [FALLBACK_SECRET, 'change-me'];
 // Reports everything that is wrong at once. Finding out about a second missing
 // variable only after fixing the first is a slow way to configure a host
 function checkEnv({ env = process.env } = {}) {
-  const production = env.NODE_ENV === 'production';
+  // Anything that is not explicitly development is treated as production. A
+  // host that forgets to set NODE_ENV then fails loudly, rather than quietly
+  // booting on the placeholder secret, which is the way round that is safe
+  const production = env.NODE_ENV !== 'development';
   const problems = [];
   const warnings = [];
 

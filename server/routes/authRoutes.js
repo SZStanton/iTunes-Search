@@ -5,6 +5,7 @@ import User from '../models/User.js';
 import authenticateToken from '../middleware/auth.js';
 import { apiLimiter, authLimiter } from '../middleware/rateLimits.js';
 import { resetDemoData } from '../config/demoSeed.js';
+import { jwtSecret } from '../config/jwtSecret.js';
 import { expiryFromNow, touchAccount } from '../config/retention.js';
 import { loginSchema, registerSchema } from '../validation/authSchemas.js';
 import { fieldErrors } from '../validation/fieldErrors.js';
@@ -15,9 +16,7 @@ const TOKEN_LIFE = '7d';
 const SALT_ROUNDS = 10;
 
 function signToken(user) {
-  const secret = process.env.JWT_SECRET || 'dev-secret-key';
-
-  return jwt.sign({ sub: user.id }, secret, { expiresIn: TOKEN_LIFE });
+  return jwt.sign({ sub: user.id }, jwtSecret(), { expiresIn: TOKEN_LIFE });
 }
 
 function accountResponse(user) {

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import jwt from 'jsonwebtoken';
 import authenticateToken from './auth.js';
+import { jwtSecret } from '../config/jwtSecret.js';
 
 // A rejected request never reaches the database, so these need no connection.
 // The accepted path does, and belongs in the local route sweep instead
@@ -58,7 +59,7 @@ describe('turning people away', () => {
   });
 
   it('refuses an expired token even though the signature is right', async () => {
-    const stale = jwt.sign({ sub: 'someone' }, 'dev-secret-key', {
+    const stale = jwt.sign({ sub: 'someone' }, jwtSecret(), {
       expiresIn: '-1h',
     });
     const { res, next } = await callWith(`Bearer ${stale}`);

@@ -8,26 +8,29 @@ const production = {
   CLIENT_URL: 'https://itunes-search.example',
 };
 
+// Only an explicit NODE_ENV=development counts as local, so a host that forgets
+// to set it is treated as production rather than waved through
+const local = {
+  NODE_ENV: 'development',
+  MONGODB_URI: 'mongodb://127.0.0.1/itunes-search',
+};
+
 describe('checking the environment locally', () => {
   it('is happy with just a database', () => {
-    const { problems } = checkEnv({
-      env: { MONGODB_URI: 'mongodb://127.0.0.1/x' },
-    });
+    const { problems } = checkEnv({ env: local });
 
     expect(problems).toEqual([]);
   });
 
   it('complains about a missing database', () => {
-    const { problems } = checkEnv({ env: {} });
+    const { problems } = checkEnv({ env: { NODE_ENV: 'development' } });
 
     expect(problems).toHaveLength(1);
     expect(problems[0]).toMatch(/MONGODB_URI/);
   });
 
   it('warns about the fallback secret rather than refusing to run', () => {
-    const { problems, warnings } = checkEnv({
-      env: { MONGODB_URI: 'mongodb://127.0.0.1/x' },
-    });
+    const { problems, warnings } = checkEnv({ env: local });
 
     expect(problems).toEqual([]);
     expect(warnings.join()).toContain(FALLBACK_SECRET);
@@ -74,6 +77,16 @@ describe('checking the environment in production', () => {
 
     expect(problems).toHaveLength(2);
     expect(problems.join()).toMatch(/MONGODB_URI/);
+    expect(problems.join()).toMatch(/JWT_SECRET/);
+  });
+
+  it('treats a host that never sets NODE_ENV as production', () => {
+    const { NODE_ENV, ...noNodeEnv } = production;
+    const { problems } = checkEnv({
+      env: { ...noNodeEnv, JWT_SECRET: FALLBACK_SECRET },
+    });
+
+    expect(NODE_ENV).toBe('production');
     expect(problems.join()).toMatch(/JWT_SECRET/);
   });
 

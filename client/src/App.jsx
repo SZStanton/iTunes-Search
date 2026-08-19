@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { apiFetch } from './api';
+import { useAuth } from './context/useAuth';
 import SearchForm from './components/SearchForm';
 import ResultsList from './components/ResultsList';
 import FavouriteList from './components/FavouriteList';
-import './App.css';
 
 // What the select offers, mapped to the values the iTunes API expects. Album is
 // a media plus an entity, which is why these are pairs rather than strings.
@@ -27,6 +27,9 @@ const FETCH_LIMIT = 200;
 const PAGE_SIZE = 40;
 
 function App() {
+  // The token comes from the session now, so there is nothing to wait for
+  const { token, user, logout } = useAuth();
+
   // == STATE ==
   // Stores search input value
   const [term, setTerm] = useState('');
@@ -38,8 +41,6 @@ function App() {
   const [favourites, setFavourites] = useState([]);
   // Controls loading state while fetching data
   const [loading, setLoading] = useState(false);
-  // Stores the token
-  const [token, setToken] = useState('');
   // Whatever went wrong last, shown above the results
   const [error, setError] = useState('');
   // Tells an empty list apart from not having searched yet
@@ -47,20 +48,6 @@ function App() {
 
   // Pagination state
   const [page, setPage] = useState(0);
-
-  // Gets JWT Token
-  useEffect(() => {
-    const getToken = async () => {
-      try {
-        const data = await apiFetch('/api/token');
-        setToken(data.token);
-      } catch (err) {
-        console.error('Token load failed:', err);
-        setError('Could not reach the server. Try reloading the page.');
-      }
-    };
-    getToken();
-  }, []);
 
   // == SEARCH API ==
   // Sends a search request to backend
@@ -114,7 +101,20 @@ function App() {
   // == UI ==
   return (
     <div className="app-container">
-      <h1 className="app-title">iTunes Search App</h1>
+      <header className="app-header">
+        <h1 className="app-title">iTunes Search App</h1>
+
+        <div className="app-account">
+          <span className="app-email">{user?.email}</span>
+          <button
+            className="btn btn-outline-secondary btn-sm"
+            type="button"
+            onClick={logout}
+          >
+            Sign out
+          </button>
+        </div>
+      </header>
 
       <SearchForm
         term={term}
@@ -123,7 +123,6 @@ function App() {
         setMedia={setMedia}
         searchMedia={searchMedia}
         loading={loading}
-        ready={Boolean(token)}
       />
 
       {error && (

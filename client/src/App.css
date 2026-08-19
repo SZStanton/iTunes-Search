@@ -53,29 +53,29 @@
   gap: 1rem;
 }
 
-.results-card {
+.result-card {
   border: 1px solid #dee2e6;
   border-radius: 8px;
   overflow: hidden;
 }
 
-.results-image {
+.result-image {
   width: 100%;
   height: 220px;
   object-fit: cover;
 }
 
-.results-content {
+.result-content {
   padding: 1rem;
 }
 
-.results-title {
+.result-title {
   font-size: 1rem;
   font-weight: bold;
 }
 
-.results-artist,
-.results-date {
+.result-artist,
+.result-date {
   color: #6c757d;
   margin-bottom: 0.5rem;
 }

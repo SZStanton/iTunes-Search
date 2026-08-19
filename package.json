@@ -1,0 +1,24 @@
+{
+    "name": "my-project",
+    "private": true,
+    "type": "module",
+    "workspaces": [
+        "client",
+        "server"
+    ],
+    "scripts": {
+        "dev": "concurrently -n server,client -c blue,magenta \"npm run dev -w server\" \"npm run dev -w client\"",
+        "dev:client": "npm run dev -w client",
+        "dev:server": "npm run dev -w server",
+        "build": "npm run build -w client",
+        "start": "npm start -w server",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "lint": "eslint .",
+        "format": "prettier --write .",
+        "format:check": "prettier --check ."
+    },
+    "devDependencies": {
+        "concurrently": "^10.0.5"
+    }
+}

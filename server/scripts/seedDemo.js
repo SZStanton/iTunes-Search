@@ -33,12 +33,34 @@ console.log(`Connected to database: ${mongoose.connection.name}`);
 const email = DEMO_EMAIL.trim().toLowerCase();
 const password = await bcrypt.hash(DEMO_PASSWORD, 10);
 
+// Converting a real account into the shared public demo would hand out its
+// password and wipe its data, so refuse rather than upsert blindly
+const existing = await User.findOne({ email });
+
+if (existing && !existing.isDemo) {
+  console.error(`${email} is a registered account, not the demo.`);
+  console.error('Pick a different DEMO_EMAIL, or delete that account first.');
+  await mongoose.disconnect();
+  process.exit(1);
+}
+
 // isDemo and no expiresAt are what keep it exempt from the retention sweep
 const user = await User.findOneAndUpdate(
   { email },
   { $set: { email, password, isDemo: true }, $unset: { expiresAt: '' } },
   { upsert: true, returnDocument: 'after' },
 );
+
+// Changing DEMO_EMAIL would otherwise leave the old one flagged and immortal,
+// and the login route picks whichever it finds first
+const { modifiedCount } = await User.updateMany(
+  { isDemo: true, _id: { $ne: user._id } },
+  { $set: { isDemo: false, expiresAt: new Date() } },
+);
+
+if (modifiedCount) {
+  console.log(`Retired ${modifiedCount} previous demo account(s).`);
+}
 
 await resetDemoData(user);
 

@@ -58,19 +58,31 @@ async function resetDemoData(user) {
     Search.deleteMany({ user: user.id }),
   ]);
 
+  // Both lists are read newest first, and writes inside one millisecond would
+  // tie, so the timestamps are set a minute apart rather than left to the clock
+  const minuteApart = index => new Date(Date.now() - (10 - index) * 60 * 1000);
+
   // No expiresAt on any of it, the demo account and its data never expire
   await Favourite.insertMany(
-    DEMO_FAVOURITES.map(favourite => ({ ...favourite, user: user.id })),
+    DEMO_FAVOURITES.map((favourite, index) => ({
+      ...favourite,
+      user: user.id,
+      createdAt: minuteApart(index),
+      updatedAt: minuteApart(index),
+    })),
+    { timestamps: false },
   );
 
-  // Written one at a time so updatedAt increases and the order is predictable
-  for (const search of DEMO_SEARCHES) {
-    await Search.create({
+  await Search.insertMany(
+    DEMO_SEARCHES.map((search, index) => ({
       ...search,
       termKey: search.term.toLowerCase(),
       user: user.id,
-    });
-  }
+      createdAt: minuteApart(index),
+      updatedAt: minuteApart(index),
+    })),
+    { timestamps: false },
+  );
 }
 
 export { DEMO_FAVOURITES, DEMO_SEARCHES, resetDemoData };

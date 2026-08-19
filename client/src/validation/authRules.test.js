@@ -4,14 +4,22 @@ import {
   loginSchema,
   registerSchema,
 } from '../../../server/validation/authSchemas.js';
+import { fieldErrors } from '../../../server/validation/fieldErrors.js';
 
 // The rules exist twice, once here and once on the server, so they will drift.
 // Every awkward value goes through both and the messages must be identical, or
 // the form says one thing and the API says another for the same input
 
+// Each side is formatted by its own helper, not one shared one, or a change to
+// the server's fieldErrors would slip through with every parity test still green
 function messagesFrom(schema, value) {
   const result = schema.safeParse(value);
   return result.success ? null : rulesErrors(result.error);
+}
+
+function serverMessagesFrom(schema, value) {
+  const result = schema.safeParse(value);
+  return result.success ? null : fieldErrors(result.error);
 }
 
 const awkwardEmails = [
@@ -43,7 +51,7 @@ describe('the register rules on both sides', () => {
     const value = { email, password: 'correct-horse' };
 
     expect(messagesFrom(registerRules, value)).toEqual(
-      messagesFrom(registerSchema, value),
+      serverMessagesFrom(registerSchema, value),
     );
   });
 
@@ -51,7 +59,7 @@ describe('the register rules on both sides', () => {
     const value = { email: 'jordan.blake@example.test', password };
 
     expect(messagesFrom(registerRules, value)).toEqual(
-      messagesFrom(registerSchema, value),
+      serverMessagesFrom(registerSchema, value),
     );
   });
 
@@ -59,7 +67,7 @@ describe('the register rules on both sides', () => {
     const value = { email: 'nope', password: '' };
 
     expect(messagesFrom(registerRules, value)).toEqual(
-      messagesFrom(registerSchema, value),
+      serverMessagesFrom(registerSchema, value),
     );
   });
 
@@ -80,7 +88,7 @@ describe('the login rules on both sides', () => {
     const value = { email, password: 'anything' };
 
     expect(messagesFrom(loginRules, value)).toEqual(
-      messagesFrom(loginSchema, value),
+      serverMessagesFrom(loginSchema, value),
     );
   });
 
@@ -88,7 +96,7 @@ describe('the login rules on both sides', () => {
     const value = { email: 'jordan.blake@example.test', password };
 
     expect(messagesFrom(loginRules, value)).toEqual(
-      messagesFrom(loginSchema, value),
+      serverMessagesFrom(loginSchema, value),
     );
   });
 
@@ -96,6 +104,6 @@ describe('the login rules on both sides', () => {
     const value = { email: 'jordan.blake@example.test', password: 'short' };
 
     expect(messagesFrom(loginRules, value)).toBeNull();
-    expect(messagesFrom(loginSchema, value)).toBeNull();
+    expect(serverMessagesFrom(loginSchema, value)).toBeNull();
   });
 });

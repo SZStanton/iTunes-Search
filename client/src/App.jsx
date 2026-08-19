@@ -75,6 +75,14 @@ function App() {
       setAllResults(data.results || []);
     } catch (err) {
       console.error('Search failed:', err);
+
+      // An expired token, or an account the retention sweep has removed. Every
+      // later search would fail the same way, so end the session instead
+      if (err.status === 401 || err.status === 403) {
+        logout();
+        return;
+      }
+
       setError(err.message || 'Something went wrong. Try again.');
     } finally {
       setSearched(true);

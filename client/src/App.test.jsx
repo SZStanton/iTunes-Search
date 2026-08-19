@@ -132,6 +132,16 @@ describe('running a search', () => {
     );
   });
 
+  it('ends the session when the token has stopped working', async () => {
+    // Every later search would fail the same way, so showing "Invalid token"
+    // over and over is worse than sending them back to the login page
+    reply({ message: 'Invalid token' }, false, 403);
+    await searchFor();
+
+    await waitFor(() => expect(logout).toHaveBeenCalledOnce());
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('does not report an empty result as a failure', async () => {
     reply({ results: [], resultCount: 0 });
     await searchFor();

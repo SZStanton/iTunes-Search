@@ -10,7 +10,8 @@ import { useAuth } from './useAuth';
 const fetchMock = vi.fn();
 
 function Probe() {
-  const { checking, signedIn, user, login, logout } = useAuth();
+  const { checking, signedIn, user, unreachable, retryCheck, login, logout } =
+    useAuth();
 
   return (
     <div>
@@ -18,6 +19,10 @@ function Probe() {
         {checking ? 'checking' : signedIn ? 'signed in' : 'signed out'}
       </p>
       <p data-testid="email">{user?.email ?? ''}</p>
+      <p data-testid="unreachable">{unreachable ? 'unreachable' : ''}</p>
+      <button type="button" onClick={retryCheck}>
+        retry
+      </button>
       <button
         type="button"
         onClick={() =>
@@ -151,8 +156,32 @@ describe('with a stored token', () => {
     renderProbe();
 
     await waitFor(() =>
-      expect(screen.getByTestId('state')).not.toHaveTextContent('checking'),
+      expect(screen.getByTestId('unreachable')).toHaveTextContent(
+        'unreachable',
+      ),
     );
     expect(localStorage.getItem(TOKEN_KEY)).toBe('stored-token');
+  });
+
+  it('can be asked to check again once the server is awake', async () => {
+    fetchMock.mockRejectedValueOnce(
+      Object.assign(new Error('Request failed: 502'), { status: 502 }),
+    );
+    const user = userEvent.setup();
+    renderProbe();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('unreachable')).toHaveTextContent(
+        'unreachable',
+      ),
+    );
+
+    reply({ user: session.user });
+    await user.click(screen.getByRole('button', { name: /retry/i }));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('state')).toHaveTextContent('signed in'),
+    );
+    expect(screen.getByTestId('unreachable')).toHaveTextContent('');
   });
 });

@@ -26,6 +26,10 @@ function AuthProvider({ children }) {
   const [token, setToken] = useState(readStoredToken);
   const [user, setUser] = useState(null);
   const [checked, setChecked] = useState(false);
+  // Set when the check could not reach the server, as opposed to being refused
+  const [unreachable, setUnreachable] = useState(false);
+  // Bumped to run the check again, since nothing else in its deps changes
+  const [attempt, setAttempt] = useState(0);
 
   // A stored token is only a guess until the server agrees, so the app waits.
   // Having the account already is what ends the wait, which is why 'user' is in
@@ -70,13 +74,19 @@ function AuthProvider({ children }) {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!cancelled) setUser(data.user);
+        if (cancelled) return;
+
+        setUser(data.user);
+        setUnreachable(false);
       } catch (err) {
-        // Only the server saying no means the token is bad. A timeout while the
-        // free tier wakes up must not sign someone out and lose their token
+        if (cancelled) return;
+
+        // Only the server saying no means the token is bad. Anything else is
+        // the free tier waking up, and that must not cost someone their token
         const rejected = err.status === 401 || err.status === 403;
 
-        if (!cancelled && rejected) logout();
+        if (rejected) logout();
+        else setUnreachable(true);
       } finally {
         if (!cancelled) setChecked(true);
       }
@@ -87,7 +97,15 @@ function AuthProvider({ children }) {
     return () => {
       cancelled = true;
     };
-  }, [token, user, logout]);
+  }, [token, user, logout, attempt]);
+
+  // Offered to someone stuck behind an unreachable server, so a cold start does
+  // not leave them on the login page with a token that is perfectly good
+  const retryCheck = useCallback(() => {
+    setChecked(false);
+    setUnreachable(false);
+    setAttempt(count => count + 1);
+  }, []);
 
   const post = useCallback(
     async (path, body) => {
@@ -109,13 +127,16 @@ function AuthProvider({ children }) {
       token,
       user,
       checking,
+      // A stored token we could not verify, rather than a rejected one
+      unreachable: unreachable && Boolean(token) && !user,
+      retryCheck,
       signedIn: Boolean(token && user),
       login: credentials => post('/api/auth/login', credentials),
       register: credentials => post('/api/auth/register', credentials),
       loginAsDemo: () => post('/api/auth/demo'),
       logout,
     }),
-    [token, user, checking, post, logout],
+    [token, user, checking, unreachable, retryCheck, post, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

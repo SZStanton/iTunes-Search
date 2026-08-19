@@ -86,6 +86,39 @@ describe('the results list', () => {
     expect(screen.getByText('Jordan Blake Live')).toBeInTheDocument();
   });
 
+  it('draws the bigger artwork when the server offers it', () => {
+    renderList([
+      {
+        trackId: 7,
+        trackName: 'Windmills',
+        artistName: 'Jordan Blake',
+        artworkUrl100: 'https://example.test/100x100bb.jpg',
+        artworkUrl600: 'https://example.test/600x600bb.jpg',
+      },
+    ]);
+
+    expect(screen.getByAltText('Windmills')).toHaveAttribute(
+      'src',
+      'https://example.test/600x600bb.jpg',
+    );
+  });
+
+  it('falls back to the small artwork when there is no bigger one', () => {
+    renderList([
+      {
+        trackId: 8,
+        trackName: 'Harbour',
+        artistName: 'Jordan Blake',
+        artworkUrl100: 'https://example.test/100x100bb.jpg',
+      },
+    ]);
+
+    expect(screen.getByAltText('Harbour')).toHaveAttribute(
+      'src',
+      'https://example.test/100x100bb.jpg',
+    );
+  });
+
   it('says unknown when there is no release date', () => {
     renderList([
       {

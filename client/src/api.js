@@ -26,4 +26,17 @@ async function apiFetch(path, options) {
   return res.json();
 }
 
-export { apiUrl, apiFetch };
+// Same thing with the session's token attached, which is every call the app
+// makes once someone is signed in
+function authFetch(path, token, options = {}) {
+  return apiFetch(path, {
+    ...options,
+    headers: {
+      ...options.headers,
+      Authorization: `Bearer ${token}`,
+      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+    },
+  });
+}
+
+export { apiUrl, apiFetch, authFetch };

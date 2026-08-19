@@ -7,6 +7,12 @@ const router = express.Router();
 const MAX_LIMIT = 200;
 const DEFAULT_LIMIT = 40;
 
+// Artwork comes back at 100px and the cards draw it at over twice that, but the
+// size is just a segment of the url, so ask for one that fits
+function biggerArtwork(url) {
+  return url.replace(/\/\d+x\d+bb\./, '/600x600bb.');
+}
+
 function clampLimit(raw) {
   const asked = Number(raw);
   if (!Number.isFinite(asked) || asked < 1) return DEFAULT_LIMIT;
@@ -36,11 +42,16 @@ router.get('/search', async (req, res) => {
     const data = await response.json();
 
     // Anything with no name or no artwork cannot be drawn as a card
-    const results = (data.results || []).filter(item => {
-      return (
-        item && (item.collectionName || item.trackName) && item.artworkUrl100
-      );
-    });
+    const results = (data.results || [])
+      .filter(item => {
+        return (
+          item && (item.collectionName || item.trackName) && item.artworkUrl100
+        );
+      })
+      .map(item => ({
+        ...item,
+        artworkUrl600: biggerArtwork(item.artworkUrl100),
+      }));
 
     // Count what is actually being sent, not what iTunes counted before filtering
     res.json({ results, resultCount: results.length });

@@ -5,7 +5,9 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import authenticateToken from './middleware/auth.js';
 import authRoutes from './routes/authRoutes.js';
+import favouriteRoutes from './routes/favouriteRoutes.js';
 import itunesRoutes from './routes/itunesRoutes.js';
+import searchRoutes from './routes/searchRoutes.js';
 
 // Path Setup, convert file URL into normal file path
 const __filename = fileURLToPath(import.meta.url);
@@ -36,6 +38,8 @@ app.use('/api/auth', authRoutes);
 
 // API Routes, protect itunes search routes with JWT middleware
 app.use('/api/itunes', authenticateToken, itunesRoutes);
+app.use('/api/favourites', authenticateToken, favouriteRoutes);
+app.use('/api/searches', authenticateToken, searchRoutes);
 
 // React Frontend, serve built Vite app from the client's dist folder
 if (process.env.NODE_ENV === 'production') {

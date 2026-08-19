@@ -26,7 +26,7 @@ function tokenThen(body, ok = true, status = 200) {
   jsonOnce(body, ok, status);
 }
 
-async function searchFor(term = 'beatles') {
+async function searchFor(term = 'beatles', mediaLabel) {
   const user = userEvent.setup();
   render(<App />);
 
@@ -34,6 +34,9 @@ async function searchFor(term = 'beatles') {
   const button = screen.getByRole('button', { name: /^search$/i });
 
   await waitFor(() => expect(button).toBeEnabled());
+  if (mediaLabel) {
+    await user.selectOptions(screen.getByRole('combobox'), mediaLabel);
+  }
   await user.type(input, term);
   await user.click(button);
 
@@ -90,6 +93,23 @@ describe('running a search', () => {
     expect(url.searchParams.get('term')).toBe('hey jude');
     expect(url.searchParams.get('limit')).toBe('200');
     expect(url.searchParams.get('media')).toBe('music');
+    expect(url.searchParams.get('entity')).toBeNull();
+  });
+
+  it.each([
+    ['album', 'music', 'album'],
+    ['music video', 'musicVideo', null],
+    ['podcast', 'podcast', null],
+    ['all', null, null],
+  ])('sends the right filter for %s', async (label, media, entity) => {
+    tokenThen({ results: [], resultCount: 0 });
+    await searchFor('adele', label);
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+    const url = new URL(fetchMock.mock.calls[1][0], 'http://localhost');
+    expect(url.searchParams.get('media')).toBe(media);
+    expect(url.searchParams.get('entity')).toBe(entity);
   });
 
   it('sends the token it was given', async () => {

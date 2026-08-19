@@ -5,17 +5,20 @@ import ResultsList from './components/ResultsList';
 import FavouriteList from './components/FavouriteList';
 import './App.css';
 
-// What the select offers, mapped to the values the iTunes API expects
+// What the select offers, mapped to the values the iTunes API expects. Album is
+// a media plus an entity, which is why these are pairs rather than strings.
+// 'movie' and 'shortFilm' are deliberately absent, Apple returns nothing for
+// either in any storefront
 const mediaMap = {
-  movie: 'movie',
-  podcast: 'podcast',
-  music: 'music',
-  audiobook: 'audiobook',
-  'short film': 'shortFilm',
-  'tv show': 'tvShow',
-  software: 'software',
-  ebook: 'ebook',
-  all: '',
+  all: {},
+  podcast: { media: 'podcast' },
+  music: { media: 'music' },
+  album: { media: 'music', entity: 'album' },
+  'music video': { media: 'musicVideo' },
+  audiobook: { media: 'audiobook' },
+  'tv show': { media: 'tvShow' },
+  software: { media: 'software' },
+  ebook: { media: 'ebook' },
 };
 
 // iTunes ignores an offset, so one search asks for as much as it will give and
@@ -70,11 +73,11 @@ function App() {
     setPage(0);
 
     try {
-      const query = new URLSearchParams({
-        term,
-        media: mediaMap[media] ?? '',
-        limit: FETCH_LIMIT,
-      });
+      const filter = mediaMap[media] ?? {};
+      const query = new URLSearchParams({ term, limit: FETCH_LIMIT });
+
+      if (filter.media) query.set('media', filter.media);
+      if (filter.entity) query.set('entity', filter.entity);
 
       const data = await apiFetch(`/api/itunes/search?${query}`, {
         headers: {

@@ -35,11 +35,11 @@ function SearchForm({
             onChange={e => setMedia(e.target.value)}
           >
             <option value="all">ALL</option>
-            <option value="movie">Movie</option>
             <option value="podcast">Podcast</option>
             <option value="music">Music</option>
+            <option value="album">Album</option>
+            <option value="music video">Music Video</option>
             <option value="audiobook">Audiobook</option>
-            <option value="short film">Short Film</option>
             <option value="tv show">TV Show</option>
             <option value="software">Software</option>
             <option value="ebook">Ebook</option>

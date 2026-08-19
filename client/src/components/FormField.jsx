@@ -10,15 +10,19 @@ function FormField({
   autoComplete,
 }) {
   return (
-    <div className="form-field">
-      <label className="form-label" htmlFor={id}>
+    <div className="mb-4">
+      <label className="mb-1.5 block text-sm font-medium text-ink" htmlFor={id}>
         {label}
       </label>
 
       <input
         id={id}
         type={type}
-        className={`form-control${error ? ' is-invalid' : ''}`}
+        className={`w-full rounded-lg border bg-surface px-3 py-2 text-ink outline-none transition placeholder:text-muted focus:ring-2 ${
+          error
+            ? 'border-danger focus:ring-danger/40'
+            : 'border-line focus:border-accent-strong focus:ring-accent-strong/30'
+        }`}
         value={value}
         onChange={onChange}
         autoComplete={autoComplete}
@@ -27,7 +31,7 @@ function FormField({
       />
 
       {error && (
-        <p className="invalid-feedback" id={`${id}-error`}>
+        <p className="mt-1.5 text-sm text-danger" id={`${id}-error`}>
           {error}
         </p>
       )}

@@ -41,12 +41,26 @@ function Register() {
   };
 
   return (
-    <div className="auth-page">
-      <h1 className="app-title">Create an account</h1>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-page px-4 py-12">
+      <div className="mb-8 text-center">
+        <h1 className="text-3xl font-semibold tracking-tight text-ink">
+          Create an account
+        </h1>
+        <p className="mt-2 text-sm text-muted">
+          Your favourites and searches are kept to your account.
+        </p>
+      </div>
 
-      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+      <form
+        className="w-full max-w-sm rounded-card border border-line bg-surface p-6 card-shadow"
+        onSubmit={handleSubmit}
+        noValidate
+      >
         {message && (
-          <p className="form-message" role="alert">
+          <p
+            className="mb-4 rounded-lg bg-danger-surface px-3 py-2 text-sm text-danger"
+            role="alert"
+          >
             {message}
           </p>
         )}
@@ -71,16 +85,26 @@ function Register() {
           autoComplete="new-password"
         />
 
-        <p className="form-hint">At least 8 characters.</p>
+        <p className="-mt-2 mb-4 text-xs text-muted">At least 8 characters.</p>
 
-        <button className="btn btn-primary" type="submit" disabled={busy}>
+        <button
+          className="w-full rounded-full bg-accent-strong py-2.5 font-medium text-accent-ink transition hover:brightness-110 active:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
+          type="submit"
+          disabled={busy}
+        >
           {busy ? 'Creating...' : 'Create account'}
         </button>
       </form>
 
-      <div className="auth-alternatives">
+      <div className="mt-4 flex w-full max-w-sm flex-col gap-3 text-center text-sm text-muted">
         <p>
-          Already have one? <Link to="/login">Sign in</Link>
+          Already have one?{' '}
+          <Link
+            className="font-medium text-accent-strong underline-offset-2 hover:underline active:underline"
+            to="/login"
+          >
+            Sign in
+          </Link>
         </p>
       </div>
     </div>

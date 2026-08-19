@@ -58,12 +58,26 @@ function Login() {
   };
 
   return (
-    <div className="auth-page">
-      <h1 className="app-title">Sign in</h1>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-page px-4 py-12">
+      <div className="mb-8 text-center">
+        <h1 className="text-3xl font-semibold tracking-tight text-ink">
+          Sign in
+        </h1>
+        <p className="mt-2 text-sm text-muted">
+          Search the iTunes catalogue and keep what you like.
+        </p>
+      </div>
 
-      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+      <form
+        className="w-full max-w-sm rounded-card border border-line bg-surface p-6 card-shadow"
+        onSubmit={handleSubmit}
+        noValidate
+      >
         {message && (
-          <p className="form-message" role="alert">
+          <p
+            className="mb-4 rounded-lg bg-danger-surface px-3 py-2 text-sm text-danger"
+            role="alert"
+          >
             {message}
           </p>
         )}
@@ -88,14 +102,18 @@ function Login() {
           autoComplete="current-password"
         />
 
-        <button className="btn btn-primary" type="submit" disabled={busy}>
+        <button
+          className="w-full rounded-full bg-accent-strong py-2.5 font-medium text-accent-ink transition hover:brightness-110 active:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
+          type="submit"
+          disabled={busy}
+        >
           {busy ? 'Signing in...' : 'Sign in'}
         </button>
       </form>
 
-      <div className="auth-alternatives">
+      <div className="mt-4 flex w-full max-w-sm flex-col gap-3 text-center text-sm text-muted">
         <button
-          className="btn btn-outline-primary"
+          className="w-full rounded-full border border-line bg-surface py-2.5 font-medium text-ink transition hover:bg-raised hover:border-accent-strong active:bg-raised disabled:opacity-60"
           type="button"
           onClick={handleDemo}
           disabled={busy}
@@ -104,7 +122,13 @@ function Login() {
         </button>
 
         <p>
-          No account yet? <Link to="/register">Create one</Link>
+          No account yet?{' '}
+          <Link
+            className="font-medium text-accent-strong underline-offset-2 hover:underline active:underline"
+            to="/register"
+          >
+            Create one
+          </Link>
         </p>
       </div>
     </div>

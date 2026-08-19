@@ -240,7 +240,9 @@ describe('what the account already has', () => {
     render(<App />);
 
     await screen.findByPlaceholderText(/search itunes/i);
-    expect(screen.queryByText(/recent searches/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('region', { name: /recent searches/i }),
+    ).not.toBeInTheDocument();
   });
 });
 
@@ -346,7 +348,9 @@ describe('recent searches', () => {
     await user.click(await screen.findByRole('button', { name: /clear all/i }));
 
     await waitFor(() =>
-      expect(screen.queryByText(/recent searches/i)).not.toBeInTheDocument(),
+      expect(
+        screen.queryByRole('region', { name: /recent searches/i }),
+      ).not.toBeInTheDocument(),
     );
   });
 });
@@ -405,6 +409,60 @@ describe('paging through the results', () => {
     await screen.findByText('Track 1');
     expect(
       screen.queryByRole('button', { name: /next/i }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe('the favourites drawer', () => {
+  it('counts what is saved without being opened', async () => {
+    favouritesReply = [
+      { _id: 'f1', itemId: 7, title: 'Windmills', artist: 'Jordan Blake' },
+      { _id: 'f2', itemId: 8, title: 'Harbour', artist: 'Jordan Blake' },
+    ];
+
+    render(<App />);
+
+    expect(
+      await screen.findByRole('button', { name: /favourites, 2 saved/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('opens and shuts', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    // Shut, the drawer is aria-hidden, so nothing inside it is reachable
+    expect(
+      screen.queryByRole('button', { name: /^close$/i }),
+    ).not.toBeInTheDocument();
+
+    await user.click(
+      await screen.findByRole('button', { name: /favourites, 0 saved/i }),
+    );
+    expect(
+      screen.getByRole('button', { name: /^close$/i }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /^close$/i }));
+    expect(
+      screen.queryByRole('button', { name: /^close$/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('shuts on escape, which is what people try first', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(
+      await screen.findByRole('button', { name: /favourites, 0 saved/i }),
+    );
+    expect(
+      screen.getByRole('button', { name: /^close$/i }),
+    ).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+    expect(
+      screen.queryByRole('button', { name: /^close$/i }),
     ).not.toBeInTheDocument();
   });
 });

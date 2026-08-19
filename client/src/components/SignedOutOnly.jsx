@@ -7,7 +7,9 @@ function SignedOutOnly({ children }) {
   const { signedIn, checking } = useAuth();
 
   if (checking) {
-    return <p className="route-checking">Checking your session...</p>;
+    return (
+      <p className="p-16 text-center text-muted">Checking your session...</p>
+    );
   }
 
   if (signedIn) {

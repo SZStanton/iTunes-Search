@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FALLBACK_SECRET, checkEnv } from './checkEnv.js';
+import { FALLBACK_SECRET, PUBLISHED_SECRETS, checkEnv } from './checkEnv.js';
 
 const production = {
   NODE_ENV: 'production',
@@ -51,12 +51,22 @@ describe('checking the environment in production', () => {
     );
   });
 
-  it('refuses to run on the placeholder secret, which is in the repo', () => {
-    const { problems } = checkEnv({
-      env: { ...production, JWT_SECRET: FALLBACK_SECRET },
-    });
+  it.each(PUBLISHED_SECRETS)(
+    'refuses to run on the published secret %s',
+    secret => {
+      const { problems } = checkEnv({
+        env: { ...production, JWT_SECRET: secret },
+      });
 
-    expect(problems.join()).toMatch(/JWT_SECRET/);
+      expect(problems.join()).toMatch(/JWT_SECRET/);
+    },
+  );
+
+  it('guards the code fallback and the one in .env.example, not just one', () => {
+    // These two drifted apart once already: the check knew about the code's
+    // fallback while .env.example told people to use a different placeholder
+    expect(PUBLISHED_SECRETS).toContain(FALLBACK_SECRET);
+    expect(PUBLISHED_SECRETS).toContain('change-me');
   });
 
   it('reports both missing values at once, not one at a time', () => {

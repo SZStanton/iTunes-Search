@@ -19,9 +19,18 @@ dotenv.config({ path: path.join(__dirname, '.env'), quiet: true });
 const app = express();
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key';
 
+// Only the frontend needs to call this, and in production it is served from the
+// same origin anyway, so a bare cors() opens it wider than it ever needs
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+
 // Middleware, allows requests from frontend and lets express read JSON data
-app.use(cors());
+app.use(cors({ origin: CLIENT_URL }));
 app.use(express.json());
+
+// Health Check, used to confirm the API is up without running a search
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
 
 // JWT Token Route, frontend calls this route to get a token before making API requests
 app.get('/api/token', (req, res) => {

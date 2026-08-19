@@ -41,9 +41,12 @@ router.post('/', async (req, res) => {
   }
 
   try {
+    // Inherits the account's expiry, so it is deleted alongside it rather than
+    // being left behind pointing at a user that no longer exists
     const favourite = await Favourite.create({
       ...parsed.data,
       user: req.user.id,
+      expiresAt: req.user.expiresAt,
     });
 
     res.status(201).json({ favourite });

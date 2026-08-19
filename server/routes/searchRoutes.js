@@ -40,7 +40,16 @@ router.post('/', async (req, res) => {
   try {
     search = await Search.findOneAndUpdate(
       { user: req.user.id, termKey, media },
-      { $set: { user: req.user.id, term, termKey, media } },
+      {
+        $set: {
+          user: req.user.id,
+          term,
+          termKey,
+          media,
+          // Deleted alongside the account rather than left behind
+          expiresAt: req.user.expiresAt,
+        },
+      },
       { upsert: true, returnDocument: 'after', timestamps: true },
     );
   } catch (err) {

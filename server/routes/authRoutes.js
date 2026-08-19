@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import authenticateToken from '../middleware/auth.js';
+import { resetDemoData } from '../config/demoSeed.js';
+import { expiryFromNow, touchAccount } from '../config/retention.js';
 import { loginSchema, registerSchema } from '../validation/authSchemas.js';
 import { fieldErrors } from '../validation/fieldErrors.js';
 
@@ -36,7 +38,13 @@ router.post('/register', async (req, res) => {
   const hash = await bcrypt.hash(password, SALT_ROUNDS);
 
   try {
-    const user = await User.create({ email, password: hash });
+    // Dated from the start, so an account that is registered and never used
+    // still gets cleaned up
+    const user = await User.create({
+      email,
+      password: hash,
+      expiresAt: expiryFromNow(),
+    });
 
     res.status(201).json(accountResponse(user));
   } catch (err) {
@@ -74,6 +82,26 @@ router.post('/login', async (req, res) => {
   if (!matches) {
     return res.status(401).json({ message: 'Email or password is incorrect.' });
   }
+
+  // Logging in is activity, so the clock restarts here as well as on a request
+  await touchAccount(user);
+
+  res.json(accountResponse(user));
+});
+
+//== DEMO ==
+// One click on the login page, so nobody has to hand over an email to look round
+router.post('/demo', async (req, res) => {
+  const user = await User.findOne({ isDemo: true });
+
+  if (!user) {
+    return res.status(503).json({
+      message: 'The demo account is not set up on this server.',
+    });
+  }
+
+  // Whatever the last visitor added or deleted goes, so everyone starts the same
+  await resetDemoData(user);
 
   res.json(accountResponse(user));
 });

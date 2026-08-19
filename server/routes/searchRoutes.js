@@ -1,5 +1,6 @@
 import express from 'express';
 import Search from '../models/Search.js';
+import { fieldErrors } from '../validation/fieldErrors.js';
 import { historySchema } from '../validation/searchSchemas.js';
 
 const router = express.Router();
@@ -25,19 +26,34 @@ router.post('/', async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({
       message: 'That search could not be remembered.',
-      errors: parsed.error.issues.map(issue => issue.message),
+      errors: fieldErrors(parsed.error),
     });
   }
 
   const { term, media } = parsed.data;
+  const termKey = term.toLowerCase();
 
   // Searching the same thing again moves it to the top rather than adding a
-  // second row, which is why the upsert matches on the pair
-  const search = await Search.findOneAndUpdate(
-    { user: req.user.id, term, media },
-    { $set: { user: req.user.id, term, media } },
-    { upsert: true, returnDocument: 'after', timestamps: true },
-  );
+  // second row, which is why the upsert matches on the key rather than the id
+  let search;
+
+  try {
+    search = await Search.findOneAndUpdate(
+      { user: req.user.id, termKey, media },
+      { $set: { user: req.user.id, term, termKey, media } },
+      { upsert: true, returnDocument: 'after', timestamps: true },
+    );
+  } catch (err) {
+    // Two identical searches at once both miss the match and both insert, and
+    // the index rejects the loser. Retrying finds the row the winner wrote
+    if (err.code !== 11000) throw err;
+
+    search = await Search.findOneAndUpdate(
+      { user: req.user.id, termKey, media },
+      { $set: { term } },
+      { returnDocument: 'after', timestamps: true },
+    );
+  }
 
   // Drop anything past the limit, oldest first
   const stale = await Search.find({ user: req.user.id })
@@ -54,10 +70,18 @@ router.post('/', async (req, res) => {
 
 //== REMOVE ONE ==
 router.delete('/:id', async (req, res) => {
-  const removed = await Search.findOneAndDelete({
-    _id: req.params.id,
-    user: req.user.id,
-  }).catch(() => null);
+  let removed;
+
+  try {
+    removed = await Search.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user.id,
+    });
+  } catch (err) {
+    // A malformed id is a 404 like any other id that is not yours. Anything
+    // else is a real failure and must not be dressed up as a missing row
+    if (err.name !== 'CastError') throw err;
+  }
 
   if (!removed) {
     return res

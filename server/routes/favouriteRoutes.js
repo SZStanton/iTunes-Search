@@ -1,8 +1,13 @@
 import express from 'express';
 import Favourite from '../models/Favourite.js';
 import { favouriteSchema } from '../validation/favouriteSchemas.js';
+import { fieldErrors } from '../validation/fieldErrors.js';
 
 const router = express.Router();
+
+// Far more than anyone will save, but the free cluster is 512MB shared by every
+// account, so the list cannot be unbounded
+const MAX_FAVOURITES = 500;
 
 // Every route here is mounted behind the auth middleware, so req.user is the
 // person asking and nothing is ever looked up by an id the client supplied
@@ -23,7 +28,15 @@ router.post('/', async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({
       message: 'That result could not be saved.',
-      errors: parsed.error.issues.map(issue => issue.message),
+      errors: fieldErrors(parsed.error),
+    });
+  }
+
+  const saved = await Favourite.countDocuments({ user: req.user.id });
+
+  if (saved >= MAX_FAVOURITES) {
+    return res.status(409).json({
+      message: `You can save up to ${MAX_FAVOURITES} favourites. Remove one to add another.`,
     });
   }
 

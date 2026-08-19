@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import authenticateToken from '../middleware/auth.js';
 import { loginSchema, registerSchema } from '../validation/authSchemas.js';
+import { fieldErrors } from '../validation/fieldErrors.js';
 
 const router = express.Router();
 
@@ -14,19 +15,6 @@ function signToken(user) {
   const secret = process.env.JWT_SECRET || 'dev-secret-key';
 
   return jwt.sign({ sub: user.id }, secret, { expiresIn: TOKEN_LIFE });
-}
-
-// The zod messages are what the form shows, so they go back as they are, keyed
-// by field. Only the first per field, since a second rarely adds anything
-function fieldErrors(error) {
-  const errors = {};
-
-  for (const issue of error.issues) {
-    const field = issue.path[0];
-    if (!errors[field]) errors[field] = issue.message;
-  }
-
-  return errors;
 }
 
 function accountResponse(user) {

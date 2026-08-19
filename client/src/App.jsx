@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { apiFetch } from './api';
 import SearchForm from './components/SearchForm';
 import ResultsList from './components/ResultsList';
 import FavouriteList from './components/FavouriteList';
@@ -48,10 +49,7 @@ function App() {
   useEffect(() => {
     const getToken = async () => {
       try {
-        const res = await fetch('/api/token');
-        if (!res.ok) throw new Error(`Token request failed: ${res.status}`);
-
-        const data = await res.json();
+        const data = await apiFetch('/api/token');
         setToken(data.token);
       } catch (err) {
         console.error('Token load failed:', err);
@@ -78,19 +76,11 @@ function App() {
         limit: FETCH_LIMIT,
       });
 
-      const response = await fetch(`/api/itunes/search?${query}`, {
+      const data = await apiFetch(`/api/itunes/search?${query}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      // An error body still parses as JSON, so the status has to be checked
-      if (!response.ok) {
-        const body = await response.json().catch(() => ({}));
-        throw new Error(body.message || `Search failed: ${response.status}`);
-      }
-
-      const data = await response.json();
 
       setAllResults(data.results || []);
     } catch (err) {

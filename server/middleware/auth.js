@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { touchAccount } from '../config/retention.js';
 
 // JWT Auth Middleware, checks the request carries a token for a real account
 async function authenticateToken(req, res, next) {
@@ -31,6 +32,15 @@ async function authenticateToken(req, res, next) {
   }
 
   req.user = user;
+
+  // Using the app is what keeps the account alive, so every guarded request
+  // counts as activity. Housekeeping though, so a failure here must not turn
+  // someone's read into a 500
+  try {
+    await touchAccount(user);
+  } catch (err) {
+    console.error('Could not refresh the expiry for', user.id, err);
+  }
 
   next();
 }

@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import authenticateToken from './middleware/auth.js';
+import { apiLimiter, authLimiter } from './middleware/rateLimits.js';
 import authRoutes from './routes/authRoutes.js';
 import favouriteRoutes from './routes/favouriteRoutes.js';
 import itunesRoutes from './routes/itunesRoutes.js';
@@ -28,18 +29,22 @@ const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 app.use(cors({ origin: CLIENT_URL }));
 app.use(express.json());
 
+// Render sits behind a proxy, so the client IP is in x-forwarded-for. Trust one
+// hop only, or anyone could spoof the header and dodge the rate limit
+app.set('trust proxy', 1);
+
 // Health Check, used to confirm the API is up without running a search
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
 // Auth Routes, register and login are open, everything past them is not
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 
 // API Routes, protect itunes search routes with JWT middleware
-app.use('/api/itunes', authenticateToken, itunesRoutes);
-app.use('/api/favourites', authenticateToken, favouriteRoutes);
-app.use('/api/searches', authenticateToken, searchRoutes);
+app.use('/api/itunes', apiLimiter, authenticateToken, itunesRoutes);
+app.use('/api/favourites', apiLimiter, authenticateToken, favouriteRoutes);
+app.use('/api/searches', apiLimiter, authenticateToken, searchRoutes);
 
 // React Frontend, serve built Vite app from the client's dist folder
 if (process.env.NODE_ENV === 'production') {

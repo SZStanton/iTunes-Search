@@ -7,8 +7,17 @@ import {
   it,
   vi,
 } from 'vitest';
-import jwt from 'jsonwebtoken';
-import app from '../app.js';
+
+// Looking a user up needs a database, and these tests are about the search
+// route rather than the guard. auth.test.js covers the guard itself
+vi.mock('../middleware/auth.js', () => ({
+  default: (req, res, next) => {
+    req.user = { id: 'test-user' };
+    next();
+  },
+}));
+
+const { default: app } = await import('../app.js');
 
 // The route calls fetch itself, so stubbing the global would swallow the test's
 // own requests too. Hold on to the real one first
@@ -17,15 +26,13 @@ const realFetch = globalThis.fetch;
 const itunesFetch = vi.fn();
 let base;
 let server;
-let token;
 
 function itunesReply(body) {
   itunesFetch.mockResolvedValueOnce({ json: async () => body });
 }
 
-function search(query, bearer = token) {
-  const headers = bearer ? { Authorization: `Bearer ${bearer}` } : {};
-  return realFetch(`${base}/api/itunes/search${query}`, { headers });
+function search(query) {
+  return realFetch(`${base}/api/itunes/search${query}`);
 }
 
 beforeAll(async () => {
@@ -34,9 +41,6 @@ beforeAll(async () => {
   server = app.listen(0);
   await new Promise(resolve => server.once('listening', resolve));
   base = `http://127.0.0.1:${server.address().port}`;
-
-  const res = await realFetch(`${base}/api/token`);
-  token = (await res.json()).token;
 });
 
 afterAll(() => {
@@ -48,36 +52,12 @@ beforeEach(() => {
   itunesFetch.mockReset();
 });
 
-describe('the token route', () => {
-  it('hands out a signed token', () => {
-    expect(jwt.decode(token)).toMatchObject({ app: 'itunes-search' });
-  });
-});
-
 describe('the health check', () => {
   it('answers without a token, so it can be used to wake the api', async () => {
     const res = await realFetch(`${base}/api/health`);
 
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ status: 'ok' });
-  });
-});
-
-describe('guarding the search route', () => {
-  it('refuses a request with no token', async () => {
-    expect((await search('?term=beatles', null)).status).toBe(401);
-  });
-
-  it('refuses a token it did not sign', async () => {
-    const forged = jwt.sign({ app: 'itunes-search' }, 'not-the-secret');
-    expect((await search('?term=beatles', forged)).status).toBe(403);
-  });
-
-  it('refuses an expired token', async () => {
-    const stale = jwt.sign({ app: 'itunes-search' }, 'dev-secret-key', {
-      expiresIn: '-1h',
-    });
-    expect((await search('?term=beatles', stale)).status).toBe(403);
   });
 });
 
@@ -109,6 +89,22 @@ describe('searching', () => {
     await search('?term=hey%20jude&media=');
 
     expect(itunesFetch.mock.calls[0][0]).not.toContain('media=');
+  });
+
+  it('passes an entity through, which is how Album is asked for', async () => {
+    itunesReply({ results: [], resultCount: 0 });
+    await search('?term=adele&media=music&entity=album');
+
+    const url = new URL(itunesFetch.mock.calls[0][0]);
+    expect(url.searchParams.get('media')).toBe('music');
+    expect(url.searchParams.get('entity')).toBe('album');
+  });
+
+  it('leaves entity off when the filter does not need one', async () => {
+    itunesReply({ results: [], resultCount: 0 });
+    await search('?term=adele&media=musicVideo');
+
+    expect(itunesFetch.mock.calls[0][0]).not.toContain('entity=');
   });
 
   it('returns what itunes sent back', async () => {

@@ -19,9 +19,10 @@ function clampLimit(raw) {
   return Math.min(Math.floor(asked), MAX_LIMIT);
 }
 
-// Search iTunes API using search term and media type received from frontend
+// Search iTunes API using search term and media type received from frontend.
+// Some filters need an entity as well, Album is media=music plus entity=album
 router.get('/search', async (req, res) => {
-  const { term, media } = req.query;
+  const { term, media, entity } = req.query;
   const limit = clampLimit(req.query.limit);
 
   // Ensure a search term was provided
@@ -35,6 +36,7 @@ router.get('/search', async (req, res) => {
     // Build query parameters for iTunes API
     const params = new URLSearchParams({ term, limit });
     if (media) params.set('media', media);
+    if (entity) params.set('entity', entity);
 
     // Request data from iTunes Search API
     const response = await fetch(`https://itunes.apple.com/search?${params}`);

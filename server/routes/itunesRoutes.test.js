@@ -133,3 +133,58 @@ describe('searching', () => {
     expect((await res.json()).message).toMatch(/failed/i);
   });
 });
+
+describe('how many results are asked for', () => {
+  async function limitSentFor(query) {
+    itunesReply({ results: [], resultCount: 0 });
+    await search(query);
+    return new URL(itunesFetch.mock.calls[0][0]).searchParams.get('limit');
+  }
+
+  it('asks for forty when none is given', async () => {
+    expect(await limitSentFor('?term=beatles')).toBe('40');
+  });
+
+  it('passes a sensible limit straight through', async () => {
+    expect(await limitSentFor('?term=beatles&limit=120')).toBe('120');
+  });
+
+  it('will not ask itunes for more than it can return', async () => {
+    expect(await limitSentFor('?term=beatles&limit=5000')).toBe('200');
+  });
+
+  it('ignores a limit that is not a number', async () => {
+    expect(await limitSentFor('?term=beatles&limit=lots')).toBe('40');
+  });
+
+  it('ignores a limit of zero or less', async () => {
+    expect(await limitSentFor('?term=beatles&limit=-10')).toBe('40');
+  });
+});
+
+describe('the result count', () => {
+  it('counts what is sent back, not what itunes counted', async () => {
+    itunesReply({
+      // The middle one has no artwork, so it cannot be drawn and is dropped
+      results: [
+        {
+          trackId: 1,
+          trackName: 'Here Comes the Sun',
+          artworkUrl100: 'https://example.test/a.jpg',
+        },
+        { trackId: 2, trackName: 'No Artwork' },
+        {
+          trackId: 3,
+          trackName: 'Come Together',
+          artworkUrl100: 'https://example.test/c.jpg',
+        },
+      ],
+      resultCount: 3,
+    });
+
+    const body = await (await search('?term=beatles')).json();
+
+    expect(body.results).toHaveLength(2);
+    expect(body.resultCount).toBe(2);
+  });
+});

@@ -5,8 +5,10 @@ function ResultsList({ results, favourites, addFavourite }) {
 
       <div className="results-grid">
         {results.map((item, index) => {
-          const id = item.collectionId || item.trackId;
-          const title = item.collectionName || item.trackName;
+          // A track's collectionId is its album, so every song on one album
+          // shared an id and the list blocked all but the first as a duplicate
+          const id = item.trackId ?? item.collectionId;
+          const title = item.trackName ?? item.collectionName;
           const isFavourite = favourites.some(favourite => favourite.id === id);
 
           return (

@@ -16,9 +16,10 @@ function ResultsList({ results, favourites, addFavourite, searched = false }) {
           return (
             <div key={id ?? index} className="result-card">
               <img
-                src={item.artworkUrl100}
+                src={item.artworkUrl600 ?? item.artworkUrl100}
                 alt={title}
                 className="result-image"
+                loading="lazy"
               />
               <div className="result-content">
                 <p className="result-title">{title}</p>

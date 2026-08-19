@@ -54,6 +54,15 @@ describe('the token route', () => {
   });
 });
 
+describe('the health check', () => {
+  it('answers without a token, so it can be used to wake the api', async () => {
+    const res = await realFetch(`${base}/api/health`);
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ status: 'ok' });
+  });
+});
+
 describe('guarding the search route', () => {
   it('refuses a request with no token', async () => {
     expect((await search('?term=beatles', null)).status).toBe(401);
@@ -159,6 +168,49 @@ describe('how many results are asked for', () => {
 
   it('ignores a limit of zero or less', async () => {
     expect(await limitSentFor('?term=beatles&limit=-10')).toBe('40');
+  });
+});
+
+describe('artwork', () => {
+  it('offers a bigger version alongside the one itunes sent', async () => {
+    itunesReply({
+      results: [
+        {
+          trackId: 1,
+          trackName: 'Here Comes the Sun',
+          artworkUrl100: 'https://example.test/a/b/100x100bb.jpg',
+        },
+      ],
+      resultCount: 1,
+    });
+
+    const body = await (await search('?term=beatles')).json();
+
+    expect(body.results[0].artworkUrl600).toBe(
+      'https://example.test/a/b/600x600bb.jpg',
+    );
+    expect(body.results[0].artworkUrl100).toBe(
+      'https://example.test/a/b/100x100bb.jpg',
+    );
+  });
+
+  it('leaves a url alone when it has no size to swap', async () => {
+    itunesReply({
+      results: [
+        {
+          trackId: 1,
+          trackName: 'Odd One',
+          artworkUrl100: 'https://example.test/no-size-here.jpg',
+        },
+      ],
+      resultCount: 1,
+    });
+
+    const body = await (await search('?term=beatles')).json();
+
+    expect(body.results[0].artworkUrl600).toBe(
+      'https://example.test/no-size-here.jpg',
+    );
   });
 });
 

@@ -1,11 +1,14 @@
 {
-  "name": "my-project",
+  "name": "itunes-search",
   "private": true,
   "type": "module",
   "workspaces": [
     "client",
     "server"
   ],
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "concurrently -n server,client -c blue,magenta \"npm run dev -w server\" \"npm run dev -w client\"",
     "dev:client": "npm run dev -w client",

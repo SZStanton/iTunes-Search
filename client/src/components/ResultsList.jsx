@@ -1,7 +1,9 @@
-function ResultsList({ results, favourites, addFavourite }) {
+function ResultsList({ results, favourites, addFavourite, searched = false }) {
   return (
     <div className="results-section">
       <h2 className="section-title">Search Results</h2>
+
+      {searched && results.length === 0 && <p>Nothing matched that search.</p>}
 
       <div className="results-grid">
         {results.map((item, index) => {

@@ -2,9 +2,21 @@ import express from 'express';
 
 const router = express.Router();
 
+// iTunes caps a search at 200 and ignores any offset, so paging has to happen
+// on whatever one request returns
+const MAX_LIMIT = 200;
+const DEFAULT_LIMIT = 40;
+
+function clampLimit(raw) {
+  const asked = Number(raw);
+  if (!Number.isFinite(asked) || asked < 1) return DEFAULT_LIMIT;
+  return Math.min(Math.floor(asked), MAX_LIMIT);
+}
+
 // Search iTunes API using search term and media type received from frontend
 router.get('/search', async (req, res) => {
-  const { term, media, limit = 40 } = req.query;
+  const { term, media } = req.query;
+  const limit = clampLimit(req.query.limit);
 
   // Ensure a search term was provided
   if (!term) {
@@ -23,14 +35,15 @@ router.get('/search', async (req, res) => {
 
     const data = await response.json();
 
-    // Return API filtered results to the frontend
+    // Anything with no name or no artwork cannot be drawn as a card
     const results = (data.results || []).filter(item => {
       return (
         item && (item.collectionName || item.trackName) && item.artworkUrl100
       );
     });
 
-    res.json({ results, resultCount: data.resultCount });
+    // Count what is actually being sent, not what iTunes counted before filtering
+    res.json({ results, resultCount: results.length });
   } catch (err) {
     console.error(err);
 

@@ -57,6 +57,9 @@ describe('saving a favourite', () => {
   it.each([
     ['missing', undefined, 'An item id is required.'],
     ['a word', 'abc', 'An item id is required.'],
+    ['true', true, 'An item id is required.'],
+    ['an array holding a number', ['5'], 'An item id is required.'],
+    ['an object', {}, 'An item id is required.'],
     ['a fraction', 1.5, 'An item id must be a whole number.'],
     ['zero', 0, 'An item id must be a positive number.'],
     ['negative', -5, 'An item id must be a positive number.'],

@@ -23,11 +23,9 @@ app.use(express.json());
 
 // JWT Token Route, frontend calls this route to get a token before making API requests
 app.get('/api/token', (req, res) => {
-  const token = jwt.sign(
-    { app: 'itunes-search' },
-    process.env.JWT_SECRET || 'dev-secret-key',
-    { expiresIn: '1h' },
-  );
+  const token = jwt.sign({ app: 'itunes-search' }, JWT_SECRET, {
+    expiresIn: '1h',
+  });
 
   res.json({ token });
 });

@@ -35,12 +35,14 @@ app.get('/api/token', (req, res) => {
 // API Routes, protect itunes search routes with JWT middleware
 app.use('/api/itunes', authenticateToken, itunesRoutes);
 
-// React Frontend, serve built Vite app from dist folder
+// React Frontend, serve built Vite app from the client's dist folder
 if (process.env.NODE_ENV === 'production') {
-  const clientPath = path.join(__dirname, '..', 'dist');
+  const clientPath = path.join(__dirname, '..', 'client', 'dist');
 
   app.use(express.static(clientPath));
-  app.get('*', (req, res) => {
+
+  // Express 5 rejects a bare '*', the wildcard has to be a named splat now
+  app.get('/*splat', (req, res) => {
     res.sendFile(path.join(clientPath, 'index.html'));
   });
 }

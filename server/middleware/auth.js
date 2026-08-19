@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
-// JWT Auth Middleware, checks if request contains a valid Bearer token.
-function authenticateToken(req, res, next) {
+// JWT Auth Middleware, checks the request carries a token for a real account
+async function authenticateToken(req, res, next) {
   const authHeader = req.headers.authorization;
 
   // Makes sure authorization header exists and has right format
@@ -12,17 +13,26 @@ function authenticateToken(req, res, next) {
   const token = authHeader.split(' ')[1];
   const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key';
 
+  let payload;
+
   try {
     // Verify token signature and expiry
-    const payload = jwt.verify(token, JWT_SECRET);
-
-    // Save the token payload on the request in case we need it later
-    req.user = payload;
-
-    next();
+    payload = jwt.verify(token, JWT_SECRET);
   } catch {
     return res.status(403).json({ message: 'Invalid token' });
   }
+
+  // Inactive accounts are deleted by a TTL index, so a signature can still be
+  // valid for someone who is no longer there
+  const user = await User.findById(payload.sub).catch(() => null);
+
+  if (!user) {
+    return res.status(401).json({ message: 'Account no longer exists' });
+  }
+
+  req.user = user;
+
+  next();
 }
 
 export default authenticateToken;

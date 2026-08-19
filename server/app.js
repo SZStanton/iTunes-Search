@@ -2,9 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import authenticateToken from './middleware/auth.js';
+import authRoutes from './routes/authRoutes.js';
 import itunesRoutes from './routes/itunesRoutes.js';
 
 // Path Setup, convert file URL into normal file path
@@ -17,7 +17,6 @@ dotenv.config({ path: path.join(__dirname, '.env'), quiet: true });
 
 // App Setup, create express app
 const app = express();
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key';
 
 // Only the frontend needs to call this, and in production it is served from the
 // same origin anyway, so a bare cors() opens it wider than it ever needs
@@ -32,14 +31,8 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// JWT Token Route, frontend calls this route to get a token before making API requests
-app.get('/api/token', (req, res) => {
-  const token = jwt.sign({ app: 'itunes-search' }, JWT_SECRET, {
-    expiresIn: '1h',
-  });
-
-  res.json({ token });
-});
+// Auth Routes, register and login are open, everything past them is not
+app.use('/api/auth', authRoutes);
 
 // API Routes, protect itunes search routes with JWT middleware
 app.use('/api/itunes', authenticateToken, itunesRoutes);
@@ -55,5 +48,13 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.join(clientPath, 'index.html'));
   });
 }
+
+// Anything a route throws lands here. Express spots an error handler by its four
+// arguments, so the unused 'next' has to stay
+app.use((err, req, res, _next) => {
+  console.error(err);
+
+  res.status(500).json({ message: 'Something went wrong on the server.' });
+});
 
 export default app;

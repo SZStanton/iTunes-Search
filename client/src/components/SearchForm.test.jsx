@@ -75,15 +75,27 @@ describe('the search form', () => {
 
     expect(values).toEqual([
       'all',
-      'movie',
       'podcast',
       'music',
+      'album',
+      'music video',
       'audiobook',
-      'short film',
       'tv show',
       'software',
       'ebook',
     ]);
+  });
+
+  it('leaves out the two apple stopped answering', () => {
+    render(<Harness />);
+
+    const values = screen
+      .getAllByRole('option')
+      .map(option => option.getAttribute('value'));
+
+    // media=movie and media=shortFilm return nothing in every storefront
+    expect(values).not.toContain('movie');
+    expect(values).not.toContain('short film');
   });
 
   it('says so and stops accepting clicks while a search is running', async () => {

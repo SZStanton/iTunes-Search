@@ -37,7 +37,10 @@ function ResultsList({ results, favourites, addFavourite, searched = false }) {
                       id,
                       title,
                       artistName: item.artistName,
-                      artworkUrl100: item.artworkUrl100,
+                      // The big one, so a saved favourite is not stuck at 100px
+                      artworkUrl100: item.artworkUrl600 ?? item.artworkUrl100,
+                      releaseDate: item.releaseDate,
+                      kind: item.kind,
                     })
                   }
                 >

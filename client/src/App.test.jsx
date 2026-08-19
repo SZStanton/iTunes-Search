@@ -18,6 +18,59 @@ const { default: App } = await import('./App.jsx');
 
 const fetchMock = vi.fn();
 
+// App asks for favourites and history the moment it mounts, so a queue of
+// replies no longer lines up. Answer by URL instead
+let favouritesReply = [];
+let searchesReply = [];
+let searchReply = {
+  ok: true,
+  status: 200,
+  body: { results: [], resultCount: 0 },
+};
+
+function respond(url, options = {}) {
+  const method = options.method ?? 'GET';
+  const address = String(url);
+
+  if (address.includes('/api/itunes/search')) {
+    return {
+      ok: searchReply.ok,
+      status: searchReply.status,
+      json: async () => searchReply.body,
+    };
+  }
+
+  if (address.includes('/api/favourites')) {
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        favourites: method === 'GET' ? favouritesReply : {},
+      }),
+    };
+  }
+
+  if (address.includes('/api/searches')) {
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({ searches: method === 'GET' ? searchesReply : {} }),
+    };
+  }
+
+  return { ok: true, status: 200, json: async () => ({}) };
+}
+
+function whenSearchReturns(body, ok = true, status = 200) {
+  searchReply = { ok, status, body };
+}
+
+function searchCalls() {
+  return fetchMock.mock.calls.filter(call =>
+    String(call[0]).includes('/api/itunes/search'),
+  );
+}
+
 function track(n) {
   return {
     trackId: n,
@@ -27,10 +80,6 @@ function track(n) {
     artistName: 'Jordan Blake',
     artworkUrl100: `https://example.test/${n}.jpg`,
   };
-}
-
-function reply(body, ok = true, status = 200) {
-  fetchMock.mockResolvedValueOnce({ ok, status, json: async () => body });
 }
 
 async function searchFor(term = 'beatles', mediaLabel) {
@@ -52,7 +101,13 @@ async function searchFor(term = 'beatles', mediaLabel) {
 beforeEach(() => {
   vi.stubGlobal('fetch', fetchMock);
   fetchMock.mockReset();
+  fetchMock.mockImplementation((url, options) =>
+    Promise.resolve(respond(url, options)),
+  );
   logout.mockReset();
+  favouritesReply = [];
+  searchesReply = [];
+  whenSearchReturns({ results: [], resultCount: 0 });
 });
 
 afterEach(() => {
@@ -78,12 +133,12 @@ describe('the signed in header', () => {
 
 describe('running a search', () => {
   it('asks for a full page of results and maps the media type', async () => {
-    reply({ results: [track(1)], resultCount: 1 });
+    whenSearchReturns({ results: [track(1)], resultCount: 1 });
     await searchFor('hey jude');
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(searchCalls()).toHaveLength(1));
 
-    const url = new URL(fetchMock.mock.calls[0][0], 'http://localhost');
+    const url = new URL(searchCalls()[0][0], 'http://localhost');
     expect(url.searchParams.get('term')).toBe('hey jude');
     expect(url.searchParams.get('limit')).toBe('200');
     expect(url.searchParams.get('media')).toBe('music');
@@ -96,35 +151,33 @@ describe('running a search', () => {
     ['podcast', 'podcast', null],
     ['all', null, null],
   ])('sends the right filter for %s', async (label, media, entity) => {
-    reply({ results: [], resultCount: 0 });
+    whenSearchReturns({ results: [], resultCount: 0 });
     await searchFor('adele', label);
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(searchCalls()).toHaveLength(1));
 
-    const url = new URL(fetchMock.mock.calls[0][0], 'http://localhost');
+    const url = new URL(searchCalls()[0][0], 'http://localhost');
     expect(url.searchParams.get('media')).toBe(media);
     expect(url.searchParams.get('entity')).toBe(entity);
   });
 
   it('sends the token from the session', async () => {
-    reply({ results: [], resultCount: 0 });
+    whenSearchReturns({ results: [], resultCount: 0 });
     await searchFor();
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-    expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe(
-      'Bearer test-token',
-    );
+    await waitFor(() => expect(searchCalls()).toHaveLength(1));
+    expect(searchCalls()[0][1].headers.Authorization).toBe('Bearer test-token');
   });
 
   it('says when nothing matched instead of showing an empty panel', async () => {
-    reply({ results: [], resultCount: 0 });
+    whenSearchReturns({ results: [], resultCount: 0 });
     await searchFor();
 
     expect(await screen.findByText(/nothing matched/i)).toBeInTheDocument();
   });
 
   it('shows the message the server sent when a search fails', async () => {
-    reply({ message: 'Search term is required' }, false, 400);
+    whenSearchReturns({ message: 'Search term is required' }, false, 400);
     await searchFor();
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -135,7 +188,7 @@ describe('running a search', () => {
   it('ends the session when the token has stopped working', async () => {
     // Every later search would fail the same way, so showing "Invalid token"
     // over and over is worse than sending them back to the login page
-    reply({ message: 'Invalid token' }, false, 403);
+    whenSearchReturns({ message: 'Invalid token' }, false, 403);
     await searchFor();
 
     await waitFor(() => expect(logout).toHaveBeenCalledOnce());
@@ -143,7 +196,7 @@ describe('running a search', () => {
   });
 
   it('does not report an empty result as a failure', async () => {
-    reply({ results: [], resultCount: 0 });
+    whenSearchReturns({ results: [], resultCount: 0 });
     await searchFor();
 
     await screen.findByText(/nothing matched/i);
@@ -151,11 +204,158 @@ describe('running a search', () => {
   });
 });
 
+describe('what the account already has', () => {
+  it('loads favourites saved in an earlier session', async () => {
+    favouritesReply = [
+      {
+        _id: 'f1',
+        itemId: 7,
+        title: 'Windmills',
+        artist: 'Jordan Blake',
+        artwork: 'https://example.test/w.jpg',
+      },
+    ];
+
+    render(<App />);
+
+    expect(await screen.findByText('Windmills')).toBeInTheDocument();
+    expect(screen.queryByText(/no favourites yet/i)).not.toBeInTheDocument();
+  });
+
+  it('loads the recent searches', async () => {
+    searchesReply = [
+      { _id: 's1', term: 'beatles', media: 'music' },
+      { _id: 's2', term: 'adele', media: 'album' },
+    ];
+
+    render(<App />);
+
+    expect(
+      await screen.findByRole('button', { name: /^beatles/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^adele/i })).toBeInTheDocument();
+  });
+
+  it('shows nothing at all when there is no history', async () => {
+    render(<App />);
+
+    await screen.findByPlaceholderText(/search itunes/i);
+    expect(screen.queryByText(/recent searches/i)).not.toBeInTheDocument();
+  });
+});
+
+describe('saving a favourite', () => {
+  it('sends it in the shape the api stores', async () => {
+    whenSearchReturns({ results: [track(1)], resultCount: 1 });
+    const user = await searchFor();
+
+    await user.click(
+      await screen.findByRole('button', { name: /add favourite/i }),
+    );
+
+    const saved = fetchMock.mock.calls.find(
+      call =>
+        String(call[0]).includes('/api/favourites') &&
+        call[1]?.method === 'POST',
+    );
+
+    expect(JSON.parse(saved[1].body)).toMatchObject({
+      itemId: 1,
+      title: 'Track 1',
+      artist: 'Jordan Blake',
+    });
+  });
+
+  it('takes it off the list again when the server refuses', async () => {
+    whenSearchReturns({ results: [track(1)], resultCount: 1 });
+
+    fetchMock.mockImplementation((url, options) => {
+      if (
+        String(url).includes('/api/favourites') &&
+        options?.method === 'POST'
+      ) {
+        return Promise.resolve({
+          ok: false,
+          status: 409,
+          json: async () => ({ message: 'That is already a favourite.' }),
+        });
+      }
+
+      return Promise.resolve(respond(url, options));
+    });
+
+    const user = await searchFor();
+    await user.click(
+      await screen.findByRole('button', { name: /add favourite/i }),
+    );
+
+    // It appears at once, then goes when the save fails, rather than the click
+    // doing nothing for a whole round trip
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      /already a favourite/i,
+    );
+    expect(await screen.findByText(/no favourites yet/i)).toBeInTheDocument();
+  });
+});
+
+describe('recent searches', () => {
+  beforeEach(() => {
+    searchesReply = [{ _id: 's1', term: 'beatles', media: 'podcast' }];
+  });
+
+  it('runs one again with its own filter, not the one on screen', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(await screen.findByRole('button', { name: /^beatles/i }));
+
+    await waitFor(() => expect(searchCalls()).toHaveLength(1));
+    const url = new URL(searchCalls()[0][0], 'http://localhost');
+
+    expect(url.searchParams.get('term')).toBe('beatles');
+    expect(url.searchParams.get('media')).toBe('podcast');
+  });
+
+  it('forgets one on request', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(
+      await screen.findByRole('button', { name: /forget beatles/i }),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: /^beatles/i }),
+      ).not.toBeInTheDocument(),
+    );
+
+    const deleted = fetchMock.mock.calls.find(
+      call =>
+        String(call[0]).includes('/api/searches/s1') &&
+        call[1]?.method === 'DELETE',
+    );
+
+    expect(deleted).toBeDefined();
+  });
+
+  it('clears the lot on request', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(await screen.findByRole('button', { name: /clear all/i }));
+
+    await waitFor(() =>
+      expect(screen.queryByText(/recent searches/i)).not.toBeInTheDocument(),
+    );
+  });
+});
+
 describe('paging through the results', () => {
   const ninety = Array.from({ length: 90 }, (_, i) => track(i + 1));
 
   it('shows forty at a time and counts the pages', async () => {
-    reply({ results: ninety, resultCount: 90 });
+    whenSearchReturns({ results: ninety, resultCount: 90 });
     await searchFor();
 
     expect(await screen.findByText('Page 1 of 3')).toBeInTheDocument();
@@ -165,11 +365,11 @@ describe('paging through the results', () => {
   });
 
   it('moves forward and back without asking the server again', async () => {
-    reply({ results: ninety, resultCount: 90 });
+    whenSearchReturns({ results: ninety, resultCount: 90 });
     const user = await searchFor();
 
     await screen.findByText('Page 1 of 3');
-    const callsAfterSearch = fetchMock.mock.calls.length;
+    const callsAfterSearch = searchCalls().length;
 
     await user.click(screen.getByRole('button', { name: /next/i }));
     expect(await screen.findByText('Page 2 of 3')).toBeInTheDocument();
@@ -180,11 +380,11 @@ describe('paging through the results', () => {
     expect(await screen.findByText('Page 1 of 3')).toBeInTheDocument();
     expect(screen.getByText('Track 1')).toBeInTheDocument();
 
-    expect(fetchMock.mock.calls).toHaveLength(callsAfterSearch);
+    expect(searchCalls()).toHaveLength(callsAfterSearch);
   });
 
   it('stops at both ends', async () => {
-    reply({ results: ninety, resultCount: 90 });
+    whenSearchReturns({ results: ninety, resultCount: 90 });
     const user = await searchFor();
 
     await screen.findByText('Page 1 of 3');
@@ -199,7 +399,7 @@ describe('paging through the results', () => {
   });
 
   it('hides the controls when everything fits on one page', async () => {
-    reply({ results: ninety.slice(0, 12), resultCount: 12 });
+    whenSearchReturns({ results: ninety.slice(0, 12), resultCount: 12 });
     await searchFor();
 
     await screen.findByText('Track 1');

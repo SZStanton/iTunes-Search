@@ -4,7 +4,7 @@ import { useAuth } from './context/useAuth';
 import SearchForm from './components/SearchForm';
 import RecentSearches from './components/RecentSearches';
 import ResultsList from './components/ResultsList';
-import FavouriteList from './components/FavouriteList';
+import FavouritesDrawer from './components/FavouritesDrawer';
 
 // What the select offers, mapped to the values the iTunes API expects. Album is
 // a media plus an entity, which is why these are pairs rather than strings.
@@ -74,6 +74,9 @@ function App() {
 
   // The last few searches, newest first
   const [recent, setRecent] = useState([]);
+  // The favourites panel slides over the results rather than sharing the width
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
   // == LOADING WHAT THE ACCOUNT ALREADY HAS ==
   // A failure here is not worth an error banner. The app still works, it just
@@ -234,14 +237,32 @@ function App() {
 
   // == UI ==
   return (
-    <div className="app-container">
-      <header className="app-header">
-        <h1 className="app-title">iTunes Search App</h1>
+    <div className="min-h-screen bg-page">
+      {/* Stays put while a page of results scrolls under it */}
+      <header className="sticky top-0 z-10 border-b border-line bg-page/85 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:px-6">
+          <h1 className="mr-auto text-lg font-semibold tracking-tight text-ink">
+            iTunes Search
+          </h1>
 
-        <div className="app-account">
-          <span className="app-email">{user?.email}</span>
           <button
-            className="btn btn-outline-secondary btn-sm"
+            className="flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-1.5 text-sm font-medium text-ink transition hover:border-accent-strong active:scale-95"
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            aria-label={`Favourites, ${favourites.length} saved`}
+          >
+            Favourites
+            <span className="rounded-full bg-accent-strong px-2 text-xs text-accent-ink">
+              {favourites.length}
+            </span>
+          </button>
+
+          <span className="hidden text-sm text-muted sm:inline">
+            {user?.email}
+          </span>
+
+          <button
+            className="rounded-full px-3 py-1.5 text-sm text-muted transition hover:text-ink active:text-ink"
             type="button"
             onClick={logout}
           >
@@ -250,60 +271,72 @@ function App() {
         </div>
       </header>
 
-      <SearchForm
-        term={term}
-        setTerm={setTerm}
-        media={media}
-        setMedia={setMedia}
-        searchMedia={searchMedia}
-        loading={loading}
-      />
-
-      <RecentSearches
-        searches={recent}
-        onRepeat={repeatSearch}
-        onForget={forgetSearch}
-        onForgetAll={forgetAllSearches}
-      />
-
-      {error && (
-        <p className="search-error" role="alert">
-          {error}
-        </p>
-      )}
-
-      <div className="content-grid">
-        <ResultsList
-          results={results}
-          favourites={favourites}
-          addFavourite={addFavourite}
-          searched={searched && !loading && !error}
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+        <SearchForm
+          term={term}
+          setTerm={setTerm}
+          media={media}
+          setMedia={setMedia}
+          searchMedia={searchMedia}
+          loading={loading}
         />
 
-        <FavouriteList
-          favourites={favourites}
-          removeFavourite={removeFavourite}
+        <RecentSearches
+          searches={recent}
+          onRepeat={repeatSearch}
+          onForget={forgetSearch}
+          onForgetAll={forgetAllSearches}
         />
-      </div>
 
-      {pageCount > 1 && (
-        <div className="pagination-controls">
-          <button disabled={page === 0} onClick={() => setPage(page - 1)}>
-            Prev
-          </button>
-
-          <span className="page-count">
-            Page {page + 1} of {pageCount}
-          </span>
-
-          <button
-            disabled={page + 1 >= pageCount}
-            onClick={() => setPage(page + 1)}
+        {error && (
+          <p
+            className="mt-4 rounded-lg bg-danger-surface px-4 py-3 text-sm text-danger"
+            role="alert"
           >
-            Next
-          </button>
+            {error}
+          </p>
+        )}
+
+        <div className="mt-8">
+          <ResultsList
+            results={results}
+            favourites={favourites}
+            addFavourite={addFavourite}
+            searched={searched && !loading && !error}
+          />
         </div>
-      )}
+
+        {pageCount > 1 && (
+          <div className="mt-10 flex items-center justify-center gap-4">
+            <button
+              className="rounded-full border border-line bg-surface px-4 py-1.5 text-sm text-ink transition hover:border-accent-strong active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+              disabled={page === 0}
+              onClick={() => setPage(page - 1)}
+            >
+              Prev
+            </button>
+
+            <span className="text-sm text-muted">
+              Page {page + 1} of {pageCount}
+            </span>
+
+            <button
+              className="rounded-full border border-line bg-surface px-4 py-1.5 text-sm text-ink transition hover:border-accent-strong active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+              disabled={page + 1 >= pageCount}
+              onClick={() => setPage(page + 1)}
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </main>
+
+      <FavouritesDrawer
+        open={drawerOpen}
+        onClose={closeDrawer}
+        favourites={favourites}
+        removeFavourite={removeFavourite}
+      />
     </div>
   );
 }

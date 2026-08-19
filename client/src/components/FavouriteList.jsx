@@ -1,32 +1,43 @@
 function FavouriteList({ favourites, removeFavourite }) {
-  return (
-    <div className="favourites-section">
-      <h2 className="section-title">Favourites</h2>
-      {favourites.length === 0 ? (
-        <p>No favourites yet.</p>
-      ) : (
-        favourites.map(item => (
-          <div className="favourite-item" key={item.id}>
-            <img
-              src={item.artworkUrl100}
-              alt={item.title}
-              className="favourite-image"
-            />
+  if (favourites.length === 0) {
+    return (
+      <p className="px-5 py-10 text-center text-sm text-muted">
+        No favourites yet.
+      </p>
+    );
+  }
 
-            <div className="favourite-info">
-              <p className="favourite-title">{item.title}</p>
-              <p className="favourite-artist">{item.artistName}</p>
-              <button
-                className="btn btn-outline-danger btn-sm favourite-btn"
-                onClick={() => removeFavourite(item.id)}
-              >
-                Remove
-              </button>
-            </div>
+  return (
+    <ul className="flex flex-col gap-1 px-3 py-3">
+      {favourites.map(item => (
+        <li
+          className="flex items-center gap-3 rounded-lg p-2 transition hover:bg-page active:bg-page"
+          key={item.id}
+        >
+          <img
+            src={item.artworkUrl100}
+            alt={item.title}
+            loading="lazy"
+            className="h-12 w-12 shrink-0 rounded-md object-cover"
+          />
+
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-ink">
+              {item.title}
+            </p>
+            <p className="truncate text-xs text-muted">{item.artistName}</p>
           </div>
-        ))
-      )}
-    </div>
+
+          <button
+            className="shrink-0 rounded-full px-2 py-1 text-sm text-muted transition hover:bg-danger-surface hover:text-danger active:bg-danger-surface active:text-danger"
+            onClick={() => removeFavourite(item.id)}
+            aria-label={`Remove ${item.title}`}
+          >
+            Remove
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }
 

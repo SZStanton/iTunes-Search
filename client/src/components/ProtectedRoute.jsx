@@ -8,18 +8,27 @@ function ProtectedRoute({ children }) {
   const { signedIn, checking, unreachable, retryCheck } = useAuth();
 
   if (checking) {
-    return <p className="route-checking">Checking your session...</p>;
+    return (
+      <p className="p-16 text-center text-muted">Checking your session...</p>
+    );
   }
 
   // A held token that could not be verified. Sending them to the login page
   // would be wrong, the session is probably fine and the server is just waking
   if (unreachable) {
     return (
-      <div className="route-checking" role="alert">
-        <p>
+      <div
+        className="flex flex-col items-center gap-4 p-16 text-center"
+        role="alert"
+      >
+        <p className="text-muted">
           Could not reach the server. The free tier can take a minute to wake.
         </p>
-        <button className="btn btn-primary" type="button" onClick={retryCheck}>
+        <button
+          className="rounded-full bg-accent-strong px-5 py-2 font-medium text-accent-ink transition hover:brightness-110 active:brightness-95"
+          type="button"
+          onClick={retryCheck}
+        >
           Try again
         </button>
       </div>

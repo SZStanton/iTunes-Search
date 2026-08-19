@@ -18,7 +18,7 @@ export default defineConfig({
         test: {
           name: 'client',
           environment: 'jsdom',
-          include: ['client/**/*.test.jsx'],
+          include: ['client/**/*.test.{js,jsx}'],
           setupFiles: ['./vitest.setup.js'],
         },
       },

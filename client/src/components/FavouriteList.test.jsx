@@ -22,7 +22,7 @@ describe('the favourites list', () => {
   it('says when there is nothing in it', () => {
     render(<FavouriteList favourites={[]} removeFavourite={vi.fn()} />);
 
-    expect(screen.getByText(/no favourites yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/nothing saved yet/i)).toBeInTheDocument();
   });
 
   it('shows the title and artist of each one', () => {
@@ -32,7 +32,7 @@ describe('the favourites list', () => {
     expect(screen.getByText('The Beatles')).toBeInTheDocument();
     expect(screen.getByText('Windmills')).toBeInTheDocument();
     expect(screen.getByText('Jordan Blake')).toBeInTheDocument();
-    expect(screen.queryByText(/no favourites yet/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/nothing saved yet/i)).not.toBeInTheDocument();
   });
 
   it('labels the artwork with the title, so it is not an empty alt', () => {

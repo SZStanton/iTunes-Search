@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
+import { ChevronLeft, ChevronRight, CircleAlert, Heart } from 'lucide-react';
 import { authFetch } from './api';
 import { useAuth } from './context/useAuth';
 import SearchForm from './components/SearchForm';
 import RecentSearches from './components/RecentSearches';
 import ResultsList from './components/ResultsList';
+import ResultsSkeleton from './components/ResultsSkeleton';
 import FavouritesDrawer from './components/FavouritesDrawer';
 import ThemeToggle from './components/ThemeToggle';
+import Badge from './components/ui/Badge';
+import Button from './components/ui/Button';
 
 // What the select offers, mapped to the values the iTunes API expects. Album is
 // a media plus an entity, which is why these are pairs rather than strings.
@@ -240,37 +244,28 @@ function App() {
   return (
     <div className="min-h-screen bg-page">
       {/* Stays put while a page of results scrolls under it */}
-      <header className="sticky top-0 z-10 border-b border-line bg-page/85 backdrop-blur">
+      <header className="glass sticky top-0 z-10 border-b border-line">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:px-6">
-          <h1 className="mr-auto text-lg font-semibold tracking-tight text-ink">
-            iTunes Search
-          </h1>
+          <h1 className="type-title mr-auto text-lg">iTunes Search</h1>
 
-          <button
-            className="flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-1.5 text-sm font-medium text-ink transition hover:border-accent-strong active:scale-95"
-            type="button"
+          <Button
             onClick={() => setDrawerOpen(true)}
             aria-label={`Favourites, ${favourites.length} saved`}
           >
+            <Heart size={16} />
             Favourites
-            <span className="rounded-full bg-accent-strong px-2 text-xs text-accent-ink">
-              {favourites.length}
-            </span>
-          </button>
+            <Badge>{favourites.length}</Badge>
+          </Button>
 
-          <span className="hidden text-sm text-muted sm:inline">
+          <span className="type-meta hidden text-sm sm:inline">
             {user?.email}
           </span>
 
           <ThemeToggle />
 
-          <button
-            className="rounded-full px-3 py-1.5 text-sm text-muted transition hover:text-ink active:text-ink"
-            type="button"
-            onClick={logout}
-          >
+          <Button variant="ghost" onClick={logout}>
             Sign out
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -293,43 +288,45 @@ function App() {
 
         {error && (
           <p
-            className="mt-4 rounded-lg bg-danger-surface px-4 py-3 text-sm text-danger"
+            className="mt-bay flex items-center gap-2 rounded-control bg-danger-surface px-4 py-3 text-sm text-danger"
             role="alert"
           >
+            <CircleAlert size={16} className="shrink-0" />
             {error}
           </p>
         )}
 
-        <div className="mt-8">
-          <ResultsList
-            results={results}
-            favourites={favourites}
-            addFavourite={addFavourite}
-            searched={searched && !loading && !error}
-          />
+        <div className="mt-section">
+          {loading ? (
+            <ResultsSkeleton />
+          ) : (
+            <ResultsList
+              results={results}
+              favourites={favourites}
+              addFavourite={addFavourite}
+              searched={searched && !error}
+            />
+          )}
         </div>
 
         {pageCount > 1 && (
-          <div className="mt-10 flex items-center justify-center gap-4">
-            <button
-              className="rounded-full border border-line bg-surface px-4 py-1.5 text-sm text-ink transition hover:border-accent-strong active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
-              disabled={page === 0}
-              onClick={() => setPage(page - 1)}
-            >
+          <div className="mt-section flex items-center justify-center gap-4">
+            <Button disabled={page === 0} onClick={() => setPage(page - 1)}>
+              <ChevronLeft size={16} />
               Prev
-            </button>
+            </Button>
 
-            <span className="text-sm text-muted">
+            <span className="type-meta text-sm tabular-nums">
               Page {page + 1} of {pageCount}
             </span>
 
-            <button
-              className="rounded-full border border-line bg-surface px-4 py-1.5 text-sm text-ink transition hover:border-accent-strong active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+            <Button
               disabled={page + 1 >= pageCount}
               onClick={() => setPage(page + 1)}
             >
               Next
-            </button>
+              <ChevronRight size={16} />
+            </Button>
           </div>
         )}
       </main>

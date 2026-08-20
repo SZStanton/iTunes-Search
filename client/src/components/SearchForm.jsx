@@ -1,21 +1,34 @@
+import { Search } from 'lucide-react';
+import Button from './ui/Button';
+import Input from './ui/Input';
+
 function SearchForm({ term, setTerm, media, setMedia, searchMedia, loading }) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row">
       {/* Search Input */}
-      <input
-        type="text"
-        className="min-w-0 flex-1 rounded-full border border-line bg-surface px-5 py-2.5 text-ink outline-none transition placeholder:text-muted focus:border-accent-strong focus:ring-2 focus:ring-accent-strong/30"
-        placeholder="Search iTunes..."
-        value={term}
-        onChange={e => setTerm(e.target.value)}
-        onKeyDown={e => {
-          if (e.key === 'Enter' && !loading) searchMedia();
-        }}
-      />
+      <div className="relative min-w-0 flex-1">
+        <Search
+          className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-muted"
+          size={18}
+          aria-hidden="true"
+        />
+
+        <Input
+          type="text"
+          shape="pill"
+          className="pl-11"
+          placeholder="Search iTunes..."
+          value={term}
+          onChange={e => setTerm(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === 'Enter' && !loading) searchMedia();
+          }}
+        />
+      </div>
 
       {/* Media Selector */}
       <select
-        className="rounded-full border border-line bg-surface px-4 py-2.5 text-ink outline-none transition focus:border-accent-strong focus:ring-2 focus:ring-accent-strong/30"
+        className="type-chrome focus-ring rounded-full border border-line bg-surface px-4 py-2.5 text-ink outline-none transition"
         value={media}
         onChange={e => setMedia(e.target.value)}
       >
@@ -31,13 +44,15 @@ function SearchForm({ term, setTerm, media, setMedia, searchMedia, loading }) {
       </select>
 
       {/* Search Button */}
-      <button
-        className="rounded-full bg-accent-strong px-6 py-2.5 font-medium text-accent-ink transition hover:brightness-110 active:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
+      <Button
+        variant="primary"
+        size="lg"
         onClick={() => searchMedia()}
         disabled={loading}
+        aria-busy={loading}
       >
         {loading ? 'Searching...' : 'Search'}
-      </button>
+      </Button>
     </div>
   );
 }

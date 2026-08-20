@@ -4,6 +4,8 @@ import FormField from '../components/FormField';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../context/useAuth';
 import { loginRules, rulesErrors } from '../validation/authRules';
+import Button from '../components/ui/Button';
+import Surface from '../components/ui/Surface';
 
 function Login() {
   const { login, loginAsDemo } = useAuth();
@@ -65,22 +67,21 @@ function Login() {
       <ThemeToggle className="absolute top-4 right-4" />
 
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-semibold tracking-tight text-ink">
-          Sign in
-        </h1>
-        <p className="mt-2 text-sm text-muted">
+        <h1 className="type-title text-3xl">Sign in</h1>
+        <p className="type-meta mt-2 text-sm">
           Search the iTunes catalogue and keep what you like.
         </p>
       </div>
 
-      <form
-        className="w-full max-w-sm rounded-card border border-line bg-surface p-6 card-shadow"
+      <Surface
+        as="form"
+        className="w-full max-w-sm p-6"
         onSubmit={handleSubmit}
         noValidate
       >
         {message && (
           <p
-            className="mb-4 rounded-lg bg-danger-surface px-3 py-2 text-sm text-danger"
+            className="mb-4 rounded-control bg-danger-surface px-3 py-2 text-sm text-danger"
             role="alert"
           >
             {message}
@@ -107,31 +108,33 @@ function Login() {
           autoComplete="current-password"
         />
 
-        <button
-          className="w-full rounded-full bg-accent-strong py-2.5 font-medium text-accent-ink transition hover:brightness-110 active:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
+        <Button
+          variant="primary"
+          size="lg"
+          full
           type="submit"
           disabled={Boolean(busy)}
           aria-busy={busy === 'form'}
         >
           {busy === 'form' ? 'Signing in...' : 'Sign in'}
-        </button>
-      </form>
+        </Button>
+      </Surface>
 
-      <div className="mt-4 flex w-full max-w-sm flex-col gap-3 text-center text-sm text-muted">
-        <button
-          className="w-full rounded-full border border-line bg-surface py-2.5 font-medium text-ink transition hover:bg-raised hover:border-accent-strong active:bg-raised disabled:opacity-60"
-          type="button"
+      <div className="type-meta mt-4 flex w-full max-w-sm flex-col gap-3 text-center text-sm">
+        <Button
+          size="lg"
+          full
           onClick={handleDemo}
           disabled={Boolean(busy)}
           aria-busy={busy === 'demo'}
         >
           {busy === 'demo' ? 'Opening the demo...' : 'Try the demo account'}
-        </button>
+        </Button>
 
         <p>
           No account yet?{' '}
           <Link
-            className="font-medium text-accent-strong underline-offset-2 hover:underline active:underline"
+            className="type-chrome text-accent-strong underline-offset-2 hover:underline active:underline"
             to="/register"
           >
             Create one

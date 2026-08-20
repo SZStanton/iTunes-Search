@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Moon, Sun } from 'lucide-react';
 import { activeTheme, applyTheme, storedTheme } from '../themeMode';
+import IconButton from './ui/IconButton';
 
 // Suppressing transitions for a moment stops every element animating between
 // the two palettes at once, which reads as a flash rather than a change
@@ -43,14 +45,13 @@ function ThemeToggle({ className = '' }) {
   };
 
   return (
-    <button
-      className={`rounded-full px-3 py-1.5 text-sm text-muted transition hover:text-ink active:text-ink ${className}`}
-      type="button"
+    <IconButton
+      label={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
       onClick={toggle}
-      aria-label={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
+      className={className}
     >
-      {theme === 'dark' ? 'Light' : 'Dark'}
-    </button>
+      {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+    </IconButton>
   );
 }
 

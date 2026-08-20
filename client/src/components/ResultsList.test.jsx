@@ -1,4 +1,6 @@
-import { render, screen } from '@testing-library/react';
+// fireEvent rather than user-event for the one case below, since a failed
+// image load is the browser's event and not something anybody clicks
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import ResultsList from './ResultsList';
@@ -117,6 +119,58 @@ describe('the results list', () => {
       'src',
       'https://example.test/100x100bb.jpg',
     );
+  });
+
+  it('puts the title in the tile when the artwork will not load', async () => {
+    renderList([
+      {
+        trackId: 9,
+        trackName: 'Low Tide',
+        artistName: 'Jordan Blake',
+        artworkUrl100: 'https://example.test/gone.jpg',
+        kind: 'song',
+      },
+    ]);
+
+    const artwork = screen.getByAltText('Low Tide');
+    // jsdom never loads an image, so the failure has to be fired by hand
+    fireEvent.error(artwork);
+
+    expect(screen.queryByAltText('Low Tide')).not.toBeInTheDocument();
+    // Twice now: once in the tile that replaced the artwork, once underneath
+    expect(screen.getAllByText('Low Tide')).toHaveLength(2);
+  });
+
+  it('does not carry a failed image over to the next page', () => {
+    const gone = [
+      {
+        trackName: 'Low Tide',
+        artistName: 'Jordan Blake',
+        artworkUrl100: 'https://example.test/gone.jpg',
+      },
+    ];
+    const fine = [
+      {
+        trackName: 'High Tide',
+        artistName: 'Jordan Blake',
+        artworkUrl100: 'https://example.test/here.jpg',
+      },
+    ];
+
+    const { rerender } = render(
+      <ResultsList results={gone} favourites={[]} addFavourite={vi.fn()} />,
+    );
+
+    fireEvent.error(screen.getByAltText('Low Tide'));
+    expect(screen.queryByAltText('Low Tide')).not.toBeInTheDocument();
+
+    // Neither result has an id of its own, so both land on the same index key
+    // and React hands the second one the card that just failed
+    rerender(
+      <ResultsList results={fine} favourites={[]} addFavourite={vi.fn()} />,
+    );
+
+    expect(screen.getByAltText('High Tide')).toBeInTheDocument();
   });
 
   it('says unknown when there is no release date', () => {

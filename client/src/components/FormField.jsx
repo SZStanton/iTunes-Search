@@ -1,3 +1,5 @@
+import Input from './ui/Input';
+
 // One labelled input with its error underneath. The label is tied to the input
 // by id, so clicking it focuses the field and a screen reader reads the pair
 function FormField({
@@ -11,22 +13,17 @@ function FormField({
 }) {
   return (
     <div className="mb-4">
-      <label className="mb-1.5 block text-sm font-medium text-ink" htmlFor={id}>
+      <label className="type-chrome mb-1.5 block text-sm text-ink" htmlFor={id}>
         {label}
       </label>
 
-      <input
+      <Input
         id={id}
         type={type}
-        className={`w-full rounded-lg border bg-surface px-3 py-2 text-ink outline-none transition placeholder:text-muted focus:ring-2 ${
-          error
-            ? 'border-danger focus:ring-danger/40'
-            : 'border-line focus:border-accent-strong focus:ring-accent-strong/30'
-        }`}
+        invalid={Boolean(error)}
         value={value}
         onChange={onChange}
         autoComplete={autoComplete}
-        aria-invalid={error ? 'true' : undefined}
         aria-describedby={error ? `${id}-error` : undefined}
       />
 

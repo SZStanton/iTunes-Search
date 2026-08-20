@@ -4,6 +4,8 @@ import FormField from '../components/FormField';
 import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../context/useAuth';
 import { registerRules, rulesErrors } from '../validation/authRules';
+import Button from '../components/ui/Button';
+import Surface from '../components/ui/Surface';
 
 function Register() {
   const { register } = useAuth();
@@ -46,22 +48,21 @@ function Register() {
       <ThemeToggle className="absolute top-4 right-4" />
 
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-semibold tracking-tight text-ink">
-          Create an account
-        </h1>
-        <p className="mt-2 text-sm text-muted">
+        <h1 className="type-title text-3xl">Create an account</h1>
+        <p className="type-meta mt-2 text-sm">
           Your favourites and searches are kept to your account.
         </p>
       </div>
 
-      <form
-        className="w-full max-w-sm rounded-card border border-line bg-surface p-6 card-shadow"
+      <Surface
+        as="form"
+        className="w-full max-w-sm p-6"
         onSubmit={handleSubmit}
         noValidate
       >
         {message && (
           <p
-            className="mb-4 rounded-lg bg-danger-surface px-3 py-2 text-sm text-danger"
+            className="mb-4 rounded-control bg-danger-surface px-3 py-2 text-sm text-danger"
             role="alert"
           >
             {message}
@@ -88,29 +89,32 @@ function Register() {
           autoComplete="new-password"
         />
 
-        <p className="-mt-2 mb-4 text-xs text-muted">At least 8 characters.</p>
+        <p className="type-meta -mt-2 mb-4 text-xs">At least 8 characters.</p>
 
-        <button
-          className="w-full rounded-full bg-accent-strong py-2.5 font-medium text-accent-ink transition hover:brightness-110 active:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
+        <Button
+          variant="primary"
+          size="lg"
+          full
           type="submit"
           disabled={busy}
+          aria-busy={busy}
         >
           {busy ? 'Creating...' : 'Create account'}
-        </button>
+        </Button>
 
         {/* 60 matches RETENTION_DAYS in server/config/retention.js, so change
             both or the page starts lying */}
-        <p className="mt-4 text-xs text-muted">
+        <p className="type-meta mt-4 text-xs">
           An account that goes unused for 60 days is deleted, along with its
           favourites and searches. Using the app pushes that back out.
         </p>
-      </form>
+      </Surface>
 
-      <div className="mt-4 flex w-full max-w-sm flex-col gap-3 text-center text-sm text-muted">
+      <div className="type-meta mt-4 flex w-full max-w-sm flex-col gap-3 text-center text-sm">
         <p>
           Already have one?{' '}
           <Link
-            className="font-medium text-accent-strong underline-offset-2 hover:underline active:underline"
+            className="type-chrome text-accent-strong underline-offset-2 hover:underline active:underline"
             to="/login"
           >
             Sign in

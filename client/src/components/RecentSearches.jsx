@@ -1,3 +1,6 @@
+import { X } from 'lucide-react';
+import Button from './ui/Button';
+
 // The last few searches, newest first. Clicking one puts the form back where it
 // was and runs it again, which is the whole reason for storing the label rather
 // than the API's own media value
@@ -6,47 +9,41 @@ function RecentSearches({ searches, onRepeat, onForget, onForgetAll }) {
 
   return (
     <section
-      className="mt-4 flex flex-wrap items-center gap-2"
+      className="mt-bay flex flex-wrap items-center gap-2"
       aria-label="Recent searches"
     >
-      <h2 className="mr-1 text-xs font-medium tracking-wide text-muted uppercase">
-        Recent
-      </h2>
+      <h2 className="type-eyebrow mr-1">Recent</h2>
 
+      {/* Each chip clips its own corners, so the focus outline on the two
+          buttons sits inside rather than being cut off at the rounded edge */}
       {searches.map(search => (
         <span
-          className="flex items-stretch overflow-hidden rounded-full border border-line bg-surface"
+          className="flex items-stretch overflow-hidden rounded-full border border-line bg-surface elev-1"
           key={search._id}
         >
           <button
-            className="flex items-center gap-1.5 py-1 pr-2 pl-3 text-sm text-ink transition hover:bg-page active:bg-page"
+            className="type-chrome flex items-center gap-1.5 py-1 pr-2 pl-3 text-sm text-ink transition outline-accent-strong hover:bg-raised focus-visible:-outline-offset-2 focus-visible:outline-2 active:bg-raised"
             type="button"
             onClick={() => onRepeat(search)}
           >
             {search.term}
-            <span className="text-[0.65rem] tracking-wide text-muted uppercase">
-              {search.media}
-            </span>
+            <span className="type-eyebrow">{search.media}</span>
           </button>
 
           <button
-            className="border-l border-line px-2 text-sm text-muted transition hover:bg-danger-surface hover:text-danger active:bg-danger-surface active:text-danger"
+            className="border-l border-line px-2 text-muted transition outline-accent-strong hover:bg-danger-surface hover:text-danger focus-visible:-outline-offset-2 focus-visible:outline-2 active:bg-danger-surface active:text-danger"
             type="button"
             onClick={() => onForget(search._id)}
             aria-label={`Forget ${search.term}`}
           >
-            &times;
+            <X size={14} />
           </button>
         </span>
       ))}
 
-      <button
-        className="ml-1 rounded-full px-2 py-1 text-sm text-muted transition hover:text-ink active:text-ink"
-        type="button"
-        onClick={onForgetAll}
-      >
+      <Button variant="ghost" size="sm" className="ml-1" onClick={onForgetAll}>
         Clear all
-      </button>
+      </Button>
     </section>
   );
 }

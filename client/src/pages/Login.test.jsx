@@ -188,4 +188,23 @@ describe('the demo account', () => {
       /demo account is not set up/i,
     );
   });
+
+  it('reports its failure next to itself, not up in the form', async () => {
+    loginAsDemo.mockRejectedValue(
+      new Error('Could not reach the server. Try that again in a moment.'),
+    );
+
+    const user = userEvent.setup();
+    renderLogin();
+
+    const demo = screen.getByRole('button', { name: /try the demo/i });
+    await user.click(demo);
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/could not reach the server/i);
+    // The form is a sibling of the block the demo button sits in, so a message
+    // inside it would be the wrong side of the page from the click
+    expect(demo.closest('form')).toBeNull();
+    expect(alert.closest('form')).toBeNull();
+  });
 });

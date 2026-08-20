@@ -1,4 +1,6 @@
-import { render, screen } from '@testing-library/react';
+// fireEvent for the one case below, since a failed image load is the browser's
+// event and not something anybody clicks
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import FavouriteList from './FavouriteList';
@@ -22,7 +24,7 @@ describe('the favourites list', () => {
   it('says when there is nothing in it', () => {
     render(<FavouriteList favourites={[]} removeFavourite={vi.fn()} />);
 
-    expect(screen.getByText(/no favourites yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/nothing saved yet/i)).toBeInTheDocument();
   });
 
   it('shows the title and artist of each one', () => {
@@ -32,7 +34,18 @@ describe('the favourites list', () => {
     expect(screen.getByText('The Beatles')).toBeInTheDocument();
     expect(screen.getByText('Windmills')).toBeInTheDocument();
     expect(screen.getByText('Jordan Blake')).toBeInTheDocument();
-    expect(screen.queryByText(/no favourites yet/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/nothing saved yet/i)).not.toBeInTheDocument();
+  });
+
+  it('drops a rotted artwork url without leaving a broken image', () => {
+    render(<FavouriteList favourites={favourites} removeFavourite={vi.fn()} />);
+
+    fireEvent.error(screen.getByAltText('Here Comes the Sun'));
+
+    expect(screen.queryByAltText('Here Comes the Sun')).not.toBeInTheDocument();
+    // The other one is untouched, so the failure is per row
+    expect(screen.getByAltText('Windmills')).toBeInTheDocument();
+    expect(screen.getByText('Here Comes the Sun')).toBeInTheDocument();
   });
 
   it('labels the artwork with the title, so it is not an empty alt', () => {

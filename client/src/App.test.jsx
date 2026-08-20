@@ -169,6 +169,35 @@ describe('running a search', () => {
     expect(searchCalls()[0][1].headers.Authorization).toBe('Bearer test-token');
   });
 
+  it('fills the grid with placeholders while the search is in flight', async () => {
+    let release;
+    fetchMock.mockImplementation((url, options) => {
+      if (String(url).includes('/api/itunes/search')) {
+        return new Promise(resolve => {
+          release = () => resolve(respond(url, options));
+        });
+      }
+
+      return Promise.resolve(respond(url, options));
+    });
+    whenSearchReturns({ results: [track(1)], resultCount: 1 });
+
+    await searchFor();
+
+    expect(
+      await screen.findByRole('status', { name: /searching/i }),
+    ).toBeInTheDocument();
+    // The empty state belongs to a finished search, not a running one
+    expect(screen.queryByText(/nothing matched/i)).not.toBeInTheDocument();
+
+    release();
+
+    expect(await screen.findByText('Track 1')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('status', { name: /searching/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it('says when nothing matched instead of showing an empty panel', async () => {
     whenSearchReturns({ results: [], resultCount: 0 });
     await searchFor();
@@ -219,7 +248,7 @@ describe('what the account already has', () => {
     render(<App />);
 
     expect(await screen.findByText('Windmills')).toBeInTheDocument();
-    expect(screen.queryByText(/no favourites yet/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/nothing saved yet/i)).not.toBeInTheDocument();
   });
 
   it('loads the recent searches', async () => {
@@ -296,7 +325,7 @@ describe('saving a favourite', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       /already a favourite/i,
     );
-    expect(await screen.findByText(/no favourites yet/i)).toBeInTheDocument();
+    expect(await screen.findByText(/nothing saved yet/i)).toBeInTheDocument();
   });
 });
 
@@ -433,19 +462,19 @@ describe('the favourites drawer', () => {
 
     // Shut, the drawer is aria-hidden, so nothing inside it is reachable
     expect(
-      screen.queryByRole('button', { name: /^close$/i }),
+      screen.queryByRole('button', { name: /close favourites/i }),
     ).not.toBeInTheDocument();
 
     await user.click(
       await screen.findByRole('button', { name: /favourites, 0 saved/i }),
     );
     expect(
-      screen.getByRole('button', { name: /^close$/i }),
+      screen.getByRole('button', { name: /close favourites/i }),
     ).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /^close$/i }));
+    await user.click(screen.getByRole('button', { name: /close favourites/i }));
     expect(
-      screen.queryByRole('button', { name: /^close$/i }),
+      screen.queryByRole('button', { name: /close favourites/i }),
     ).not.toBeInTheDocument();
   });
 
@@ -457,12 +486,12 @@ describe('the favourites drawer', () => {
       await screen.findByRole('button', { name: /favourites, 0 saved/i }),
     );
     expect(
-      screen.getByRole('button', { name: /^close$/i }),
+      screen.getByRole('button', { name: /close favourites/i }),
     ).toBeInTheDocument();
 
     await user.keyboard('{Escape}');
     expect(
-      screen.queryByRole('button', { name: /^close$/i }),
+      screen.queryByRole('button', { name: /close favourites/i }),
     ).not.toBeInTheDocument();
   });
 });

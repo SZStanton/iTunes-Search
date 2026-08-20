@@ -4,7 +4,24 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <meta
+      name="description"
+      content="Search the iTunes catalogue, filter by media type and keep your favourites."
+    />
+    <title>iTunes Search</title>
+    <script>
+      // Runs before first paint, or a returning dark mode visitor gets a white
+      // flash while the app boots. Only an explicit choice is stored, so with
+      // nothing here the media query in index.css decides
+      try {
+        var stored = localStorage.getItem('itunes-search:theme');
+        if (stored === 'light' || stored === 'dark') {
+          document.documentElement.setAttribute('data-theme', stored);
+        }
+      } catch (error) {
+        // Storage blocked, follow the system
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

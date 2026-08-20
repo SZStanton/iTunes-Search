@@ -11,6 +11,10 @@ function ResultsSkeleton() {
       role="status"
       aria-label="Searching"
     >
+      {/* The label names the region, but status takes no name from content and
+          a live region with nothing readable in it announces nothing */}
+      <span className="sr-only">Searching</span>
+
       {Array.from({ length: PLACEHOLDERS }, (_, index) => (
         <div className="flex flex-col gap-3" key={index}>
           {/* The delay repeats every five, so the shimmer reads as one sweep

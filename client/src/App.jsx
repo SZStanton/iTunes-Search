@@ -40,6 +40,9 @@ function toCard(favourite) {
     title: favourite.title,
     artistName: favourite.artist,
     artworkUrl100: favourite.artwork,
+    // Only read when the artwork will not load, and the placeholder picks its
+    // icon from it
+    kind: favourite.kind,
   };
 }
 

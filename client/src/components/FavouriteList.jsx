@@ -1,4 +1,5 @@
 import { Heart, X } from 'lucide-react';
+import Artwork from './Artwork';
 import IconButton from './ui/IconButton';
 
 function FavouriteList({ favourites, removeFavourite }) {
@@ -23,12 +24,14 @@ function FavouriteList({ favourites, removeFavourite }) {
           className="group flex items-center gap-3 rounded-control p-2 transition hover:bg-raised active:bg-raised"
           key={item.id}
         >
-          <img
-            src={item.artworkUrl100}
-            alt={item.title}
-            loading="lazy"
-            className="size-12 shrink-0 rounded-control bg-raised object-cover"
-          />
+          <div className="size-12 shrink-0 overflow-hidden rounded-control bg-raised">
+            <Artwork
+              src={item.artworkUrl100}
+              title={item.title}
+              kind={item.kind}
+              iconSize={18}
+            />
+          </div>
 
           <div className="min-w-0 flex-1">
             <p className="type-title truncate text-sm">{item.title}</p>

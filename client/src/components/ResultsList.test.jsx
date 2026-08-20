@@ -141,6 +141,38 @@ describe('the results list', () => {
     expect(screen.getAllByText('Low Tide')).toHaveLength(2);
   });
 
+  it('does not carry a failed image over to the next page', () => {
+    const gone = [
+      {
+        trackName: 'Low Tide',
+        artistName: 'Jordan Blake',
+        artworkUrl100: 'https://example.test/gone.jpg',
+      },
+    ];
+    const fine = [
+      {
+        trackName: 'High Tide',
+        artistName: 'Jordan Blake',
+        artworkUrl100: 'https://example.test/here.jpg',
+      },
+    ];
+
+    const { rerender } = render(
+      <ResultsList results={gone} favourites={[]} addFavourite={vi.fn()} />,
+    );
+
+    fireEvent.error(screen.getByAltText('Low Tide'));
+    expect(screen.queryByAltText('Low Tide')).not.toBeInTheDocument();
+
+    // Neither result has an id of its own, so both land on the same index key
+    // and React hands the second one the card that just failed
+    rerender(
+      <ResultsList results={fine} favourites={[]} addFavourite={vi.fn()} />,
+    );
+
+    expect(screen.getByAltText('High Tide')).toBeInTheDocument();
+  });
+
   it('says unknown when there is no release date', () => {
     renderList([
       {

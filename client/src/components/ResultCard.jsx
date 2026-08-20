@@ -1,14 +1,21 @@
-import { Check, Heart } from 'lucide-react';
+import { Heart } from 'lucide-react';
+import { resultLabel } from '../media';
 import Artwork from './Artwork';
 import IconButton from './ui/IconButton';
 
-function ResultCard({ item, id, title, isFavourite, addFavourite }) {
+function ResultCard({
+  item,
+  id,
+  title,
+  isFavourite,
+  addFavourite,
+  removeFavourite,
+}) {
   const artwork = item.artworkUrl600 ?? item.artworkUrl100;
 
   return (
     <div className="group flex flex-col">
-      {/* Only the artwork lifts. The text underneath staying put is what keeps
-          a row of forty cards from feeling like it is breathing */}
+      {/* Only the artwork lifts, so forty cards do not all shift at once */}
       <div className="duration-(--motion-panel) relative aspect-square overflow-hidden rounded-card bg-raised elev-1 transition group-hover:-translate-y-1 group-hover:elev-3">
         <Artwork
           src={artwork}
@@ -18,8 +25,7 @@ function ResultCard({ item, id, title, isFavourite, addFavourite }) {
           className="transition duration-500 group-hover:scale-[1.04]"
         />
 
-        {/* A cover can be any colour, so the corner is darkened before a
-            control is put on it */}
+        {/* A cover can be any colour, so darken the corner under the button */}
         <div
           className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/45 to-transparent opacity-0 transition group-hover:opacity-100"
           aria-hidden="true"
@@ -27,32 +33,32 @@ function ResultCard({ item, id, title, isFavourite, addFavourite }) {
 
         <IconButton
           className="absolute right-2 bottom-2"
-          label={isFavourite ? `Added ${title}` : `Add favourite ${title}`}
+          label={
+            isFavourite ? `Remove favourite ${title}` : `Add favourite ${title}`
+          }
           variant={isFavourite ? 'solid' : 'glass'}
-          disabled={isFavourite}
+          aria-pressed={isFavourite}
           onClick={() =>
-            addFavourite({
-              id,
-              title,
-              artistName: item.artistName,
-              // The big one, so a saved favourite is not stuck at 100px
-              artworkUrl100: artwork,
-              releaseDate: item.releaseDate,
-              kind: item.kind,
-            })
+            isFavourite
+              ? removeFavourite(id)
+              : addFavourite({
+                  id,
+                  title,
+                  artistName: item.artistName,
+                  // The big one, so a saved favourite is not stuck at 100px
+                  artworkUrl100: artwork,
+                  releaseDate: item.releaseDate,
+                  kind: item.kind,
+                })
           }
         >
-          {isFavourite ? <Check size={16} /> : <Heart size={16} />}
+          <Heart size={16} fill={isFavourite ? 'currentColor' : 'none'} />
         </IconButton>
       </div>
 
       <p className="type-title mt-3 line-clamp-2 text-sm">{title}</p>
       <p className="type-meta line-clamp-1 text-sm">{item.artistName}</p>
-      <p className="type-meta text-xs">
-        {item.releaseDate
-          ? new Date(item.releaseDate).toLocaleDateString()
-          : 'Unknown'}
-      </p>
+      <p className="type-eyebrow mt-0.5">{resultLabel(item)}</p>
     </div>
   );
 }

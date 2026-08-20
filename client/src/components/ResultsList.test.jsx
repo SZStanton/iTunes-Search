@@ -29,13 +29,17 @@ const sameAlbum = [
 
 function renderList(results, props = {}) {
   const addFavourite = props.addFavourite ?? vi.fn();
+  const removeFavourite = props.removeFavourite ?? vi.fn();
+
   render(
     <ResultsList
       results={results}
       favourites={props.favourites ?? []}
       addFavourite={addFavourite}
+      removeFavourite={removeFavourite}
     />,
   );
+
   return addFavourite;
 }
 
@@ -66,13 +70,29 @@ describe('the results list', () => {
     );
   });
 
-  it('marks only the favourited song as added', () => {
+  it('marks only the favourited song as saved', () => {
     renderList(sameAlbum, { favourites: [{ id: 1441164589 }] });
 
-    expect(screen.getByRole('button', { name: /added/i })).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: /remove favourite/i }),
+    ).toHaveAttribute('aria-pressed', 'true');
     expect(
       screen.getByRole('button', { name: /add favourite/i }),
-    ).toBeEnabled();
+    ).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('takes a favourite off again from the card it was added on', async () => {
+    const user = userEvent.setup();
+    const removeFavourite = vi.fn();
+
+    renderList(sameAlbum, {
+      favourites: [{ id: 1441164589 }],
+      removeFavourite,
+    });
+
+    await user.click(screen.getByRole('button', { name: /remove favourite/i }));
+
+    expect(removeFavourite).toHaveBeenCalledWith(1441164589);
   });
 
   it('falls back to the collection when a result has no track', () => {
@@ -173,16 +193,41 @@ describe('the results list', () => {
     expect(screen.getByAltText('High Tide')).toBeInTheDocument();
   });
 
-  it('says unknown when there is no release date', () => {
+  it('labels a result by what it is and when it came out', () => {
     renderList([
       {
         trackId: 7,
         trackName: 'Windmills',
         artistName: 'Jordan Blake',
         artworkUrl100: 'https://example.test/windmills.jpg',
+        kind: 'song',
+        releaseDate: '2024-03-01T07:00:00Z',
       },
     ]);
 
-    expect(screen.getByText('Unknown')).toBeInTheDocument();
+    expect(screen.getByText('Music · 2024')).toBeInTheDocument();
+  });
+
+  it('drops whichever half of that label is missing', () => {
+    renderList([
+      {
+        trackId: 8,
+        trackName: 'Harbour',
+        artistName: 'Jordan Blake',
+        artworkUrl100: 'https://example.test/harbour.jpg',
+        kind: 'song',
+      },
+      {
+        trackId: 9,
+        trackName: 'Low Tide',
+        artistName: 'Jordan Blake',
+        artworkUrl100: 'https://example.test/low.jpg',
+        releaseDate: '1999-01-01T00:00:00Z',
+      },
+    ]);
+
+    expect(screen.getByText('Music')).toBeInTheDocument();
+    // Stored as UTC midnight, so reading the year locally would say 1998 here
+    expect(screen.getByText('1999')).toBeInTheDocument();
   });
 });

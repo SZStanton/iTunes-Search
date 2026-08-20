@@ -1,4 +1,6 @@
-import { render, screen } from '@testing-library/react';
+// fireEvent rather than user-event for the one case below, since a failed
+// image load is the browser's event and not something anybody clicks
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import ResultsList from './ResultsList';
@@ -117,6 +119,26 @@ describe('the results list', () => {
       'src',
       'https://example.test/100x100bb.jpg',
     );
+  });
+
+  it('puts the title in the tile when the artwork will not load', async () => {
+    renderList([
+      {
+        trackId: 9,
+        trackName: 'Low Tide',
+        artistName: 'Jordan Blake',
+        artworkUrl100: 'https://example.test/gone.jpg',
+        kind: 'song',
+      },
+    ]);
+
+    const artwork = screen.getByAltText('Low Tide');
+    // jsdom never loads an image, so the failure has to be fired by hand
+    fireEvent.error(artwork);
+
+    expect(screen.queryByAltText('Low Tide')).not.toBeInTheDocument();
+    // Twice now: once in the tile that replaced the artwork, once underneath
+    expect(screen.getAllByText('Low Tide')).toHaveLength(2);
   });
 
   it('says unknown when there is no release date', () => {

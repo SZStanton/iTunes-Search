@@ -1,7 +1,5 @@
 import { MEDIA_TYPES } from '../media';
 
-// The eight types that work are most of what this app is, so on a wide screen
-// they are on show rather than folded into a dropdown
 function MediaChips({ media, setMedia, className = '' }) {
   return (
     <div

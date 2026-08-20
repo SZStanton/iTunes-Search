@@ -1,8 +1,5 @@
-// The dropdown, the chips and the query all read this one list, so a type
-// cannot exist in the interface without a filter behind it. Album is a media
-// plus an entity, which is why these are objects rather than strings.
-// 'movie' and 'shortFilm' are deliberately absent, Apple returns nothing for
-// either in any storefront
+// The dropdown, the chips and the query read this one list, so a type cannot
+// exist in the interface without a filter behind it. No movie or shortFilm
 const MEDIA_TYPES = [
   { value: 'all', label: 'All', filter: {} },
   { value: 'podcast', label: 'Podcast', filter: { media: 'podcast' } },
@@ -27,8 +24,7 @@ function mediaFilter(value) {
   return MEDIA_TYPES.find(type => type.value === value)?.filter ?? {};
 }
 
-// What the API calls a result, in words. Anything unrecognised gets nothing
-// rather than a raw slug like 'tv-episode' on the front of a card
+// Unrecognised gets nothing rather than a raw slug like 'tv-episode'
 const KIND_LABELS = {
   song: 'Music',
   album: 'Album',
@@ -42,8 +38,8 @@ const KIND_LABELS = {
   'feature-movie': 'Film',
 };
 
-// A date-only value is stored as UTC midnight, so reading the year in local
-// time puts anyone west of UTC in the year before
+// A date-only value is UTC midnight, so a local year puts anyone west of UTC
+// a year early
 function releaseYear(releaseDate) {
   if (!releaseDate) return '';
 

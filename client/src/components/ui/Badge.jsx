@@ -3,7 +3,6 @@ const tones = {
   quiet: 'bg-raised text-muted',
 };
 
-// A count or a short label riding on something else. Never on its own
 function Badge({ tone = 'accent', className = '', children }) {
   return (
     <span

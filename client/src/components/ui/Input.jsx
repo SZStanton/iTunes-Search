@@ -3,15 +3,13 @@ const shapes = {
   field: 'rounded-control px-3',
 };
 
-// Two heights rather than an overriding className, since py-3.5 and py-2.5 are
-// the same kind of utility and CSS order decides which wins, not class order
+// A size prop rather than an overriding className, since py-3.5 and py-2.5 are
+// the same kind of utility and CSS order picks the winner, not class order
 const sizes = {
   md: 'py-2.5',
   lg: 'py-3.5 text-base',
 };
 
-// The focus treatment is a glow rather than a bare ring, since the field is the
-// thing the whole page is about and a hairline outline undersells it
 function Input({
   shape = 'field',
   size = 'md',

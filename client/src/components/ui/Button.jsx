@@ -1,5 +1,3 @@
-// Every button in the app is one of these four. A one-off string of utilities
-// is how a hover ends up without its active, or a focus ring goes missing
 const variants = {
   primary:
     'bg-accent-strong text-accent-ink hover:brightness-110 active:brightness-95',

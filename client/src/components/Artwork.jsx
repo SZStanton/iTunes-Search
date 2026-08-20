@@ -11,8 +11,7 @@ import {
   Video,
 } from 'lucide-react';
 
-// Keyed on the kind the API sends back. A collection has no kind at all, so
-// anything unrecognised falls through to the disc
+// A collection carries no kind, so anything unrecognised falls to the disc
 const icons = {
   song: Music,
   album: Disc3,
@@ -27,8 +26,7 @@ const icons = {
 };
 
 // Fills whatever it is put in, so the caller owns the size and the corners.
-// Artwork comes from Apple and does sometimes 404, and a broken image glyph in
-// a grid of covers looks like the app is broken rather than the picture
+// Apple's artwork does 404, and a broken image glyph reads as a broken app
 function Artwork({
   src,
   title,
@@ -37,8 +35,8 @@ function Artwork({
   showTitle = false,
   className = '',
 }) {
-  // Held as the url that failed rather than a flag, so a card reused for a
-  // different result on the next page corrects itself
+  // The url that failed rather than a flag, so a card reused for the next
+  // page corrects itself
   const [failedSrc, setFailedSrc] = useState(null);
   const Icon = icons[kind] ?? Disc3;
 

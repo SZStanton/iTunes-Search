@@ -6,7 +6,7 @@ import IconButton from './ui/IconButton';
 import Input from './ui/Input';
 
 function SearchForm({ term, setTerm, media, setMedia, searchMedia, loading }) {
-  // Changing the type once results are already up should show them, not wait
+  // Changing the type with results already up shows them, rather than waiting
   // for a second click on Search
   const changeMedia = next => {
     setMedia(next);
@@ -15,8 +15,6 @@ function SearchForm({ term, setTerm, media, setMedia, searchMedia, loading }) {
 
   return (
     <div className="flex flex-col gap-3">
-      {/* The field owns the row. The type and the button are the actions
-          beside it, deliberately smaller than the thing they act on */}
       <div className="flex gap-3">
         <div className="relative min-w-0 flex-1">
           <Search
@@ -50,8 +48,7 @@ function SearchForm({ term, setTerm, media, setMedia, searchMedia, loading }) {
           )}
         </div>
 
-        {/* The chips take too much room on a phone, so there the same choice
-            is a dropdown */}
+        {/* The chips take too much room on a phone */}
         <select
           className="type-chrome focus-ring rounded-full border border-line bg-surface px-4 text-ink outline-none transition sm:hidden"
           value={media}

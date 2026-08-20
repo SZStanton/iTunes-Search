@@ -150,6 +150,30 @@ describe('the demo account', () => {
     expect(navigate).toHaveBeenCalledWith('/', { replace: true });
   });
 
+  it('says it is working while the server takes its time', async () => {
+    // A cold server can take most of a minute, so an unchanged button reads as
+    // a click that did nothing
+    let finish;
+    loginAsDemo.mockReturnValue(
+      new Promise(resolve => {
+        finish = resolve;
+      }),
+    );
+
+    const user = userEvent.setup();
+    renderLogin();
+
+    await user.click(screen.getByRole('button', { name: /try the demo/i }));
+
+    const waiting = await screen.findByRole('button', {
+      name: /opening the demo/i,
+    });
+    expect(waiting).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^sign in$/i })).toBeDisabled();
+
+    finish({});
+  });
+
   it('says so when the demo is not set up on the server', async () => {
     loginAsDemo.mockRejectedValue(
       new Error('The demo account is not set up on this server.'),

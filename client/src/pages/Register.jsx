@@ -97,6 +97,13 @@ function Register() {
         >
           {busy ? 'Creating...' : 'Create account'}
         </button>
+
+        {/* 60 matches RETENTION_DAYS in server/config/retention.js, so change
+            both or the page starts lying */}
+        <p className="mt-4 text-xs text-muted">
+          An account that goes unused for 60 days is deleted, along with its
+          favourites and searches. Using the app pushes that back out.
+        </p>
       </form>
 
       <div className="mt-4 flex w-full max-w-sm flex-col gap-3 text-center text-sm text-muted">

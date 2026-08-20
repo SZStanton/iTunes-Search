@@ -13,7 +13,9 @@ function Login() {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState('');
-  const [busy, setBusy] = useState(false);
+  // Which button is waiting, not just that something is. The demo sign in can
+  // take most of a minute on a cold server, so it has to say so on itself
+  const [busy, setBusy] = useState('');
 
   const handleSubmit = async event => {
     event.preventDefault();
@@ -28,7 +30,7 @@ function Login() {
       return;
     }
 
-    setBusy(true);
+    setBusy('form');
     setErrors({});
     setMessage('');
 
@@ -39,12 +41,12 @@ function Login() {
       setErrors(err.errors ?? {});
       setMessage(err.message);
     } finally {
-      setBusy(false);
+      setBusy('');
     }
   };
 
   const handleDemo = async () => {
-    setBusy(true);
+    setBusy('demo');
     setErrors({});
     setMessage('');
 
@@ -54,7 +56,7 @@ function Login() {
     } catch (err) {
       setMessage(err.message);
     } finally {
-      setBusy(false);
+      setBusy('');
     }
   };
 
@@ -108,9 +110,10 @@ function Login() {
         <button
           className="w-full rounded-full bg-accent-strong py-2.5 font-medium text-accent-ink transition hover:brightness-110 active:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
           type="submit"
-          disabled={busy}
+          disabled={Boolean(busy)}
+          aria-busy={busy === 'form'}
         >
-          {busy ? 'Signing in...' : 'Sign in'}
+          {busy === 'form' ? 'Signing in...' : 'Sign in'}
         </button>
       </form>
 
@@ -119,9 +122,10 @@ function Login() {
           className="w-full rounded-full border border-line bg-surface py-2.5 font-medium text-ink transition hover:bg-raised hover:border-accent-strong active:bg-raised disabled:opacity-60"
           type="button"
           onClick={handleDemo}
-          disabled={busy}
+          disabled={Boolean(busy)}
+          aria-busy={busy === 'demo'}
         >
-          Try the demo account
+          {busy === 'demo' ? 'Opening the demo...' : 'Try the demo account'}
         </button>
 
         <p>

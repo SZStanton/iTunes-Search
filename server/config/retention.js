@@ -3,7 +3,7 @@ import Search from '../models/Search.js';
 
 // How long an account survives without being used. Retention follows use rather
 // than signup, so someone who logs in every month is never deleted
-const RETENTION_DAYS = 90;
+const RETENTION_DAYS = 60;
 
 // Rewriting three collections on every request would be wasteful, so the date
 // only moves when it has drifted by more than this

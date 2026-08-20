@@ -5,6 +5,7 @@ import './index.css';
 import App from './App.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import SignedOutOnly from './components/SignedOutOnly.jsx';
+import WakeBanner from './components/WakeBanner.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
@@ -13,6 +14,9 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
+        {/* Outside the routes, so opening or refreshing any page wakes the
+            api, signed in or not */}
+        <WakeBanner />
         <Routes>
           <Route
             path="/login"

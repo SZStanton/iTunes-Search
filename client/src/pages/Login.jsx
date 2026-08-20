@@ -15,6 +15,9 @@ function Login() {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState('');
+  // The demo button sits below the form, so its failure needs its own slot
+  // beside it. Put in the form's banner it reads as a message about the fields
+  const [demoMessage, setDemoMessage] = useState('');
   // Which button is waiting, not just that something is. The demo sign in can
   // take most of a minute on a cold server, so it has to say so on itself
   const [busy, setBusy] = useState('');
@@ -29,12 +32,14 @@ function Login() {
     if (!parsed.success) {
       setErrors(rulesErrors(parsed.error));
       setMessage('');
+      setDemoMessage('');
       return;
     }
 
     setBusy('form');
     setErrors({});
     setMessage('');
+    setDemoMessage('');
 
     try {
       await login(parsed.data);
@@ -51,12 +56,13 @@ function Login() {
     setBusy('demo');
     setErrors({});
     setMessage('');
+    setDemoMessage('');
 
     try {
       await loginAsDemo();
       navigate('/', { replace: true });
     } catch (err) {
-      setMessage(err.message);
+      setDemoMessage(err.message);
     } finally {
       setBusy('');
     }
@@ -130,6 +136,15 @@ function Login() {
         >
           {busy === 'demo' ? 'Opening the demo...' : 'Try the demo account'}
         </Button>
+
+        {demoMessage && (
+          <p
+            className="rounded-control bg-danger-surface px-3 py-2 text-sm text-danger"
+            role="alert"
+          >
+            {demoMessage}
+          </p>
+        )}
 
         <p>
           No account yet?{' '}

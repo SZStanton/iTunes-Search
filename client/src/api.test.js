@@ -42,6 +42,21 @@ describe('calling the api', () => {
     await expect(apiFetch('/api/token')).resolves.toEqual({ token: 'x' });
   });
 
+  it('says the server could not be reached when nothing answers', async () => {
+    const { apiFetch } = await loadApi(undefined);
+    // What a dropped connection looks like: the fetch itself rejects, so there
+    // is no response, no status and no body
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new TypeError('Failed to fetch')),
+    );
+
+    await expect(apiFetch('/api/auth/demo')).rejects.toMatchObject({
+      message: 'Could not reach the server. Try that again in a moment.',
+      offline: true,
+    });
+  });
+
   it("throws with the server's own message when it fails", async () => {
     const { apiFetch } = await loadApi(undefined);
     vi.stubGlobal(

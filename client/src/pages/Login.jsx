@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import FormField from '../components/FormField';
+import ThemeToggle from '../components/ThemeToggle';
 import { useAuth } from '../context/useAuth';
 import { loginRules, rulesErrors } from '../validation/authRules';
 
@@ -58,7 +59,9 @@ function Login() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-page px-4 py-12">
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-page px-4 py-12">
+      <ThemeToggle className="absolute top-4 right-4" />
+
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-semibold tracking-tight text-ink">
           Sign in

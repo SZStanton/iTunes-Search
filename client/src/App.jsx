@@ -5,6 +5,7 @@ import SearchForm from './components/SearchForm';
 import RecentSearches from './components/RecentSearches';
 import ResultsList from './components/ResultsList';
 import FavouritesDrawer from './components/FavouritesDrawer';
+import ThemeToggle from './components/ThemeToggle';
 
 // What the select offers, mapped to the values the iTunes API expects. Album is
 // a media plus an entity, which is why these are pairs rather than strings.
@@ -260,6 +261,8 @@ function App() {
           <span className="hidden text-sm text-muted sm:inline">
             {user?.email}
           </span>
+
+          <ThemeToggle />
 
           <button
             className="rounded-full px-3 py-1.5 text-sm text-muted transition hover:text-ink active:text-ink"

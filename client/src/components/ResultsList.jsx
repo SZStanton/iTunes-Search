@@ -1,7 +1,13 @@
 import { SearchX } from 'lucide-react';
 import ResultCard from './ResultCard';
 
-function ResultsList({ results, favourites, addFavourite, searched = false }) {
+function ResultsList({
+  results,
+  favourites,
+  addFavourite,
+  removeFavourite,
+  searched = false,
+}) {
   if (searched && results.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 py-page text-center">
@@ -10,7 +16,7 @@ function ResultsList({ results, favourites, addFavourite, searched = false }) {
         </span>
         <p className="type-title text-lg">Nothing matched that search</p>
         <p className="type-meta max-w-xs text-sm">
-          Try a different spelling, or widen the media type to ALL.
+          Try a different spelling, or widen the media type to All.
         </p>
       </div>
     );
@@ -32,6 +38,7 @@ function ResultsList({ results, favourites, addFavourite, searched = false }) {
             title={title}
             isFavourite={favourites.some(favourite => favourite.id === id)}
             addFavourite={addFavourite}
+            removeFavourite={removeFavourite}
           />
         );
       })}

@@ -1,7 +1,6 @@
 import Skeleton from './ui/Skeleton';
 
-// Two rows at the widest layout. Enough to fill the fold without pretending to
-// know how many results are coming
+// Two rows at the widest layout, without pretending to know what is coming
 const PLACEHOLDERS = 10;
 
 function ResultsSkeleton() {
@@ -11,14 +10,14 @@ function ResultsSkeleton() {
       role="status"
       aria-label="Searching"
     >
-      {/* The label names the region, but status takes no name from content and
-          a live region with nothing readable in it announces nothing */}
+      {/* status takes no name from content, and a live region with nothing
+          readable in it announces nothing, so it needs both */}
       <span className="sr-only">Searching</span>
 
       {Array.from({ length: PLACEHOLDERS }, (_, index) => (
         <div className="flex flex-col gap-3" key={index}>
-          {/* The delay repeats every five, so the shimmer reads as one sweep
-              across a row rather than a queue working its way down the page */}
+          {/* Repeats every five, so the shimmer sweeps a row rather than
+              queueing down the page */}
           <Skeleton
             className="aspect-square"
             style={{ animationDelay: `${(index % 5) * 90}ms` }}

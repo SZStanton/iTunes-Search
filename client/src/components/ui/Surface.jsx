@@ -4,8 +4,6 @@ const elevations = {
   3: 'elev-3',
 };
 
-// A panel with a border and a place on the elevation ladder. Anything that
-// holds content and is not the page itself is one of these
 function Surface({
   as: Tag = 'div',
   elevation = 2,

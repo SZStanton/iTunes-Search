@@ -1,31 +1,18 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, CircleAlert, Heart } from 'lucide-react';
 import { authFetch } from './api';
+import { mediaFilter } from './media';
 import { useAuth } from './context/useAuth';
 import SearchForm from './components/SearchForm';
+import FirstVisit from './components/FirstVisit';
 import RecentSearches from './components/RecentSearches';
+import ResultsHeader from './components/ResultsHeader';
 import ResultsList from './components/ResultsList';
 import ResultsSkeleton from './components/ResultsSkeleton';
 import FavouritesDrawer from './components/FavouritesDrawer';
 import ThemeToggle from './components/ThemeToggle';
 import Badge from './components/ui/Badge';
 import Button from './components/ui/Button';
-
-// What the select offers, mapped to the values the iTunes API expects. Album is
-// a media plus an entity, which is why these are pairs rather than strings.
-// 'movie' and 'shortFilm' are deliberately absent, Apple returns nothing for
-// either in any storefront
-const mediaMap = {
-  all: {},
-  podcast: { media: 'podcast' },
-  music: { media: 'music' },
-  album: { media: 'music', entity: 'album' },
-  'music video': { media: 'musicVideo' },
-  audiobook: { media: 'audiobook' },
-  'tv show': { media: 'tvShow' },
-  software: { media: 'software' },
-  ebook: { media: 'ebook' },
-};
 
 // iTunes ignores an offset, so one search asks for as much as it will give and
 // the pages are cut from that
@@ -40,8 +27,7 @@ function toCard(favourite) {
     title: favourite.title,
     artistName: favourite.artist,
     artworkUrl100: favourite.artwork,
-    // Only read when the artwork will not load, and the placeholder picks its
-    // icon from it
+    // Only read when the artwork fails, to pick the placeholder icon
     kind: favourite.kind,
   };
 }
@@ -76,6 +62,8 @@ function App() {
   const [error, setError] = useState('');
   // Tells an empty list apart from not having searched yet
   const [searched, setSearched] = useState(false);
+  // What is on screen, not what is in the form, which changes on every keypress
+  const [ran, setRan] = useState({ term: '', media: '' });
 
   // Pagination state
   const [page, setPage] = useState(0);
@@ -126,7 +114,7 @@ function App() {
     setPage(0);
 
     try {
-      const filter = mediaMap[searchMediaLabel] ?? {};
+      const filter = mediaFilter(searchMediaLabel);
       const query = new URLSearchParams({
         term: searchTerm,
         limit: FETCH_LIMIT,
@@ -138,6 +126,7 @@ function App() {
       const data = await authFetch(`/api/itunes/search?${query}`, token);
 
       setAllResults(data.results || []);
+      setRan({ term: searchTerm, media: searchMediaLabel });
 
       // Remembered only once the search worked, so a typo that errors does not
       // take one of the ten slots
@@ -208,9 +197,16 @@ function App() {
   // == FAVOURITES ==
   // Shown straight away and undone if the server refuses, since waiting for a
   // round trip to tick a button reads as a broken click
+
+  // One request per item at a time, or a spammed heart sends an add and a
+  // delete that can land in either order
+  const inFlight = useRef(new Set());
+
   const addFavourite = async item => {
+    if (inFlight.current.has(item.id)) return;
     if (favourites.some(f => f.id === item.id)) return;
 
+    inFlight.current.add(item.id);
     setFavourites(current => [...current, item]);
 
     try {
@@ -222,20 +218,32 @@ function App() {
       console.error('Could not save that favourite:', err);
       setFavourites(current => current.filter(f => f.id !== item.id));
       setError(err.message || 'Could not save that favourite.');
+    } finally {
+      inFlight.current.delete(item.id);
     }
   };
 
   // Remove an item from favourites
   const removeFavourite = async id => {
-    const previous = favourites;
-    setFavourites(favourites.filter(item => item.id !== id));
+    if (inFlight.current.has(id)) return;
+
+    // Where it was, so a failed delete puts it back in its own place
+    const index = favourites.findIndex(item => item.id === id);
+    if (index === -1) return;
+
+    const removed = favourites[index];
+
+    inFlight.current.add(id);
+    setFavourites(current => current.filter(item => item.id !== id));
 
     try {
       await authFetch(`/api/favourites/${id}`, token, { method: 'DELETE' });
     } catch (err) {
       console.error('Could not remove that favourite:', err);
-      setFavourites(previous);
+      setFavourites(current => current.toSpliced(index, 0, removed));
       setError(err.message || 'Could not remove that favourite.');
+    } finally {
+      inFlight.current.delete(id);
     }
   };
 
@@ -273,6 +281,8 @@ function App() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+        {!searched && !loading && <FirstVisit />}
+
         <SearchForm
           term={term}
           setTerm={setTerm}
@@ -299,6 +309,16 @@ function App() {
           </p>
         )}
 
+        {!loading && !error && allResults.length > 0 && (
+          <ResultsHeader
+            query={ran.term}
+            media={ran.media}
+            count={allResults.length}
+            page={page}
+            pageCount={pageCount}
+          />
+        )}
+
         <div className="mt-section">
           {loading ? (
             <ResultsSkeleton />
@@ -307,6 +327,7 @@ function App() {
               results={results}
               favourites={favourites}
               addFavourite={addFavourite}
+              removeFavourite={removeFavourite}
               searched={searched && !error}
             />
           )}

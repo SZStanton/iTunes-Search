@@ -297,6 +297,74 @@ describe('saving a favourite', () => {
     });
   });
 
+  it('sends one request however fast the heart is clicked', async () => {
+    whenSearchReturns({ results: [track(1)], resultCount: 1 });
+
+    // Held open, so every click below lands while the first one is still out
+    let release;
+    fetchMock.mockImplementation((url, options) => {
+      if (
+        String(url).includes('/api/favourites') &&
+        options?.method === 'POST'
+      ) {
+        return new Promise(resolve => {
+          release = () => resolve(respond(url, options));
+        });
+      }
+
+      return Promise.resolve(respond(url, options));
+    });
+
+    const user = await searchFor();
+    const heart = await screen.findByRole('button', {
+      name: /add favourite/i,
+    });
+
+    await user.click(heart);
+    await user.click(screen.getByRole('button', { name: /remove favourite/i }));
+    await user.click(screen.getByRole('button', { name: /remove favourite/i }));
+
+    // The load on mount sends no method at all, so match the two that write
+    const writes = fetchMock.mock.calls.filter(
+      call =>
+        String(call[0]).includes('/api/favourites') &&
+        ['POST', 'DELETE'].includes(call[1]?.method),
+    );
+
+    // An add and a delete racing each other is how the server ends up holding
+    // the opposite of what is on screen
+    expect(writes).toHaveLength(1);
+    expect(writes[0][1].method).toBe('POST');
+
+    release();
+  });
+
+  it('lets it be removed once the save has landed', async () => {
+    whenSearchReturns({ results: [track(1)], resultCount: 1 });
+    const user = await searchFor();
+
+    await user.click(
+      await screen.findByRole('button', { name: /add favourite/i }),
+    );
+    await user.click(
+      await screen.findByRole('button', { name: /remove favourite/i }),
+    );
+
+    await waitFor(() => {
+      const deleted = fetchMock.mock.calls.find(
+        call =>
+          String(call[0]).includes('/api/favourites/1') &&
+          call[1]?.method === 'DELETE',
+      );
+
+      expect(deleted).toBeDefined();
+    });
+
+    expect(
+      await screen.findByRole('button', { name: /add favourite/i }),
+    ).toBeInTheDocument();
+  });
+
   it('takes it off the list again when the server refuses', async () => {
     whenSearchReturns({ results: [track(1)], resultCount: 1 });
 
@@ -381,6 +449,54 @@ describe('recent searches', () => {
         screen.queryByRole('region', { name: /recent searches/i }),
       ).not.toBeInTheDocument(),
     );
+  });
+});
+
+describe('saying where you are', () => {
+  it('introduces the app until something has been searched', async () => {
+    whenSearchReturns({ results: [track(1)], resultCount: 1 });
+    render(<App />);
+
+    expect(screen.getByText(/everything apple has/i)).toBeInTheDocument();
+
+    const user = userEvent.setup();
+    await user.type(screen.getByPlaceholderText(/search itunes/i), 'beatles');
+    await user.click(screen.getByRole('button', { name: /^search$/i }));
+
+    await screen.findByText('Track 1');
+    expect(screen.queryByText(/everything apple has/i)).not.toBeInTheDocument();
+  });
+
+  it('names the search the results came from, not what is in the box', async () => {
+    whenSearchReturns({ results: [track(1)], resultCount: 1 });
+    const user = await searchFor('hey jude');
+
+    expect(
+      await screen.findByText(/results for hey jude/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText('1 result')).toBeInTheDocument();
+
+    // Typing again must not rewrite the heading over results it did not fetch
+    await user.type(screen.getByPlaceholderText(/search itunes/i), ' live');
+    expect(screen.getByText(/results for hey jude/i)).toBeInTheDocument();
+  });
+
+  it('keeps the count and the page on screen while paging', async () => {
+    whenSearchReturns({
+      results: Array.from({ length: 90 }, (_, i) => track(i + 1)),
+      resultCount: 90,
+    });
+    const user = await searchFor();
+
+    expect(
+      await screen.findByText('90 results · Page 1 of 3'),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /next/i }));
+
+    expect(
+      await screen.findByText('90 results · Page 2 of 3'),
+    ).toBeInTheDocument();
   });
 });
 

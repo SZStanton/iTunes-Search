@@ -23,10 +23,7 @@
   --color-danger: var(--danger);
   --color-danger-surface: var(--danger-surface);
 
-  /* One scale, a fifth apart at the top and a step of two or three pixels at
-     the bottom. Line height and tracking travel with the size so they cannot
-     be forgotten: text tightens as it grows, which is what stops a large
-     heading reading as a stretched paragraph */
+  /* Line height and tracking travel with the size, tightening as it grows */
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 1.45;
   --text-2xs--letter-spacing: 0.02em;
@@ -55,8 +52,7 @@
   --text-4xl--line-height: 1.05;
   --text-4xl--letter-spacing: -0.03em;
 
-  /* Layout rhythm, every one a multiple of eight. Named so the gap between two
-     sections is a decision rather than whatever number was nearest */
+  /* Layout rhythm, every one a multiple of eight */
   --spacing-tight: 0.5rem;
   --spacing-snug: 1rem;
   --spacing-bay: 1.5rem;
@@ -67,14 +63,12 @@
   --radius-card: 0.875rem;
   --radius-panel: 1.25rem;
 
-  /* Three speeds and nothing else. A press answers immediately, a panel takes
-     long enough to be followed, an overlay a little longer because it is bigger */
+  /* Three speeds and nothing else */
   --motion-micro: 140ms;
   --motion-panel: 220ms;
   --motion-overlay: 260ms;
 
-  /* Decelerating hard, so movement starts fast and settles. No overshoot
-     anywhere, since bounce reads as a toy */
+  /* Decelerating hard, no overshoot anywhere */
   --ease-soft: cubic-bezier(0.32, 0.72, 0, 1);
   --default-transition-duration: var(--motion-micro);
   --default-transition-timing-function: var(--ease-soft);
@@ -95,8 +89,7 @@
   --accent-ink: #ffffff;
   --danger: #842029;
   --danger-surface: #f8d7da;
-  /* Light cannot separate surfaces by lightness, the page is already near
-     white, so the whole ladder is shadow. Dark lifts instead, see below */
+  /* The page is already near white, so the whole ladder is shadow */
   --elev-1: 0 1px 2px rgb(0 0 0 / 0.06);
   --elev-2: 0 1px 3px rgb(0 0 0 / 0.08), 0 8px 24px rgb(0 0 0 / 0.06);
   --elev-3: 0 4px 16px rgb(0 0 0 / 0.1), 0 24px 56px rgb(0 0 0 / 0.14);
@@ -120,8 +113,8 @@
     --accent-ink: #ffffff;
     --danger: #ff6961;
     --danger-surface: #3b1113;
-    /* A shadow on black is invisible, so depth comes from a lighter surface
-       and a lit top edge, the way a real object catches the light above it */
+    /* A shadow on black is invisible, so depth is a lighter surface and a
+       lit top edge */
     --elev-1: inset 0 1px 0 rgb(255 255 255 / 0.05);
     --elev-2:
       0 8px 24px rgb(0 0 0 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.07);
@@ -161,8 +154,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* One ring for everything focusable. An outline follows the border radius on
-   its own, which a ring built from shadows does not */
+/* An outline follows the border radius on its own, a box-shadow ring does not */
 @utility focus-ring {
   &:focus-visible {
     outline: 2px solid var(--accent-strong);
@@ -170,8 +162,7 @@ body {
   }
 }
 
-/* A sweep rather than a fade, so a loading grid reads as busy rather than
-   broken. The gradient is three times the box, and the animation moves it */
+/* The gradient is three times the box, and the animation moves it across */
 @utility skeleton {
   background-image: linear-gradient(
     90deg,
@@ -192,8 +183,7 @@ body {
   }
 }
 
-/* The ladder. 1 is a control resting on the page, 2 is a card or a panel, 3 is
-   something over the top of everything else. Nothing uses a fourth */
+/* 1 rests on the page, 2 is a card or panel, 3 is over everything else */
 @utility elev-1 {
   box-shadow: var(--elev-1);
 }
@@ -206,16 +196,15 @@ body {
   box-shadow: var(--elev-3);
 }
 
-/* Anything that floats over content and lets it through. The saturation lift
-   is what stops the blur behind it turning grey */
+/* The saturation lift stops the blur behind it turning grey */
 @utility glass {
   background: var(--glass);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
 }
 
-/* Content and chrome should not sound alike. A media title is the thing
-   itself, so it takes the weight, the tracking and the contrast */
+/* Content and chrome should not sound alike, so a title takes the weight,
+   the tracking and the contrast */
 @utility type-title {
   font-weight: 600;
   letter-spacing: -0.015em;
@@ -223,8 +212,7 @@ body {
   text-wrap: pretty;
 }
 
-/* A button or a count is a label on the furniture, so it stays upright and
-   never tightens, which is what keeps it from reading as a title */
+/* Never tightens, which is what keeps a button from reading as a title */
 @utility type-chrome {
   font-weight: 500;
   letter-spacing: 0;
@@ -236,8 +224,7 @@ body {
   color: var(--muted);
 }
 
-/* Small caps above a group. Tracking has to open up as size drops or the
-   letters close into a block */
+/* Tracking has to open up as size drops or the letters close into a block */
 @utility type-eyebrow {
   font-size: var(--text-2xs);
   font-weight: 600;
@@ -252,8 +239,7 @@ body {
   transition: none !important;
 }
 
-/* Anyone who has asked for less movement gets the end state and none of the
-   travel. Nothing in the app depends on an animation finishing */
+/* Nothing here depends on an animation finishing */
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,

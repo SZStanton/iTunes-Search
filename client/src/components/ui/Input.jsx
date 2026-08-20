@@ -3,12 +3,25 @@ const shapes = {
   field: 'rounded-control px-3',
 };
 
+// Two heights rather than an overriding className, since py-3.5 and py-2.5 are
+// the same kind of utility and CSS order decides which wins, not class order
+const sizes = {
+  md: 'py-2.5',
+  lg: 'py-3.5 text-base',
+};
+
 // The focus treatment is a glow rather than a bare ring, since the field is the
 // thing the whole page is about and a hairline outline undersells it
-function Input({ shape = 'field', invalid = false, className = '', ...rest }) {
+function Input({
+  shape = 'field',
+  size = 'md',
+  invalid = false,
+  className = '',
+  ...rest
+}) {
   return (
     <input
-      className={`w-full border bg-surface py-2.5 text-ink outline-none transition placeholder:text-muted ${shapes[shape]} ${
+      className={`w-full border bg-surface text-ink outline-none transition placeholder:text-muted ${shapes[shape]} ${sizes[size]} ${
         invalid
           ? 'border-danger focus:ring-4 focus:ring-danger/25'
           : 'border-line focus:border-accent-strong focus:ring-4 focus:ring-accent-strong/20'

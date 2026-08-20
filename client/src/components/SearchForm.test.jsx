@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import SearchForm from './SearchForm';
@@ -96,6 +96,71 @@ describe('the search form', () => {
     // media=movie and media=shortFilm return nothing in every storefront
     expect(values).not.toContain('movie');
     expect(values).not.toContain('short film');
+  });
+
+  it('offers the same types as chips, with the current one pressed', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    const chips = screen.getByRole('group', { name: /media type/i });
+
+    expect(
+      within(chips).getByRole('button', { name: 'Music' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+
+    await user.click(within(chips).getByRole('button', { name: 'Podcast' }));
+
+    expect(
+      within(chips).getByRole('button', { name: 'Podcast' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    // The dropdown is the same choice on a narrow screen, so it has to follow
+    expect(screen.getByRole('combobox')).toHaveValue('podcast');
+  });
+
+  it('runs the search again when the type changes with a term already in', async () => {
+    const user = userEvent.setup();
+    const searchMedia = vi.fn();
+    render(<Harness searchMedia={searchMedia} />);
+
+    await user.type(screen.getByPlaceholderText(/search itunes/i), 'beatles');
+    await user.click(
+      within(screen.getByRole('group', { name: /media type/i })).getByRole(
+        'button',
+        { name: 'Album' },
+      ),
+    );
+
+    // Changing a filter and showing the old results would read as a dead click
+    expect(searchMedia).toHaveBeenCalledWith('beatles', 'album');
+  });
+
+  it('leaves an empty search alone when the type changes', async () => {
+    const user = userEvent.setup();
+    const searchMedia = vi.fn();
+    render(<Harness searchMedia={searchMedia} />);
+
+    await user.click(
+      within(screen.getByRole('group', { name: /media type/i })).getByRole(
+        'button',
+        { name: 'Album' },
+      ),
+    );
+
+    expect(searchMedia).not.toHaveBeenCalled();
+  });
+
+  it('clears the field, and only offers to once there is something in it', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    expect(
+      screen.queryByRole('button', { name: /clear search/i }),
+    ).not.toBeInTheDocument();
+
+    await user.type(screen.getByPlaceholderText(/search itunes/i), 'beatles');
+    await user.click(screen.getByRole('button', { name: /clear search/i }));
+
+    expect(screen.getByPlaceholderText(/search itunes/i)).toHaveValue('');
   });
 
   it('says so and stops accepting clicks while a search is running', async () => {

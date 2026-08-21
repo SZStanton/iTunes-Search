@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, CircleAlert, Heart } from 'lucide-react';
 import { authFetch } from './api';
+import { typingIn } from './keys';
 import { mediaFilter } from './media';
 import { useAuth } from './context/useAuth';
+import { useOverlayOpen } from './context/useOverlay';
 import SearchForm from './components/SearchForm';
+import EdgePager from './components/EdgePager';
 import FirstVisit from './components/FirstVisit';
+import ShortcutsHelp from './components/ShortcutsHelp';
 import RecentSearches from './components/RecentSearches';
 import ResultsHeader from './components/ResultsHeader';
 import ResultsList from './components/ResultsList';
@@ -73,6 +77,9 @@ function App() {
   // The favourites panel slides over the results rather than sharing the width
   const [drawerOpen, setDrawerOpen] = useState(false);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+
+  const searchField = useRef(null);
+  const overlayOpen = useOverlayOpen();
 
   // == LOADING WHAT THE ACCOUNT ALREADY HAS ==
   // A failure here is not worth an error banner. The app still works, it just
@@ -251,6 +258,46 @@ function App() {
   const pageCount = Math.ceil(allResults.length / PAGE_SIZE);
   const results = allResults.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
+  // Forty new cards under a scrolled window looks like nothing happened
+  const goToPage = useCallback(
+    next => {
+      if (next < 0 || next >= pageCount) return;
+
+      setPage(next);
+      window.scrollTo({
+        top: 0,
+        behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)')
+          .matches
+          ? 'auto'
+          : 'smooth',
+      });
+    },
+    [pageCount],
+  );
+
+  // == KEYBOARD ==
+  useEffect(() => {
+    const onKeyDown = event => {
+      if (typingIn(event.target)) return;
+
+      if (event.key === '/') {
+        event.preventDefault();
+        searchField.current?.focus();
+        return;
+      }
+
+      // The arrows belong to whatever is over the page while one is open
+      if (overlayOpen) return;
+
+      if (event.key === 'ArrowLeft') goToPage(page - 1);
+      if (event.key === 'ArrowRight') goToPage(page + 1);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [goToPage, page, overlayOpen]);
+
   // == UI ==
   return (
     <div className="min-h-screen bg-page">
@@ -272,6 +319,8 @@ function App() {
             {user?.email}
           </span>
 
+          <ShortcutsHelp />
+
           <ThemeToggle />
 
           <Button variant="ghost" onClick={logout}>
@@ -284,6 +333,7 @@ function App() {
         {!searched && !loading && <FirstVisit />}
 
         <SearchForm
+          fieldRef={searchField}
           term={term}
           setTerm={setTerm}
           media={media}
@@ -335,7 +385,7 @@ function App() {
 
         {pageCount > 1 && (
           <div className="mt-section flex items-center justify-center gap-4">
-            <Button disabled={page === 0} onClick={() => setPage(page - 1)}>
+            <Button disabled={page === 0} onClick={() => goToPage(page - 1)}>
               <ChevronLeft size={16} />
               Prev
             </Button>
@@ -346,7 +396,7 @@ function App() {
 
             <Button
               disabled={page + 1 >= pageCount}
-              onClick={() => setPage(page + 1)}
+              onClick={() => goToPage(page + 1)}
             >
               Next
               <ChevronRight size={16} />
@@ -354,6 +404,8 @@ function App() {
           </div>
         )}
       </main>
+
+      <EdgePager page={page} pageCount={pageCount} onPage={goToPage} />
 
       <FavouritesDrawer
         open={drawerOpen}

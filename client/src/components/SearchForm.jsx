@@ -5,7 +5,15 @@ import Button from './ui/Button';
 import IconButton from './ui/IconButton';
 import Input from './ui/Input';
 
-function SearchForm({ term, setTerm, media, setMedia, searchMedia, loading }) {
+function SearchForm({
+  term,
+  setTerm,
+  media,
+  setMedia,
+  searchMedia,
+  loading,
+  fieldRef,
+}) {
   // Changing the type with results already up shows them, rather than waiting
   // for a second click on Search
   const changeMedia = next => {
@@ -24,6 +32,7 @@ function SearchForm({ term, setTerm, media, setMedia, searchMedia, loading }) {
           />
 
           <Input
+            ref={fieldRef}
             type="text"
             shape="pill"
             size="lg"

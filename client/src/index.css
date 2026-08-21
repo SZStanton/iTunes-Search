@@ -1,9 +1,8 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/inter';
 
-/* The toggle wins over the system setting, so utilities have to follow the
-   attribute as well as the media query */
-@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+/* Dark is the default, so a dark: utility is anything not explicitly light */
+@custom-variant dark (&:where(:root:not([data-theme='light']) *));
 
 @theme {
   --font-sans:
@@ -22,6 +21,8 @@
   --color-accent-ink: var(--accent-ink);
   --color-danger: var(--danger);
   --color-danger-surface: var(--danger-surface);
+  --color-overlay-ink: var(--overlay-ink);
+  --color-overlay-muted: var(--overlay-muted);
 
   /* Line height and tracking travel with the size, tightening as it grows */
   --text-2xs: 0.6875rem;
@@ -74,16 +75,46 @@
   --default-transition-timing-function: var(--ease-soft);
 }
 
-/* LIGHT, on bare :root so it is the fallback for everything */
+/* DARK, on bare :root, so it is what anyone gets without choosing. The system
+   preference is deliberately not consulted */
 :root {
+  --page: #000000;
+  --surface: #1c1c1e;
+  --raised: #2c2c2e;
+  --line: #3a3a3c;
+  --ink: #f5f5f7;
+  --muted: #a1a1a6;
+  /* Apple's own red carries white text at only 3.79:1, so it is for ornament
+     and large graphics. Anything with words on it uses accent-strong */
+  --accent: #fa2d48;
+  --accent-strong: #ff375f;
+  --accent-ink: #ffffff;
+  --danger: #ff6961;
+  --danger-surface: #3b1113;
+  /* A shadow on black is invisible, so depth is a lighter surface and a lit
+     top edge */
+  --elev-1: inset 0 1px 0 rgb(255 255 255 / 0.05);
+  --elev-2: 0 8px 24px rgb(0 0 0 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.07);
+  --elev-3:
+    0 24px 64px rgb(0 0 0 / 0.72), inset 0 1px 0 rgb(255 255 255 / 0.09);
+  --glass: rgb(28 28 30 / 0.72);
+  /* The artwork viewer sits on a dark backdrop in both themes, so its text
+     does not swap with the rest */
+  --overlay-ink: #f5f5f7;
+  --overlay-muted: #c7c7cc;
+
+  color-scheme: dark;
+}
+
+/* LIGHT, only for someone who has asked for it. One block rather than two,
+   since nothing has to beat a media query any more */
+:root[data-theme='light'] {
   --page: #f5f5f7;
   --surface: #ffffff;
   --raised: #ffffff;
   --line: #d2d2d7;
   --ink: #1d1d1f;
   --muted: #6e6e73;
-  /* Apple's own red carries white text at only 3.79:1, so it is for ornament
-     and large graphics. Anything with words on it uses accent-strong */
   --accent: #fa2d48;
   --accent-strong: #d70015;
   --accent-ink: #ffffff;
@@ -95,54 +126,7 @@
   --elev-3: 0 4px 16px rgb(0 0 0 / 0.1), 0 24px 56px rgb(0 0 0 / 0.14);
   --glass: rgb(255 255 255 / 0.72);
 
-  color-scheme: light dark;
-}
-
-/* DARK, for anyone who has not chosen. Guarded so an explicit light choice
-   still wins over the system setting */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --page: #000000;
-    --surface: #1c1c1e;
-    --raised: #2c2c2e;
-    --line: #3a3a3c;
-    --ink: #f5f5f7;
-    --muted: #a1a1a6;
-    --accent: #fa2d48;
-    --accent-strong: #ff375f;
-    --accent-ink: #ffffff;
-    --danger: #ff6961;
-    --danger-surface: #3b1113;
-    /* A shadow on black is invisible, so depth is a lighter surface and a
-       lit top edge */
-    --elev-1: inset 0 1px 0 rgb(255 255 255 / 0.05);
-    --elev-2:
-      0 8px 24px rgb(0 0 0 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.07);
-    --elev-3:
-      0 24px 64px rgb(0 0 0 / 0.72), inset 0 1px 0 rgb(255 255 255 / 0.09);
-    --glass: rgb(28 28 30 / 0.72);
-  }
-}
-
-/* DARK again, for the toggle. Identical to the block above on purpose, and the
-   two will drift silently, so change them together */
-:root[data-theme='dark'] {
-  --page: #000000;
-  --surface: #1c1c1e;
-  --raised: #2c2c2e;
-  --line: #3a3a3c;
-  --ink: #f5f5f7;
-  --muted: #a1a1a6;
-  --accent: #fa2d48;
-  --accent-strong: #ff375f;
-  --accent-ink: #ffffff;
-  --danger: #ff6961;
-  --danger-surface: #3b1113;
-  --elev-1: inset 0 1px 0 rgb(255 255 255 / 0.05);
-  --elev-2: 0 8px 24px rgb(0 0 0 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.07);
-  --elev-3:
-    0 24px 64px rgb(0 0 0 / 0.72), inset 0 1px 0 rgb(255 255 255 / 0.09);
-  --glass: rgb(28 28 30 / 0.72);
+  color-scheme: light;
 }
 
 body {
@@ -205,11 +189,12 @@ body {
 
 /* Content and chrome should not sound alike, so a title takes the weight,
    the tracking and the contrast */
+/* No text-wrap here. It expands to text-wrap-mode, which beats the nowrap
+   that truncate and line-clamp rely on */
 @utility type-title {
   font-weight: 600;
   letter-spacing: -0.015em;
   color: var(--ink);
-  text-wrap: pretty;
 }
 
 /* Never tightens, which is what keeps a button from reading as a title */

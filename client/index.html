@@ -10,16 +10,15 @@
     />
     <title>iTunes Search</title>
     <script>
-      // Runs before first paint, or a returning dark mode visitor gets a white
-      // flash while the app boots. Only an explicit choice is stored, so with
-      // nothing here the media query in index.css decides
+      // Runs before first paint, or someone who chose light gets a dark flash
+      // while the app boots. Nothing stored means the dark default in index.css
       try {
         var stored = localStorage.getItem('itunes-search:theme');
         if (stored === 'light' || stored === 'dark') {
           document.documentElement.setAttribute('data-theme', stored);
         }
       } catch (error) {
-        // Storage blocked, follow the system
+        // Storage blocked, so the default stands
       }
     </script>
   </head>

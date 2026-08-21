@@ -27,8 +27,7 @@ function Tab({ id, tab, onTab, children, count }) {
   );
 }
 
-// Both lists live in one panel rather than two, so they are siblings on screen
-// as well as in the code, and one action opens either on a narrow screen
+// Both lists in one panel, so one action opens either on a narrow screen
 function LibraryDrawer({
   open,
   tab,

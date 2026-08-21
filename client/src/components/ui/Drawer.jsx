@@ -3,8 +3,7 @@ import { X } from 'lucide-react';
 import IconButton from './IconButton';
 import { useFocusTrap } from './useFocusTrap';
 
-// Rendered whether it is open or not, and moved off screen when it is not, so
-// it animates on the way out as well as the way in
+// Rendered when shut too, moved off screen, so it animates both ways
 function Drawer({ open, onClose, label, header, children }) {
   const panel = useFocusTrap(open, onClose);
 
@@ -24,8 +23,7 @@ function Drawer({ open, onClose, label, header, children }) {
         }`}
         aria-label={label}
         aria-hidden={open ? undefined : 'true'}
-        // Shut, it is still in the page, and inert is what keeps Tab from
-        // walking into it
+        // Shut, it is still in the page, so inert keeps Tab out
         inert={!open}
         ref={panel}
       >

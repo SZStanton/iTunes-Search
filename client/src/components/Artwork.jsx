@@ -44,7 +44,7 @@ function Artwork({
   // Contained artwork sizes itself, since a viewer holds covers that are not
   // square and cropping one to fit is the whole thing it is there to avoid
   const box = contain
-    ? 'max-h-[70vh] max-w-full object-contain'
+    ? 'max-h-[74vh] max-w-full object-contain'
     : 'h-full w-full object-cover';
 
   if (!src || failedSrc === src) {

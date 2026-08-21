@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -426,40 +426,97 @@ describe('recent searches', () => {
     expect(url.searchParams.get('media')).toBe('podcast');
   });
 
-  it('forgets one on request', async () => {
+  it('leaves forgetting to the drawer, so the chips stay quick', async () => {
+    renderApp();
+
+    await screen.findByRole('button', { name: /^beatles/i });
+
+    expect(
+      screen.queryByRole('button', { name: /forget beatles/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /clear all/i }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe('the library drawer', () => {
+  beforeEach(() => {
+    searchesReply = [{ _id: 's1', term: 'beatles', media: 'podcast' }];
+  });
+
+  async function openHistory(user) {
+    await user.click(
+      await screen.findByRole('button', { name: /history, 1 searches/i }),
+    );
+
+    return screen.getByRole('tabpanel');
+  }
+
+  it('opens on the tab the header button asked for', async () => {
     const user = userEvent.setup();
     renderApp();
 
     await user.click(
-      await screen.findByRole('button', { name: /forget beatles/i }),
+      await screen.findByRole('button', { name: /favourites, 0 saved/i }),
+    );
+    expect(screen.getByRole('tab', { name: /favourites/i })).toHaveAttribute(
+      'aria-selected',
+      'true',
     );
 
-    await waitFor(() =>
-      expect(
-        screen.queryByRole('button', { name: /^beatles/i }),
-      ).not.toBeInTheDocument(),
+    await user.click(screen.getByRole('tab', { name: /history/i }));
+    expect(screen.getByRole('tab', { name: /history/i })).toHaveAttribute(
+      'aria-selected',
+      'true',
     );
-
-    const deleted = fetchMock.mock.calls.find(
-      call =>
-        String(call[0]).includes('/api/searches/s1') &&
-        call[1]?.method === 'DELETE',
-    );
-
-    expect(deleted).toBeDefined();
   });
 
-  it('clears the lot on request', async () => {
+  it('forgets one search', async () => {
     const user = userEvent.setup();
     renderApp();
 
-    await user.click(await screen.findByRole('button', { name: /clear all/i }));
+    const panel = await openHistory(user);
+    await user.click(
+      within(panel).getByRole('button', { name: /forget beatles/i }),
+    );
+
+    await waitFor(() => {
+      const deleted = fetchMock.mock.calls.find(
+        call =>
+          String(call[0]).includes('/api/searches/s1') &&
+          call[1]?.method === 'DELETE',
+      );
+
+      expect(deleted).toBeDefined();
+    });
+  });
+
+  it('clears the lot', async () => {
+    const user = userEvent.setup();
+    renderApp();
+
+    const panel = await openHistory(user);
+    await user.click(within(panel).getByRole('button', { name: /clear all/i }));
 
     await waitFor(() =>
       expect(
         screen.queryByRole('region', { name: /recent searches/i }),
       ).not.toBeInTheDocument(),
     );
+  });
+
+  it('runs a search again and gets out of the way', async () => {
+    const user = userEvent.setup();
+    renderApp();
+
+    const panel = await openHistory(user);
+    // Anchored, or it also matches the Forget button beside it
+    await user.click(within(panel).getByRole('button', { name: /^beatles/i }));
+
+    await waitFor(() => expect(searchCalls()).toHaveLength(1));
+    // Leaving the panel over the results it just fetched would be odd
+    expect(screen.queryByRole('tabpanel')).not.toBeInTheDocument();
   });
 });
 
@@ -693,19 +750,19 @@ describe('the favourites drawer', () => {
 
     // Shut, the drawer is aria-hidden, so nothing inside it is reachable
     expect(
-      screen.queryByRole('button', { name: /close favourites/i }),
+      screen.queryByRole('button', { name: /close library/i }),
     ).not.toBeInTheDocument();
 
     await user.click(
       await screen.findByRole('button', { name: /favourites, 0 saved/i }),
     );
     expect(
-      screen.getByRole('button', { name: /close favourites/i }),
+      screen.getByRole('button', { name: /close library/i }),
     ).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /close favourites/i }));
+    await user.click(screen.getByRole('button', { name: /close library/i }));
     expect(
-      screen.queryByRole('button', { name: /close favourites/i }),
+      screen.queryByRole('button', { name: /close library/i }),
     ).not.toBeInTheDocument();
   });
 
@@ -717,12 +774,12 @@ describe('the favourites drawer', () => {
       await screen.findByRole('button', { name: /favourites, 0 saved/i }),
     );
     expect(
-      screen.getByRole('button', { name: /close favourites/i }),
+      screen.getByRole('button', { name: /close library/i }),
     ).toBeInTheDocument();
 
     await user.keyboard('{Escape}');
     expect(
-      screen.queryByRole('button', { name: /close favourites/i }),
+      screen.queryByRole('button', { name: /close library/i }),
     ).not.toBeInTheDocument();
   });
 });

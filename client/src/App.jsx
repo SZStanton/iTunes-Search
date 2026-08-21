@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, CircleAlert, Heart } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  CircleAlert,
+  Clock,
+  Heart,
+  Library,
+} from 'lucide-react';
 import { authFetch } from './api';
 import { typingIn } from './keys';
 import { mediaFilter } from './media';
@@ -13,10 +20,11 @@ import RecentSearches from './components/RecentSearches';
 import ResultsHeader from './components/ResultsHeader';
 import ResultsList from './components/ResultsList';
 import ResultsSkeleton from './components/ResultsSkeleton';
-import FavouritesDrawer from './components/FavouritesDrawer';
+import LibraryDrawer from './components/LibraryDrawer';
 import ThemeToggle from './components/ThemeToggle';
 import Badge from './components/ui/Badge';
 import Button from './components/ui/Button';
+import IconButton from './components/ui/IconButton';
 
 // iTunes ignores an offset, so one search asks for as much as it will give and
 // the pages are cut from that
@@ -74,9 +82,9 @@ function App() {
 
   // The last few searches, newest first
   const [recent, setRecent] = useState([]);
-  // The favourites panel slides over the results rather than sharing the width
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+  // One panel holding both lists. null when shut, otherwise the tab it is on
+  const [library, setLibrary] = useState(null);
+  const closeLibrary = useCallback(() => setLibrary(null), []);
 
   const searchField = useRef(null);
   const overlayOpen = useOverlayOpen();
@@ -306,14 +314,35 @@ function App() {
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:px-6">
           <h1 className="type-title mr-auto text-lg">iTunes Search</h1>
 
+          {/* Two ways in on a wide screen, one on a narrow one, so the search
+              stays the biggest thing in the bar */}
           <Button
-            onClick={() => setDrawerOpen(true)}
+            className="hidden sm:inline-flex"
+            onClick={() => setLibrary('history')}
+            aria-label={`History, ${recent.length} searches`}
+          >
+            <Clock size={16} />
+            History
+            <Badge>{recent.length}</Badge>
+          </Button>
+
+          <Button
+            className="hidden sm:inline-flex"
+            onClick={() => setLibrary('favourites')}
             aria-label={`Favourites, ${favourites.length} saved`}
           >
             <Heart size={16} />
             Favourites
             <Badge>{favourites.length}</Badge>
           </Button>
+
+          <IconButton
+            className="sm:hidden"
+            label="Favourites and history"
+            onClick={() => setLibrary('favourites')}
+          >
+            <Library size={18} />
+          </IconButton>
 
           <span className="type-meta hidden text-sm sm:inline">
             {user?.email}
@@ -342,12 +371,7 @@ function App() {
           loading={loading}
         />
 
-        <RecentSearches
-          searches={recent}
-          onRepeat={repeatSearch}
-          onForget={forgetSearch}
-          onForgetAll={forgetAllSearches}
-        />
+        <RecentSearches searches={recent} onRepeat={repeatSearch} />
 
         {error && (
           <p
@@ -407,11 +431,17 @@ function App() {
 
       <EdgePager page={page} pageCount={pageCount} onPage={goToPage} />
 
-      <FavouritesDrawer
-        open={drawerOpen}
-        onClose={closeDrawer}
+      <LibraryDrawer
+        open={library !== null}
+        tab={library}
+        onTab={setLibrary}
+        onClose={closeLibrary}
         favourites={favourites}
         removeFavourite={removeFavourite}
+        searches={recent}
+        onRepeat={repeatSearch}
+        onForget={forgetSearch}
+        onForgetAll={forgetAllSearches}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Heart, X } from 'lucide-react';
-import { dominantColour } from '../dominantColour';
+import { cachedColour, dominantColour } from '../dominantColour';
 import { resultLabel } from '../media';
 import Artwork from './Artwork';
 import Button from './ui/Button';
@@ -13,49 +13,64 @@ function Lightbox({
   item,
   title,
   artwork,
+  sample,
   isFavourite,
   onFavourite,
 }) {
-  const [bloom, setBloom] = useState(null);
+  const [sampled, setSampled] = useState(null);
 
-  // Sampled after the viewer is up, so a slow read never holds it back
+  // Read every render, not once on mount: this is mounted with the card, long
+  // before the hover that fills the cache
+  const bloom = sampled ?? cachedColour(sample);
+
+  // The 100px artwork, not the 600px one on screen. Sampling asks for its own
+  // copy, so the small one lands in a fraction of the time
   useEffect(() => {
     if (!open) return;
 
     let cancelled = false;
 
-    dominantColour(artwork).then(colour => {
-      if (!cancelled) setBloom(colour);
+    dominantColour(sample).then(colour => {
+      if (!cancelled) setSampled(colour);
     });
 
     return () => {
       cancelled = true;
     };
-  }, [open, artwork]);
+  }, [open, sample]);
 
   return (
     <Modal open={open} onClose={onClose} label={title}>
-      <div className="relative flex max-h-[90vh] w-fit max-w-[92vw] min-w-72 flex-col gap-3">
-        {bloom && (
-          <div
-            className="pointer-events-none absolute -inset-16 -z-10 rounded-full opacity-60 blur-3xl transition-opacity duration-500"
-            style={{ background: `rgb(${bloom.join(' ')})` }}
-            aria-hidden="true"
-          />
-        )}
+      {/* isolate, or the bloom's negative z-index escapes and paints behind
+          the modal backdrop instead of behind the artwork */}
+      <div className="relative isolate flex max-h-[90vh] w-fit max-w-[92vw] min-w-72 flex-col gap-3">
+        {/* Mounted before the colour arrives so a cold one can fade in. A
+            cached colour is there on the first paint and never fades */}
+        <div
+          className={`duration-(--motion-overlay) pointer-events-none absolute -inset-16 -z-10 rounded-full blur-3xl transition-opacity ${
+            bloom ? 'opacity-60' : 'opacity-0'
+          }`}
+          style={bloom ? { background: `rgb(${bloom.join(' ')})` } : undefined}
+          aria-hidden="true"
+        />
 
         {/* w-0 keeps this row out of the width calculation, so the artwork
             sets the width and the credits cut to match */}
         <div className="flex w-0 min-w-full items-start gap-3">
           <div className="min-w-0 flex-1">
-            <h2 className="type-title line-clamp-2 text-xl break-words">
+            <h2 className="type-title line-clamp-2 text-xl break-words text-overlay-ink">
               {title}
             </h2>
-            <p className="type-meta truncate text-sm" title={item.artistName}>
+            <p
+              className="type-meta truncate text-sm text-overlay-muted"
+              title={item.artistName}
+            >
               {item.artistName}
             </p>
             {resultLabel(item) && (
-              <p className="type-eyebrow mt-1">{resultLabel(item)}</p>
+              <p className="type-eyebrow mt-1 text-overlay-muted">
+                {resultLabel(item)}
+              </p>
             )}
           </div>
 

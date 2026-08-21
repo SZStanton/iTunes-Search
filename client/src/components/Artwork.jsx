@@ -41,11 +41,11 @@ function Artwork({
   const [failedSrc, setFailedSrc] = useState(null);
   const Icon = icons[kind] ?? Disc3;
 
-  // Contained artwork sizes itself, since a viewer holds covers that are not
-  // square and cropping one to fit is the whole thing it is there to avoid
+  // Never cover. A 600x600bb url keeps the artwork's own shape, so an ebook
+  // comes back portrait and covering a square tile would cut its title off
   const box = contain
     ? 'max-h-[74vh] max-w-full object-contain'
-    : 'h-full w-full object-cover';
+    : 'h-full w-full object-contain';
 
   if (!src || failedSrc === src) {
     return (

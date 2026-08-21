@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Heart } from 'lucide-react';
 import { resultLabel } from '../media';
 import Artwork from './Artwork';
+import Lightbox from './Lightbox';
 import IconButton from './ui/IconButton';
 
 function ResultCard({
@@ -11,19 +13,40 @@ function ResultCard({
   addFavourite,
   removeFavourite,
 }) {
+  const [viewing, setViewing] = useState(false);
   const artwork = item.artworkUrl600 ?? item.artworkUrl100;
+
+  const toggleFavourite = () =>
+    isFavourite
+      ? removeFavourite(id)
+      : addFavourite({
+          id,
+          title,
+          artistName: item.artistName,
+          // The big one, so a saved favourite is not stuck at 100px
+          artworkUrl100: artwork,
+          releaseDate: item.releaseDate,
+          kind: item.kind,
+        });
 
   return (
     <div className="group flex flex-col">
       {/* Only the artwork lifts, so forty cards do not all shift at once */}
       <div className="duration-(--motion-panel) relative aspect-square overflow-hidden rounded-card bg-raised elev-1 transition group-hover:-translate-y-1 group-hover:elev-3">
-        <Artwork
-          src={artwork}
-          title={title}
-          kind={item.kind}
-          showTitle
-          className="transition duration-500 group-hover:scale-[1.04]"
-        />
+        <button
+          className="focus-ring block h-full w-full cursor-zoom-in"
+          type="button"
+          onClick={() => setViewing(true)}
+          aria-label={`View ${title}`}
+        >
+          <Artwork
+            src={artwork}
+            title={title}
+            kind={item.kind}
+            showTitle
+            className="transition duration-500 group-hover:scale-[1.04]"
+          />
+        </button>
 
         {/* A cover can be any colour, so darken the corner under the button */}
         <div
@@ -38,27 +61,31 @@ function ResultCard({
           }
           variant={isFavourite ? 'solid' : 'glass'}
           aria-pressed={isFavourite}
-          onClick={() =>
-            isFavourite
-              ? removeFavourite(id)
-              : addFavourite({
-                  id,
-                  title,
-                  artistName: item.artistName,
-                  // The big one, so a saved favourite is not stuck at 100px
-                  artworkUrl100: artwork,
-                  releaseDate: item.releaseDate,
-                  kind: item.kind,
-                })
-          }
+          onClick={toggleFavourite}
         >
           <Heart size={16} fill={isFavourite ? 'currentColor' : 'none'} />
         </IconButton>
       </div>
 
-      <p className="type-title mt-3 line-clamp-2 text-sm">{title}</p>
-      <p className="type-meta line-clamp-1 text-sm">{item.artistName}</p>
-      <p className="type-eyebrow mt-0.5">{resultLabel(item)}</p>
+      {/* One line each, so every card is the same height and the rows line up.
+          The viewer has the full title for anything that gets cut */}
+      <p className="type-title mt-2 truncate text-sm" title={title}>
+        {title}
+      </p>
+      <p className="type-meta truncate text-xs" title={item.artistName}>
+        {item.artistName}
+      </p>
+      <p className="type-eyebrow truncate">{resultLabel(item)}</p>
+
+      <Lightbox
+        open={viewing}
+        onClose={() => setViewing(false)}
+        item={item}
+        title={title}
+        artwork={artwork}
+        isFavourite={isFavourite}
+        onFavourite={toggleFavourite}
+      />
     </div>
   );
 }

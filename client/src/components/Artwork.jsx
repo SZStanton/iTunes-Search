@@ -33,6 +33,7 @@ function Artwork({
   kind,
   iconSize = 28,
   showTitle = false,
+  contain = false,
   className = '',
 }) {
   // The url that failed rather than a flag, so a card reused for the next
@@ -40,9 +41,17 @@ function Artwork({
   const [failedSrc, setFailedSrc] = useState(null);
   const Icon = icons[kind] ?? Disc3;
 
+  // Contained artwork sizes itself, since a viewer holds covers that are not
+  // square and cropping one to fit is the whole thing it is there to avoid
+  const box = contain
+    ? 'max-h-[70vh] max-w-full object-contain'
+    : 'h-full w-full object-cover';
+
   if (!src || failedSrc === src) {
     return (
-      <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-2 text-center">
+      <div
+        className={`flex flex-col items-center justify-center gap-2 px-2 text-center ${contain ? 'size-64' : 'h-full w-full'}`}
+      >
         <Icon size={iconSize} className="text-muted" aria-hidden="true" />
         {showTitle && <p className="type-eyebrow line-clamp-2">{title}</p>}
       </div>
@@ -55,7 +64,7 @@ function Artwork({
       alt={title}
       loading="lazy"
       onError={() => setFailedSrc(src)}
-      className={`h-full w-full object-cover ${className}`}
+      className={`${box} ${className}`}
     />
   );
 }

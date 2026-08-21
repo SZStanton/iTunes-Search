@@ -4,8 +4,7 @@ import { useRegisterOverlay } from '../../context/useOverlay';
 const FOCUSABLE =
   'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
-// Shared by the modal and the drawer, so the two cannot drift on Escape, on
-// where focus goes, or on whether the page behind knows it is covered
+// Shared, so the drawer and the modal cannot drift on Escape or on focus
 function useFocusTrap(open, onClose) {
   const panel = useRef(null);
   const returnTo = useRef(null);

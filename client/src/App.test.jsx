@@ -602,6 +602,83 @@ describe('the shortcuts sheet', () => {
   });
 });
 
+describe('sorting the results', () => {
+  // Reverse alphabetical as they arrive, so relevance and title differ
+  const backwards = [
+    { ...track(1), trackName: 'Zephyr' },
+    { ...track(2), trackName: 'Marigold' },
+    { ...track(3), trackName: 'Aubade' },
+  ];
+
+  function firstCard() {
+    return screen.getAllByRole('button', { name: /^view /i })[0];
+  }
+
+  it('reorders without asking the server again', async () => {
+    whenSearchReturns({ results: backwards, resultCount: 3 });
+    const user = await searchFor();
+
+    await screen.findByText('3 results');
+    const callsAfterSearch = searchCalls().length;
+
+    await user.selectOptions(screen.getByLabelText(/sort/i), 'title');
+
+    expect(firstCard()).toHaveAccessibleName('View Aubade');
+    expect(searchCalls()).toHaveLength(callsAfterSearch);
+  });
+
+  it('turns the order around on the arrow', async () => {
+    whenSearchReturns({ results: backwards, resultCount: 3 });
+    const user = await searchFor();
+
+    await screen.findByText('3 results');
+    await user.selectOptions(screen.getByLabelText(/sort/i), 'title');
+    await user.click(
+      screen.getByRole('button', { name: /reverse the order/i }),
+    );
+
+    expect(firstCard()).toHaveAccessibleName('View Zephyr');
+  });
+
+  it('sorts every page, not the forty on screen', async () => {
+    // Named so the last one to arrive is the first one alphabetically, and it
+    // is on page three until the sort moves it
+    const ninety = Array.from({ length: 90 }, (_, i) =>
+      i === 89
+        ? { ...track(90), trackName: 'Aardvark' }
+        : { ...track(i + 1), trackName: `Zz Track ${i + 1}` },
+    );
+
+    whenSearchReturns({ results: ninety, resultCount: 90 });
+    const user = await searchFor();
+
+    await screen.findByText(/90 results/);
+    expect(screen.queryByText('Aardvark')).not.toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText(/sort/i), 'title');
+
+    expect(screen.getByText('Aardvark')).toBeInTheDocument();
+  });
+
+  it('goes back to page one, since page three was the old order', async () => {
+    whenSearchReturns({
+      results: Array.from({ length: 90 }, (_, i) => track(i + 1)),
+      resultCount: 90,
+    });
+    const user = await searchFor();
+
+    await screen.findByText('90 results · Page 1 of 3');
+    await user.click(screen.getByRole('button', { name: /next/i }));
+    await screen.findByText('90 results · Page 2 of 3');
+
+    await user.selectOptions(screen.getByLabelText(/sort/i), 'title');
+
+    expect(
+      await screen.findByText('90 results · Page 1 of 3'),
+    ).toBeInTheDocument();
+  });
+});
+
 describe('paging by the keyboard', () => {
   const ninety = Array.from({ length: 90 }, (_, i) => track(i + 1));
 

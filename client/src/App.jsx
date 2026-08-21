@@ -10,6 +10,7 @@ import {
 import { authFetch } from './api';
 import { typingIn } from './keys';
 import { mediaFilter } from './media';
+import { sortResults } from './sorting';
 import { useAuth } from './context/useAuth';
 import { useOverlayOpen } from './context/useOverlay';
 import SearchForm from './components/SearchForm';
@@ -18,6 +19,7 @@ import FirstVisit from './components/FirstVisit';
 import ShortcutsHelp from './components/ShortcutsHelp';
 import RecentSearches from './components/RecentSearches';
 import ResultsHeader from './components/ResultsHeader';
+import SortControl from './components/SortControl';
 import ResultsList from './components/ResultsList';
 import ResultsSkeleton from './components/ResultsSkeleton';
 import LibraryDrawer from './components/LibraryDrawer';
@@ -79,6 +81,11 @@ function App() {
 
   // Pagination state
   const [page, setPage] = useState(0);
+
+  // Session only, on purpose. How someone wants one search ordered says
+  // nothing about the next one
+  const [sort, setSort] = useState('relevance');
+  const [reversed, setReversed] = useState(false);
 
   // The last few searches, newest first
   const [recent, setRecent] = useState([]);
@@ -262,9 +269,23 @@ function App() {
     }
   };
 
-  // == PAGING ==
-  const pageCount = Math.ceil(allResults.length / PAGE_SIZE);
-  const results = allResults.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  // == SORTING AND PAGING ==
+  // One request filled allResults, so this reorders the whole set rather than
+  // the forty on screen, and it costs nothing
+  const sorted = sortResults(allResults, sort, reversed);
+  const pageCount = Math.ceil(sorted.length / PAGE_SIZE);
+  const results = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
+  // Page four of the old order has nothing to do with the new one
+  const changeSort = next => {
+    setSort(next);
+    setPage(0);
+  };
+
+  const reverseSort = () => {
+    setReversed(current => !current);
+    setPage(0);
+  };
 
   // Forty new cards under a scrolled window looks like nothing happened
   const goToPage = useCallback(
@@ -387,9 +408,17 @@ function App() {
           <ResultsHeader
             query={ran.term}
             media={ran.media}
-            count={allResults.length}
+            count={sorted.length}
             page={page}
             pageCount={pageCount}
+            sort={
+              <SortControl
+                field={sort}
+                reversed={reversed}
+                onField={changeSort}
+                onReverse={reverseSort}
+              />
+            }
           />
         )}
 

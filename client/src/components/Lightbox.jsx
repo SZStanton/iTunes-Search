@@ -18,8 +18,7 @@ function Lightbox({
 }) {
   const [bloom, setBloom] = useState(null);
 
-  // Sampled after the viewer is up, never in front of it, so a slow read can
-  // only add the colour late rather than hold the artwork back
+  // Sampled after the viewer is up, so a slow read never holds it back
   useEffect(() => {
     if (!open) return;
 
@@ -45,8 +44,8 @@ function Lightbox({
           />
         )}
 
-        {/* w-0 keeps this row out of the panel's width calculation, so the
-            artwork decides how wide the panel is and the credits cut to match */}
+        {/* w-0 keeps this row out of the width calculation, so the artwork
+            sets the width and the credits cut to match */}
         <div className="flex w-0 min-w-full items-start gap-3">
           <div className="min-w-0 flex-1">
             <h2 className="type-title line-clamp-2 text-xl break-words">

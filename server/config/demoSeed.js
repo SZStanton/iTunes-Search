@@ -63,25 +63,39 @@ async function resetDemoData(user) {
   const minuteApart = index => new Date(Date.now() - (10 - index) * 60 * 1000);
 
   // No expiresAt on any of it, the demo account and its data never expire
-  await Favourite.insertMany(
-    DEMO_FAVOURITES.map((favourite, index) => ({
-      ...favourite,
-      user: user.id,
-      createdAt: minuteApart(index),
-      updatedAt: minuteApart(index),
-    })),
-    { timestamps: false },
+  // Two demo logins at once interleave the delete and the insert, and a
+  // duplicate just means the other login already wrote that exact row
+  const ignoringDuplicates = async write => {
+    try {
+      await write;
+    } catch (err) {
+      if (err.code !== 11000) throw err;
+    }
+  };
+
+  await ignoringDuplicates(
+    Favourite.insertMany(
+      DEMO_FAVOURITES.map((favourite, index) => ({
+        ...favourite,
+        user: user.id,
+        createdAt: minuteApart(index),
+        updatedAt: minuteApart(index),
+      })),
+      { timestamps: false, ordered: false },
+    ),
   );
 
-  await Search.insertMany(
-    DEMO_SEARCHES.map((search, index) => ({
-      ...search,
-      termKey: search.term.toLowerCase(),
-      user: user.id,
-      createdAt: minuteApart(index),
-      updatedAt: minuteApart(index),
-    })),
-    { timestamps: false },
+  await ignoringDuplicates(
+    Search.insertMany(
+      DEMO_SEARCHES.map((search, index) => ({
+        ...search,
+        termKey: search.term.toLowerCase(),
+        user: user.id,
+        createdAt: minuteApart(index),
+        updatedAt: minuteApart(index),
+      })),
+      { timestamps: false, ordered: false },
+    ),
   );
 }
 

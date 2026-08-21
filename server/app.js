@@ -48,6 +48,12 @@ app.use('/api/itunes', apiLimiter, authenticateToken, itunesRoutes);
 app.use('/api/favourites', apiLimiter, authenticateToken, favouriteRoutes);
 app.use('/api/searches', apiLimiter, authenticateToken, searchRoutes);
 
+// Past every route above, so an unmatched api path answers as itself rather
+// than falling into the SPA below and returning index.html with a 200
+app.use('/api', (req, res) => {
+  res.status(404).json({ message: 'No such endpoint.' });
+});
+
 // React Frontend, serve built Vite app from the client's dist folder
 if (process.env.NODE_ENV === 'production') {
   const clientPath = path.join(__dirname, '..', 'client', 'dist');
@@ -65,7 +71,13 @@ if (process.env.NODE_ENV === 'production') {
 app.use((err, req, res, _next) => {
   console.error(err);
 
-  res.status(500).json({ message: 'Something went wrong on the server.' });
+  // body-parser puts 400 on malformed json and 413 on an oversized body, and
+  // reporting either as a 500 sends the client looking in the wrong place
+  const status = err.status ?? err.statusCode ?? 500;
+  const message =
+    status === 500 ? 'Something went wrong on the server.' : err.message;
+
+  res.status(status).json({ message });
 });
 
 export default app;

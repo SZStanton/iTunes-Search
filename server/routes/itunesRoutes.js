@@ -43,6 +43,14 @@ router.get('/search', async (req, res) => {
 
     const data = await response.json();
 
+    // iTunes answers a bad filter with a 200, an errorMessage and no results,
+    // which would otherwise reach the page as "Nothing matched that search"
+    if (!response.ok || data.errorMessage) {
+      return res.status(502).json({
+        message: 'The iTunes API could not answer that search.',
+      });
+    }
+
     // Anything with no name or no artwork cannot be drawn as a card
     const results = (data.results || [])
       .filter(item => {

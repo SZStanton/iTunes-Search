@@ -41,6 +41,7 @@ function toCard(favourite) {
     title: favourite.title,
     artistName: favourite.artist,
     artworkUrl100: favourite.artwork,
+    releaseDate: favourite.releaseDate,
     // Only read when the artwork fails, to pick the placeholder icon
     kind: favourite.kind,
   };
@@ -62,15 +63,11 @@ function App() {
   const { token, user, logout } = useAuth();
 
   // == STATE ==
-  // Stores search input value
   const [term, setTerm] = useState('');
-  // Stores selected media type
   const [media, setMedia] = useState('music');
   // Everything the last search returned, not just the page on screen
   const [allResults, setAllResults] = useState([]);
-  // Stores user's favourites during the session
   const [favourites, setFavourites] = useState([]);
-  // Controls loading state while fetching data
   const [loading, setLoading] = useState(false);
   // Whatever went wrong last, shown above the results
   const [error, setError] = useState('');
@@ -79,7 +76,6 @@ function App() {
   // What is on screen, not what is in the form, which changes on every keypress
   const [ran, setRan] = useState({ term: '', media: '' });
 
-  // Pagination state
   const [page, setPage] = useState(0);
 
   // Session only, on purpose. How someone wants one search ordered says
@@ -91,9 +87,21 @@ function App() {
   const [recent, setRecent] = useState([]);
   // One panel holding both lists. null when shut, otherwise the tab it is on
   const [library, setLibrary] = useState(null);
-  const closeLibrary = useCallback(() => setLibrary(null), []);
+  // Its own, because the page banner sits under the drawer's backdrop
+  const [libraryError, setLibraryError] = useState('');
+  const closeLibrary = useCallback(() => {
+    setLibrary(null);
+    setLibraryError('');
+  }, []);
 
   const searchField = useRef(null);
+
+  // Every refetch takes the next ticket, so one that arrives late cannot
+  // overwrite a newer list
+  const historyTicket = useRef(0);
+  // One request per row, the way favourites work, so forgetting one never
+  // blocks forgetting another
+  const forgetting = useRef(new Set());
   const overlayOpen = useOverlayOpen();
 
   // == LOADING WHAT THE ACCOUNT ALREADY HAS ==
@@ -102,19 +110,27 @@ function App() {
   useEffect(() => {
     let cancelled = false;
 
+    // Settled, not all: these are two unrelated lists, and one failing used to
+    // take the other down with it even though its own request had worked
     const load = async () => {
-      try {
-        const [saved, history] = await Promise.all([
-          authFetch('/api/favourites', token),
-          authFetch('/api/searches', token),
-        ]);
+      const [saved, history] = await Promise.allSettled([
+        authFetch('/api/favourites', token),
+        authFetch('/api/searches', token),
+      ]);
 
-        if (cancelled) return;
+      if (cancelled) return;
 
-        setFavourites((saved.favourites ?? []).map(toCard));
-        setRecent(history.searches ?? []);
-      } catch (err) {
-        console.error('Could not load your account:', err);
+      if (saved.status === 'fulfilled') {
+        setFavourites((saved.value?.favourites ?? []).map(toCard));
+      } else {
+        console.error('Could not load your favourites:', saved.reason);
+      }
+
+      if (history.status === 'fulfilled') {
+        historyTicket.current += 1;
+        setRecent(history.value?.searches ?? []);
+      } else {
+        console.error('Could not load your searches:', history.reason);
       }
     };
 
@@ -126,7 +142,6 @@ function App() {
   }, [token]);
 
   // == SEARCH API ==
-  // Sends a search request to backend
   const searchMedia = async (searchTerm = term, searchMediaLabel = media) => {
     if (!searchTerm.trim()) return;
 
@@ -171,23 +186,35 @@ function App() {
   };
 
   // == SEARCH HISTORY ==
-  const rememberSearch = useCallback(
-    async (searchTerm, searchMediaLabel) => {
-      try {
-        await authFetch('/api/searches', token, {
-          method: 'POST',
-          body: JSON.stringify({ term: searchTerm, media: searchMediaLabel }),
-        });
+  // The server owns the order and the ten item cap, so every write ends by
+  // asking it rather than guessing
+  const loadHistory = async () => {
+    const ticket = (historyTicket.current += 1);
 
-        const history = await authFetch('/api/searches', token);
-        setRecent(history.searches ?? []);
-      } catch (err) {
-        // Not being remembered is not worth interrupting anyone over
-        console.error('Could not remember that search:', err);
-      }
-    },
-    [token],
-  );
+    try {
+      const history = await authFetch('/api/searches', token);
+      if (ticket !== historyTicket.current) return;
+
+      setRecent(history.searches ?? []);
+    } catch (err) {
+      console.error('Could not load your searches:', err);
+    }
+  };
+
+  const rememberSearch = async (searchTerm, searchMediaLabel) => {
+    try {
+      await authFetch('/api/searches', token, {
+        method: 'POST',
+        body: JSON.stringify({ term: searchTerm, media: searchMediaLabel }),
+      });
+    } catch (err) {
+      // Not being remembered is not worth interrupting anyone over
+      console.error('Could not remember that search:', err);
+      return;
+    }
+
+    await loadHistory();
+  };
 
   // Clicking one puts the form back where it was and runs it again
   const repeatSearch = search => {
@@ -197,22 +224,40 @@ function App() {
   };
 
   const forgetSearch = async id => {
-    setRecent(recent.filter(search => search._id !== id));
+    if (forgetting.current.has(id)) return;
+    if (!recent.some(search => search._id === id)) return;
+
+    forgetting.current.add(id);
+    setLibraryError('');
+    setRecent(current => current.filter(search => search._id !== id));
 
     try {
       await authFetch(`/api/searches/${id}`, token, { method: 'DELETE' });
     } catch (err) {
       console.error('Could not forget that search:', err);
+      setLibraryError(err.message || 'Could not forget that search.');
+    } finally {
+      forgetting.current.delete(id);
     }
+
+    // Either way. It puts a failed one back in its own place without tracking
+    // an index, and settles the list after a successful one
+    await loadHistory();
   };
 
   const forgetAllSearches = async () => {
+    const previous = recent;
+
+    setLibraryError('');
     setRecent([]);
 
     try {
       await authFetch('/api/searches', token, { method: 'DELETE' });
+      await loadHistory();
     } catch (err) {
       console.error('Could not clear your searches:', err);
+      setRecent(previous);
+      setLibraryError(err.message || 'Could not clear your searches.');
     }
   };
 
@@ -224,11 +269,17 @@ function App() {
   // delete that can land in either order
   const inFlight = useRef(new Set());
 
+  // The heart is on the card and in the drawer, so the message has to follow
+  // whichever of the two is being looked at
+  const reportFavourite = message =>
+    library === null ? setError(message) : setLibraryError(message);
+
   const addFavourite = async item => {
     if (inFlight.current.has(item.id)) return;
     if (favourites.some(f => f.id === item.id)) return;
 
     inFlight.current.add(item.id);
+    setLibraryError('');
     setFavourites(current => [...current, item]);
 
     try {
@@ -239,13 +290,12 @@ function App() {
     } catch (err) {
       console.error('Could not save that favourite:', err);
       setFavourites(current => current.filter(f => f.id !== item.id));
-      setError(err.message || 'Could not save that favourite.');
+      reportFavourite(err.message || 'Could not save that favourite.');
     } finally {
       inFlight.current.delete(item.id);
     }
   };
 
-  // Remove an item from favourites
   const removeFavourite = async id => {
     if (inFlight.current.has(id)) return;
 
@@ -256,6 +306,7 @@ function App() {
     const removed = favourites[index];
 
     inFlight.current.add(id);
+    setLibraryError('');
     setFavourites(current => current.filter(item => item.id !== id));
 
     try {
@@ -263,7 +314,7 @@ function App() {
     } catch (err) {
       console.error('Could not remove that favourite:', err);
       setFavourites(current => current.toSpliced(index, 0, removed));
-      setError(err.message || 'Could not remove that favourite.');
+      reportFavourite(err.message || 'Could not remove that favourite.');
     } finally {
       inFlight.current.delete(id);
     }
@@ -271,7 +322,7 @@ function App() {
 
   // == SORTING AND PAGING ==
   // One request filled allResults, so this reorders the whole set rather than
-  // the forty on screen, and it costs nothing
+  // the forty on screen
   const sorted = sortResults(allResults, sort, reversed);
   const pageCount = Math.ceil(sorted.length / PAGE_SIZE);
   const results = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
@@ -404,7 +455,7 @@ function App() {
           </p>
         )}
 
-        {!loading && !error && allResults.length > 0 && (
+        {!loading && allResults.length > 0 && (
           <ResultsHeader
             query={ran.term}
             media={ran.media}
@@ -471,6 +522,7 @@ function App() {
         onRepeat={repeatSearch}
         onForget={forgetSearch}
         onForgetAll={forgetAllSearches}
+        error={libraryError}
       />
     </div>
   );

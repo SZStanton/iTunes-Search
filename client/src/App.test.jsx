@@ -62,6 +62,13 @@ function respond(url, options = {}) {
   }
 
   if (address.includes('/api/searches')) {
+    // A delete has to actually remove it, or the refetch that follows every
+    // history write hands the row straight back
+    if (method === 'DELETE') {
+      const id = address.split('/api/searches/')[1];
+      searchesReply = id ? searchesReply.filter(s => s._id !== id) : [];
+    }
+
     return {
       ok: true,
       status: 200,
@@ -440,6 +447,27 @@ describe('recent searches', () => {
   });
 });
 
+describe('when part of the account will not load', () => {
+  it('keeps the history when the favourites request fails', async () => {
+    searchesReply = [{ _id: 's1', term: 'beatles', media: 'podcast' }];
+
+    fetchMock.mockImplementation((url, options) => {
+      if (String(url).includes('/api/favourites')) {
+        return Promise.reject(new Error('Could not reach the server.'));
+      }
+
+      return Promise.resolve(respond(url, options));
+    });
+
+    renderApp();
+
+    // Two unrelated lists, so one failing must not take the other with it
+    expect(
+      await screen.findByRole('button', { name: /^beatles/i }),
+    ).toBeInTheDocument();
+  });
+});
+
 describe('the library drawer', () => {
   beforeEach(() => {
     searchesReply = [{ _id: 's1', term: 'beatles', media: 'podcast' }];
@@ -504,6 +532,105 @@ describe('the library drawer', () => {
         screen.queryByRole('region', { name: /recent searches/i }),
       ).not.toBeInTheDocument(),
     );
+  });
+
+  it('forgets two rows without the first blocking the second', async () => {
+    searchesReply = [
+      { _id: 's1', term: 'beatles', media: 'podcast' },
+      { _id: 's2', term: 'queen', media: 'album' },
+    ];
+
+    const user = userEvent.setup();
+    renderApp();
+
+    await user.click(
+      await screen.findByRole('button', { name: /history, 2 searches/i }),
+    );
+
+    const panel = screen.getByRole('tabpanel');
+    await user.click(
+      within(panel).getByRole('button', { name: /forget beatles/i }),
+    );
+    await user.click(
+      within(panel).getByRole('button', { name: /forget queen/i }),
+    );
+
+    // A guard over the whole list would make the second click do nothing
+    await waitFor(() => {
+      const deleted = fetchMock.mock.calls.filter(
+        call =>
+          String(call[0]).includes('/api/searches/') &&
+          call[1]?.method === 'DELETE',
+      );
+
+      expect(deleted).toHaveLength(2);
+    });
+  });
+
+  it('puts a search back when the server cannot be reached at all', async () => {
+    // The refetch talks to the same server, so restoring by asking it would
+    // leave the row gone on screen and present on the server
+    let reachable = true;
+
+    fetchMock.mockImplementation((url, options) => {
+      if (!reachable && String(url).includes('/api/searches')) {
+        return Promise.reject(new Error('Could not reach the server.'));
+      }
+
+      return Promise.resolve(respond(url, options));
+    });
+
+    const user = userEvent.setup();
+    renderApp();
+
+    const panel = await openHistory(user);
+    reachable = false;
+
+    await user.click(
+      within(panel).getByRole('button', { name: /forget beatles/i }),
+    );
+
+    expect(
+      await within(screen.getByRole('tabpanel')).findByRole('button', {
+        name: /^beatles/i,
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it('puts a search back when the server refuses to forget it', async () => {
+    fetchMock.mockImplementation((url, options) => {
+      if (
+        String(url).includes('/api/searches/s1') &&
+        options?.method === 'DELETE'
+      ) {
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: async () => ({ message: 'Could not forget that search.' }),
+        });
+      }
+
+      return Promise.resolve(respond(url, options));
+    });
+
+    const user = userEvent.setup();
+    renderApp();
+
+    const panel = await openHistory(user);
+    await user.click(
+      within(panel).getByRole('button', { name: /forget beatles/i }),
+    );
+
+    // Gone from the screen but still on the server is the worst of both
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/could not forget/i);
+    // Inside the drawer, or it renders under the drawer's own backdrop
+    expect(alert.closest('aside')).toHaveAttribute('aria-label', 'Library');
+    expect(
+      within(screen.getByRole('tabpanel')).getByRole('button', {
+        name: /^beatles/i,
+      }),
+    ).toBeInTheDocument();
   });
 
   it('runs a search again and gets out of the way', async () => {

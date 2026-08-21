@@ -27,8 +27,8 @@ const itunesFetch = vi.fn();
 let base;
 let server;
 
-function itunesReply(body) {
-  itunesFetch.mockResolvedValueOnce({ json: async () => body });
+function itunesReply(body, ok = true) {
+  itunesFetch.mockResolvedValueOnce({ ok, json: async () => body });
 }
 
 function search(query) {
@@ -211,6 +211,25 @@ describe('artwork', () => {
 });
 
 describe('the result count', () => {
+  it('reports an upstream failure rather than an empty page', async () => {
+    // iTunes answers a bad filter with a 200, an errorMessage and no results,
+    // which read as "Nothing matched that search" all the way to the page
+    itunesReply({ errorMessage: 'Invalid value(s) for key(s): [mediaType]' });
+
+    const res = await realFetch(`${base}/api/itunes/search?term=beatles`);
+
+    expect(res.status).toBe(502);
+    expect((await res.json()).message).toMatch(/could not answer/i);
+  });
+
+  it('reports a non-200 from itunes', async () => {
+    itunesReply({}, false);
+
+    const res = await realFetch(`${base}/api/itunes/search?term=beatles`);
+
+    expect(res.status).toBe(502);
+  });
+
   it('counts what is sent back, not what itunes counted', async () => {
     itunesReply({
       // The middle one has no artwork, so it cannot be drawn and is dropped

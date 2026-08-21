@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Keyboard } from 'lucide-react';
 import { typingIn } from '../keys';
+import { useOverlayOpen } from '../context/useOverlay';
 import IconButton from './ui/IconButton';
 import Modal from './ui/Modal';
 import Surface from './ui/Surface';
@@ -14,10 +15,15 @@ const shortcuts = [
 
 function ShortcutsHelp() {
   const [open, setOpen] = useState(false);
+  const overlayOpen = useOverlayOpen();
 
   useEffect(() => {
     const onKeyDown = event => {
       if (event.key !== '?' || typingIn(event.target)) return;
+
+      // Escape belongs to whatever is already over the page, so this sheet
+      // must not stack on top of the viewer or the drawer
+      if (overlayOpen) return;
 
       event.preventDefault();
       setOpen(true);
@@ -26,7 +32,7 @@ function ShortcutsHelp() {
     window.addEventListener('keydown', onKeyDown);
 
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [overlayOpen]);
 
   return (
     <>

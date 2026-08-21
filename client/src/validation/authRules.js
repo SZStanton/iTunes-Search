@@ -1,8 +1,7 @@
 import { z } from 'zod';
 
-// Mirrors server/validation/authSchemas.js. Two copies so the form can check
-// before it asks the server, and authRules.test.js asserts the messages match
-// word for word, since a difference would show as the form changing its mind
+// Mirrors server/validation/authSchemas.js so the form can check before asking.
+// authRules.test.js asserts both produce the same message, word for word
 
 const emailField = z
   .string({ error: 'Email is required.' })

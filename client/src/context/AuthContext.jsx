@@ -31,10 +31,8 @@ function AuthProvider({ children }) {
   // Bumped to run the check again, since nothing else in its deps changes
   const [attempt, setAttempt] = useState(0);
 
-  // A stored token is only a guess until the server agrees, so the app waits.
-  // Having the account already is what ends the wait, which is why 'user' is in
-  // here: a fresh login sets both at once and must not wait for a check that
-  // will never run
+  // A stored token is only a guess until the server agrees. 'user' ends the
+  // wait too, or a fresh login sits waiting for a check that never runs
   const checking = Boolean(token) && !user && !checked;
 
   const saveSession = useCallback(session => {
@@ -63,7 +61,7 @@ function AuthProvider({ children }) {
   // has since deleted, so it gets checked once on load
   useEffect(() => {
     // Nothing to check with no token, and nothing to check again once a login
-    // has already handed us the account
+    // has already provided the account
     if (!token || user) return;
 
     let cancelled = false;
@@ -127,7 +125,7 @@ function AuthProvider({ children }) {
       token,
       user,
       checking,
-      // A stored token we could not verify, rather than a rejected one
+      // A stored token that could not be verified, not a rejected one
       unreachable: unreachable && Boolean(token) && !user,
       retryCheck,
       signedIn: Boolean(token && user),

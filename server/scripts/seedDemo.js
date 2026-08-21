@@ -3,6 +3,8 @@ import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import Favourite from '../models/Favourite.js';
+import Search from '../models/Search.js';
 import User from '../models/User.js';
 import { resetDemoData } from '../config/demoSeed.js';
 
@@ -53,13 +55,27 @@ const user = await User.findOneAndUpdate(
 
 // Changing DEMO_EMAIL would otherwise leave the old one flagged and immortal,
 // and the login route picks whichever it finds first
-const { modifiedCount } = await User.updateMany(
+const retiring = await User.find(
   { isDemo: true, _id: { $ne: user._id } },
-  { $set: { isDemo: false, expiresAt: new Date() } },
+  { _id: 1 },
 );
 
-if (modifiedCount) {
-  console.log(`Retired ${modifiedCount} previous demo account(s).`);
+if (retiring.length) {
+  const ids = retiring.map(account => account._id);
+
+  await User.updateMany(
+    { _id: { $in: ids } },
+    { $set: { isDemo: false, expiresAt: new Date() } },
+  );
+
+  // Their rows were seeded with no expiresAt, so the TTL index collects the
+  // user and leaves the favourites and searches behind pointing at nothing
+  await Promise.all([
+    Favourite.deleteMany({ user: { $in: ids } }),
+    Search.deleteMany({ user: { $in: ids } }),
+  ]);
+
+  console.log(`Retired ${retiring.length} previous demo account(s).`);
 }
 
 await resetDemoData(user);

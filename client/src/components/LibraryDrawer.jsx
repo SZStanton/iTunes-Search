@@ -1,3 +1,4 @@
+import { CircleAlert } from 'lucide-react';
 import FavouriteList from './FavouriteList';
 import HistoryList from './HistoryList';
 import Badge from './ui/Badge';
@@ -39,6 +40,7 @@ function LibraryDrawer({
   onRepeat,
   onForget,
   onForgetAll,
+  error,
 }) {
   const showing = tab === 'history' ? 'history' : 'favourites';
 
@@ -63,6 +65,16 @@ function LibraryDrawer({
         </div>
       }
     >
+      {error && (
+        <p
+          className="mx-3 mt-3 flex items-center gap-2 rounded-control bg-danger-surface px-3 py-2 text-sm text-danger"
+          role="alert"
+        >
+          <CircleAlert size={16} className="shrink-0" />
+          {error}
+        </p>
+      )}
+
       {showing === 'favourites' ? (
         <div
           role="tabpanel"

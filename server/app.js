@@ -38,15 +38,20 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Auth Routes, register and login are open, everything past them is not. The
-// limiter is applied per route inside, since /me runs on every page load and
-// must not share a bucket sized for password guessing
+// Register and login are open, everything past them is not. The limiter is per
+// route inside, since /me must not share a bucket sized for password guessing
 app.use('/api/auth', authRoutes);
 
 // API Routes, protect itunes search routes with JWT middleware
 app.use('/api/itunes', apiLimiter, authenticateToken, itunesRoutes);
 app.use('/api/favourites', apiLimiter, authenticateToken, favouriteRoutes);
 app.use('/api/searches', apiLimiter, authenticateToken, searchRoutes);
+
+// Past every route above, so an unmatched api path answers as itself rather
+// than falling into the SPA below and returning index.html with a 200
+app.use('/api', (req, res) => {
+  res.status(404).json({ message: 'No such endpoint.' });
+});
 
 // React Frontend, serve built Vite app from the client's dist folder
 if (process.env.NODE_ENV === 'production') {
@@ -60,12 +65,23 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
+const SAFE_TO_REPEAT = new Set([400, 413]);
+
 // Anything a route throws lands here. Express spots an error handler by its four
 // arguments, so the unused 'next' has to stay
 app.use((err, req, res, _next) => {
   console.error(err);
 
-  res.status(500).json({ message: 'Something went wrong on the server.' });
+  // body-parser puts 400 on malformed json and 413 on an oversized body, and
+  // reporting either as a 500 sends the client looking in the wrong place
+  const status = err.status ?? err.statusCode ?? 500;
+  // Only those two messages are safe to repeat. A failed sendFile carries a
+  // 404 and an ENOENT naming the absolute path on the server
+  const message = SAFE_TO_REPEAT.has(status)
+    ? err.message
+    : 'Something went wrong on the server.';
+
+  res.status(status).json({ message });
 });
 
 export default app;

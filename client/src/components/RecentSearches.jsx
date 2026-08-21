@@ -1,3 +1,5 @@
+import { RotateCcw } from 'lucide-react';
+
 // The last few searches, newest first. Clicking one puts the form back where it
 // was and runs it again, which is the whole reason for storing the label rather
 // than the API's own media value.
@@ -6,21 +8,27 @@ function RecentSearches({ searches, onRepeat }) {
   if (searches.length === 0) return null;
 
   return (
+    // One row, and the last chip fades out rather than being cut in half. The
+    // results must not move down because somebody searched for a long phrase
     <section
-      className="mt-bay flex flex-wrap items-center gap-2"
+      className="mt-bay flex items-center gap-2 overflow-hidden [mask-image:linear-gradient(to_right,black_92%,transparent)]"
       aria-label="Recent searches"
     >
-      <h2 className="type-eyebrow mr-1">Recent</h2>
+      <h2 className="type-eyebrow shrink-0">Recent</h2>
 
       {searches.map(search => (
+        // Quieter than the media chips above, which are a filter rather than
+        // a shortcut, and easy to mistake these for at a glance
         <button
-          className="type-chrome focus-ring flex items-center gap-1.5 rounded-full border border-line bg-surface py-1 pr-3 pl-3 text-sm text-ink transition elev-1 hover:bg-raised active:bg-raised"
+          className="type-chrome focus-ring flex max-w-44 shrink-0 items-center gap-1.5 rounded-full bg-raised px-3 py-1 text-sm text-muted transition hover:text-ink active:text-ink"
           type="button"
           key={search._id}
+          title={`${search.term} (${search.media})`}
           onClick={() => onRepeat(search)}
         >
-          {search.term}
-          <span className="type-eyebrow">{search.media}</span>
+          <RotateCcw className="shrink-0" size={12} aria-hidden="true" />
+          <span className="min-w-0 truncate">{search.term}</span>
+          <span className="type-eyebrow shrink-0">{search.media}</span>
         </button>
       ))}
     </section>

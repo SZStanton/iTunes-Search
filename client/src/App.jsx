@@ -422,7 +422,7 @@ function App() {
           />
         )}
 
-        <div className="mt-section">
+        <div className="mt-snug">
           {loading ? (
             <ResultsSkeleton />
           ) : (

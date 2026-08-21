@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  DEFAULT_THEME,
   THEME_KEY,
   activeTheme,
   applyTheme,
   storedTheme,
-  systemTheme,
 } from './themeMode';
 
-// jsdom has no matchMedia, and it is the whole point of "follow the system"
+// Stubbed only to prove nothing reads it any more
 function systemPrefers(scheme) {
   vi.stubGlobal(
     'matchMedia',
@@ -32,16 +32,21 @@ afterEach(() => {
 });
 
 describe('working out which theme to use', () => {
-  it('follows the system when nothing has been chosen', () => {
-    systemPrefers('dark');
-
+  it('starts dark when nothing has been chosen', () => {
+    expect(DEFAULT_THEME).toBe('dark');
     expect(storedTheme()).toBeNull();
-    expect(systemTheme()).toBe('dark');
     expect(activeTheme()).toBe('dark');
   });
 
-  it('lets an explicit choice beat the system', () => {
+  it('ignores the system, whichever way it is set', () => {
+    systemPrefers('light');
+    expect(activeTheme()).toBe('dark');
+
     systemPrefers('dark');
+    expect(activeTheme()).toBe('dark');
+  });
+
+  it('lets an explicit choice beat the default', () => {
     localStorage.setItem(THEME_KEY, 'light');
 
     expect(activeTheme()).toBe('light');
@@ -51,11 +56,10 @@ describe('working out which theme to use', () => {
     localStorage.setItem(THEME_KEY, 'banana');
 
     expect(storedTheme()).toBeNull();
-    expect(activeTheme()).toBe('light');
+    expect(activeTheme()).toBe('dark');
   });
 
-  it('follows the system rather than breaking when storage is blocked', () => {
-    systemPrefers('dark');
+  it('falls back to the default rather than breaking when storage is blocked', () => {
     const getItem = vi
       .spyOn(Storage.prototype, 'getItem')
       .mockImplementation(() => {

@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ThemeToggle from './ThemeToggle';
@@ -33,16 +33,16 @@ afterEach(() => {
 });
 
 describe('the theme toggle', () => {
-  it('offers dark when the system is light', () => {
+  it('offers light, since dark is what everyone starts on', () => {
     render(<ThemeToggle />);
 
     expect(
-      screen.getByRole('button', { name: /switch to dark/i }),
+      screen.getByRole('button', { name: /switch to light/i }),
     ).toBeInTheDocument();
   });
 
-  it('offers light when the system is dark', () => {
-    systemPrefers('dark');
+  it('starts dark even on a system set to light', () => {
+    systemPrefers('light');
     render(<ThemeToggle />);
 
     expect(
@@ -54,12 +54,12 @@ describe('the theme toggle', () => {
     const user = userEvent.setup();
     render(<ThemeToggle />);
 
-    await user.click(screen.getByRole('button', { name: /switch to dark/i }));
+    await user.click(screen.getByRole('button', { name: /switch to light/i }));
 
-    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
-    expect(localStorage.getItem(THEME_KEY)).toBe('dark');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+    expect(localStorage.getItem(THEME_KEY)).toBe('light');
     expect(
-      screen.getByRole('button', { name: /switch to light/i }),
+      screen.getByRole('button', { name: /switch to dark/i }),
     ).toBeInTheDocument();
   });
 
@@ -67,18 +67,35 @@ describe('the theme toggle', () => {
     const user = userEvent.setup();
     render(<ThemeToggle />);
 
-    await user.click(screen.getByRole('button', { name: /switch to dark/i }));
     await user.click(screen.getByRole('button', { name: /switch to light/i }));
+    await user.click(screen.getByRole('button', { name: /switch to dark/i }));
 
-    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
-    expect(localStorage.getItem(THEME_KEY)).toBe('light');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    expect(localStorage.getItem(THEME_KEY)).toBe('dark');
+  });
+
+  it('keeps a stored choice of light', () => {
+    localStorage.setItem(THEME_KEY, 'light');
+    render(<ThemeToggle />);
+
+    expect(
+      screen.getByRole('button', { name: /switch to dark/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('never asks the system what it prefers', () => {
+    systemPrefers('light');
+    render(<ThemeToggle />);
+
+    // Nothing subscribes, because the system no longer decides anything
+    expect(listeners).toHaveLength(0);
   });
 
   it('suppresses transitions during the swap, then stops', async () => {
     const user = userEvent.setup();
     render(<ThemeToggle />);
 
-    await user.click(screen.getByRole('button', { name: /switch to dark/i }));
+    await user.click(screen.getByRole('button', { name: /switch to light/i }));
 
     // Cleared on a frame and again on a timeout, since a hidden tab throttles
     // rAF to nothing and the class would otherwise stick
@@ -87,24 +104,5 @@ describe('the theme toggle', () => {
         document.documentElement.classList.contains('theme-swapping'),
       ).toBe(false),
     );
-  });
-
-  it('keeps up when the system changes and nobody has chosen', () => {
-    render(<ThemeToggle />);
-
-    expect(listeners).toHaveLength(1);
-    // Fired by the browser rather than by React, so it needs flushing
-    act(() => listeners[0]({ matches: true }));
-
-    expect(
-      screen.getByRole('button', { name: /switch to light/i }),
-    ).toBeInTheDocument();
-  });
-
-  it('ignores the system once a choice has been made', () => {
-    localStorage.setItem(THEME_KEY, 'light');
-    render(<ThemeToggle />);
-
-    expect(listeners).toHaveLength(0);
   });
 });

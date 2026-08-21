@@ -1,31 +1,25 @@
-// Only an explicit choice is stored. Persisting the inferred default would
-// freeze whatever the system said the first time, and a later OS switch would
-// be ignored forever
+// Only an explicit choice is stored, so an empty slot always means the default
 const THEME_KEY = 'itunes-search:theme';
+
+// The app picks a side rather than following the system. Artwork is the point,
+// and it sits better on black
+const DEFAULT_THEME = 'dark';
 
 function storedTheme() {
   try {
     const stored = localStorage.getItem(THEME_KEY);
     return stored === 'light' || stored === 'dark' ? stored : null;
   } catch {
-    // Storage can be blocked outright, and that should mean following the
-    // system rather than breaking
+    // Storage can be blocked outright, and that should mean the default rather
+    // than breaking
     return null;
   }
 }
 
-function systemTheme() {
-  return window.matchMedia?.('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light';
-}
-
 function activeTheme() {
-  return storedTheme() ?? systemTheme();
+  return storedTheme() ?? DEFAULT_THEME;
 }
 
-// The attribute is only ever set for an explicit choice. With it absent the
-// media query in index.css governs, which is what "follow the system" means
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
 
@@ -36,4 +30,4 @@ function applyTheme(theme) {
   }
 }
 
-export { THEME_KEY, activeTheme, applyTheme, storedTheme, systemTheme };
+export { DEFAULT_THEME, THEME_KEY, activeTheme, applyTheme, storedTheme };

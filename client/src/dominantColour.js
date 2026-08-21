@@ -35,7 +35,7 @@ function averageColour(data) {
   return [Math.round(r / count), Math.round(g / count), Math.round(b / count)];
 }
 
-function dominantColour(src) {
+function read(src) {
   return new Promise(resolve => {
     if (!src) return resolve(null);
 
@@ -68,4 +68,30 @@ function dominantColour(src) {
   });
 }
 
-export { averageColour, dominantColour };
+// Keyed on the url, so a cover sampled once is never fetched again and a
+// second viewer opens with the colour already in hand
+const resolved = new Map();
+const pending = new Map();
+
+function cachedColour(src) {
+  return resolved.get(src) ?? null;
+}
+
+function dominantColour(src) {
+  if (!src) return Promise.resolve(null);
+  if (resolved.has(src)) return Promise.resolve(resolved.get(src));
+  if (pending.has(src)) return pending.get(src);
+
+  const job = read(src).then(colour => {
+    resolved.set(src, colour);
+    pending.delete(src);
+
+    return colour;
+  });
+
+  pending.set(src, job);
+
+  return job;
+}
+
+export { averageColour, cachedColour, dominantColour };

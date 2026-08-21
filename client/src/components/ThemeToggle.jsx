@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
-import { activeTheme, applyTheme, storedTheme } from '../themeMode';
+import { activeTheme, applyTheme } from '../themeMode';
 import IconButton from './ui/IconButton';
 
 // Suppressing transitions for a moment stops every element animating between
@@ -21,21 +21,6 @@ function swapWithoutFlashing(next) {
 
 function ThemeToggle({ className = '' }) {
   const [theme, setTheme] = useState(activeTheme);
-
-  // Someone who has not chosen still follows the system, so the label has to
-  // keep up if they change it while the page is open
-  useEffect(() => {
-    if (storedTheme()) return;
-
-    const query = window.matchMedia?.('(prefers-color-scheme: dark)');
-    if (!query) return;
-
-    const onChange = event => setTheme(event.matches ? 'dark' : 'light');
-
-    query.addEventListener('change', onChange);
-
-    return () => query.removeEventListener('change', onChange);
-  }, []);
 
   const toggle = () => {
     const next = theme === 'dark' ? 'light' : 'dark';

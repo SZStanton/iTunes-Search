@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Heart } from 'lucide-react';
+import { dominantColour } from '../dominantColour';
 import { resultLabel } from '../media';
 import Artwork from './Artwork';
 import Lightbox from './Lightbox';
@@ -15,6 +16,7 @@ function ResultCard({
 }) {
   const [viewing, setViewing] = useState(false);
   const artwork = item.artworkUrl600 ?? item.artworkUrl100;
+  const sample = item.artworkUrl100 ?? artwork;
 
   const toggleFavourite = () =>
     isFavourite
@@ -33,10 +35,14 @@ function ResultCard({
     <div className="group flex flex-col">
       {/* Only the artwork lifts, so forty cards do not all shift at once */}
       <div className="duration-(--motion-panel) relative aspect-square overflow-hidden rounded-card bg-raised elev-1 transition group-hover:-translate-y-1 group-hover:elev-3">
+        {/* Sampled on the way to the click, so the viewer opens with its
+            colour rather than catching up a moment later */}
         <button
           className="focus-ring block h-full w-full cursor-zoom-in"
           type="button"
           onClick={() => setViewing(true)}
+          onPointerEnter={() => dominantColour(sample)}
+          onFocus={() => dominantColour(sample)}
           aria-label={`View ${title}`}
         >
           <Artwork
@@ -83,6 +89,7 @@ function ResultCard({
         item={item}
         title={title}
         artwork={artwork}
+        sample={sample}
         isFavourite={isFavourite}
         onFavourite={toggleFavourite}
       />

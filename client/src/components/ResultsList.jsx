@@ -23,7 +23,7 @@ function ResultsList({
   }
 
   return (
-    <div className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+    <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {results.map((item, index) => {
         // A track's collectionId is its album, so every song on one album
         // shared an id and the list blocked all but the first as a duplicate

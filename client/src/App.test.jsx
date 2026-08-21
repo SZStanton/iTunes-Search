@@ -15,6 +15,17 @@ vi.mock('./context/useAuth', () => ({
 }));
 
 const { default: App } = await import('./App.jsx');
+const { OverlayProvider } = await import('./context/OverlayContext.jsx');
+
+// Wrapped the way main.jsx wraps it, so the drawer and the viewer can say they
+// are open and the arrow keys can stay out of their way
+function renderApp() {
+  return render(
+    <OverlayProvider>
+      <App />
+    </OverlayProvider>,
+  );
+}
 
 const fetchMock = vi.fn();
 
@@ -84,7 +95,7 @@ function track(n) {
 
 async function searchFor(term = 'beatles', mediaLabel) {
   const user = userEvent.setup();
-  render(<App />);
+  renderApp();
 
   const input = screen.getByPlaceholderText(/search itunes/i);
 
@@ -116,14 +127,14 @@ afterEach(() => {
 
 describe('the signed in header', () => {
   it('shows which account is in use', () => {
-    render(<App />);
+    renderApp();
 
     expect(screen.getByText('jordan.blake@example.test')).toBeInTheDocument();
   });
 
   it('signs out when asked', async () => {
     const user = userEvent.setup();
-    render(<App />);
+    renderApp();
 
     await user.click(screen.getByRole('button', { name: /sign out/i }));
 
@@ -245,7 +256,7 @@ describe('what the account already has', () => {
       },
     ];
 
-    render(<App />);
+    renderApp();
 
     expect(await screen.findByText('Windmills')).toBeInTheDocument();
     expect(screen.queryByText(/nothing saved yet/i)).not.toBeInTheDocument();
@@ -257,7 +268,7 @@ describe('what the account already has', () => {
       { _id: 's2', term: 'adele', media: 'album' },
     ];
 
-    render(<App />);
+    renderApp();
 
     expect(
       await screen.findByRole('button', { name: /^beatles/i }),
@@ -266,7 +277,7 @@ describe('what the account already has', () => {
   });
 
   it('shows nothing at all when there is no history', async () => {
-    render(<App />);
+    renderApp();
 
     await screen.findByPlaceholderText(/search itunes/i);
     expect(
@@ -404,7 +415,7 @@ describe('recent searches', () => {
 
   it('runs one again with its own filter, not the one on screen', async () => {
     const user = userEvent.setup();
-    render(<App />);
+    renderApp();
 
     await user.click(await screen.findByRole('button', { name: /^beatles/i }));
 
@@ -417,7 +428,7 @@ describe('recent searches', () => {
 
   it('forgets one on request', async () => {
     const user = userEvent.setup();
-    render(<App />);
+    renderApp();
 
     await user.click(
       await screen.findByRole('button', { name: /forget beatles/i }),
@@ -440,7 +451,7 @@ describe('recent searches', () => {
 
   it('clears the lot on request', async () => {
     const user = userEvent.setup();
-    render(<App />);
+    renderApp();
 
     await user.click(await screen.findByRole('button', { name: /clear all/i }));
 
@@ -455,7 +466,7 @@ describe('recent searches', () => {
 describe('saying where you are', () => {
   it('introduces the app until something has been searched', async () => {
     whenSearchReturns({ results: [track(1)], resultCount: 1 });
-    render(<App />);
+    renderApp();
 
     expect(screen.getByText(/everything apple has/i)).toBeInTheDocument();
 
@@ -497,6 +508,110 @@ describe('saying where you are', () => {
     expect(
       await screen.findByText('90 results · Page 2 of 3'),
     ).toBeInTheDocument();
+  });
+});
+
+describe('the shortcuts sheet', () => {
+  it('opens from the header, but not inside it', async () => {
+    const user = userEvent.setup();
+    renderApp();
+
+    await user.click(
+      screen.getByRole('button', { name: /keyboard shortcuts/i }),
+    );
+
+    const sheet = screen.getByRole('dialog', { name: /keyboard shortcuts/i });
+
+    expect(sheet).toHaveTextContent('Jump to the search box');
+    // The header has a backdrop-filter, which would make it the containing
+    // block for a fixed child and put the sheet up in the header's own box
+    expect(sheet.closest('header')).toBeNull();
+    expect(sheet.parentElement).toBe(document.body);
+  });
+
+  it('opens on the question mark, and not while typing one', async () => {
+    const user = userEvent.setup();
+    renderApp();
+
+    await user.click(screen.getByPlaceholderText(/search itunes/i));
+    await user.keyboard('?');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    await user.click(document.body);
+    await user.keyboard('?');
+    expect(
+      screen.getByRole('dialog', { name: /keyboard shortcuts/i }),
+    ).toBeInTheDocument();
+  });
+});
+
+describe('paging by the keyboard', () => {
+  const ninety = Array.from({ length: 90 }, (_, i) => track(i + 1));
+
+  it('moves with the arrow keys', async () => {
+    whenSearchReturns({ results: ninety, resultCount: 90 });
+    const user = await searchFor();
+
+    await screen.findByText('Page 1 of 3');
+
+    await user.keyboard('{ArrowRight}');
+    expect(await screen.findByText('Page 2 of 3')).toBeInTheDocument();
+
+    await user.keyboard('{ArrowLeft}');
+    expect(await screen.findByText('Page 1 of 3')).toBeInTheDocument();
+  });
+
+  it('leaves the arrows alone while typing a search', async () => {
+    whenSearchReturns({ results: ninety, resultCount: 90 });
+    const user = await searchFor();
+
+    await screen.findByText('Page 1 of 3');
+    await user.click(screen.getByPlaceholderText(/search itunes/i));
+    await user.keyboard('{ArrowRight}');
+
+    // Moving the caret through a term must not throw the page away
+    expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
+  });
+
+  it('leaves the arrows alone while the drawer is open', async () => {
+    whenSearchReturns({ results: ninety, resultCount: 90 });
+    const user = await searchFor();
+
+    await screen.findByText('Page 1 of 3');
+    await user.click(
+      screen.getByRole('button', { name: /favourites, 0 saved/i }),
+    );
+    await user.keyboard('{ArrowRight}');
+
+    expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
+  });
+
+  it('leaves the arrows alone while the artwork viewer is open', async () => {
+    whenSearchReturns({ results: ninety, resultCount: 90 });
+    const user = await searchFor();
+
+    await screen.findByText('Page 1 of 3');
+    // Exact, or it also matches Track 10 through Track 19
+    await user.click(screen.getByRole('button', { name: 'View Track 1' }));
+    await user.keyboard('{ArrowRight}');
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
+  });
+
+  it('sends the slash key to the search box', async () => {
+    whenSearchReturns({ results: ninety, resultCount: 90 });
+    const user = await searchFor();
+
+    await screen.findByText('Page 1 of 3');
+    const field = screen.getByPlaceholderText(/search itunes/i);
+    field.blur();
+
+    await user.keyboard('/');
+
+    expect(field).toHaveFocus();
+    // The slash itself belongs to the shortcut, not to the term
+    expect(field).toHaveValue('beatles');
   });
 });
 
@@ -565,7 +680,7 @@ describe('the favourites drawer', () => {
       { _id: 'f2', itemId: 8, title: 'Harbour', artist: 'Jordan Blake' },
     ];
 
-    render(<App />);
+    renderApp();
 
     expect(
       await screen.findByRole('button', { name: /favourites, 2 saved/i }),
@@ -574,7 +689,7 @@ describe('the favourites drawer', () => {
 
   it('opens and shuts', async () => {
     const user = userEvent.setup();
-    render(<App />);
+    renderApp();
 
     // Shut, the drawer is aria-hidden, so nothing inside it is reachable
     expect(
@@ -596,7 +711,7 @@ describe('the favourites drawer', () => {
 
   it('shuts on escape, which is what people try first', async () => {
     const user = userEvent.setup();
-    render(<App />);
+    renderApp();
 
     await user.click(
       await screen.findByRole('button', { name: /favourites, 0 saved/i }),

@@ -1,0 +1,71 @@
+// Averaged from a 16px downscale rather than a real palette pass, since the
+// result is only a bloom behind the artwork and nearest is good enough
+const SAMPLE = 16;
+// Below this spread between channels a pixel is grey, and greys average out to
+// mud that reads as no colour at all
+const COLOURFUL = 30;
+
+function averageColour(data) {
+  let all = [0, 0, 0, 0];
+  let colourful = [0, 0, 0, 0];
+
+  for (let i = 0; i < data.length; i += 4) {
+    const [r, g, b, a] = [data[i], data[i + 1], data[i + 2], data[i + 3]];
+
+    if (a < 128) continue;
+
+    all = [all[0] + r, all[1] + g, all[2] + b, all[3] + 1];
+
+    if (Math.max(r, g, b) - Math.min(r, g, b) >= COLOURFUL) {
+      colourful = [
+        colourful[0] + r,
+        colourful[1] + g,
+        colourful[2] + b,
+        colourful[3] + 1,
+      ];
+    }
+  }
+
+  // A cover with almost no colour in it still gets its own grey rather than
+  // nothing, so the bloom follows a black and white sleeve too
+  const [r, g, b, count] = colourful[3] >= all[3] / 10 ? colourful : all;
+
+  if (!count) return null;
+
+  return [Math.round(r / count), Math.round(g / count), Math.round(b / count)];
+}
+
+function dominantColour(src) {
+  return new Promise(resolve => {
+    if (!src) return resolve(null);
+
+    const image = new Image();
+
+    // Apple sends Access-Control-Allow-Origin, but a plain img is used for the
+    // display so a host that stops would only lose the bloom
+    image.crossOrigin = 'anonymous';
+    image.onerror = () => resolve(null);
+
+    image.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = SAMPLE;
+        canvas.height = SAMPLE;
+
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+        if (!context) return resolve(null);
+
+        context.drawImage(image, 0, 0, SAMPLE, SAMPLE);
+
+        resolve(averageColour(context.getImageData(0, 0, SAMPLE, SAMPLE).data));
+      } catch {
+        // A tainted canvas throws here, and a missing bloom is not worth saying
+        resolve(null);
+      }
+    };
+
+    image.src = src;
+  });
+}
+
+export { averageColour, dominantColour };

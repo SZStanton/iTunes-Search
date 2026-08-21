@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useRegisterOverlay } from '../context/useOverlay';
 import FavouriteList from './FavouriteList';
 import Badge from './ui/Badge';
 import IconButton from './ui/IconButton';
@@ -7,6 +8,8 @@ import IconButton from './ui/IconButton';
 // Slides in over the results rather than taking a third of the page from them.
 // Rendered always, moved off screen when shut, so it animates both ways
 function FavouritesDrawer({ open, onClose, favourites, removeFavourite }) {
+  useRegisterOverlay(open);
+
   // Escape is what people try first on anything that slides over the page
   useEffect(() => {
     if (!open) return;

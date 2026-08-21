@@ -36,7 +36,7 @@ function Lightbox({
 
   return (
     <Modal open={open} onClose={onClose} label={title}>
-      <div className="relative flex max-h-[90vh] max-w-[92vw] flex-col gap-3">
+      <div className="relative flex max-h-[90vh] w-fit max-w-[92vw] min-w-72 flex-col gap-3">
         {bloom && (
           <div
             className="pointer-events-none absolute -inset-16 -z-10 rounded-full opacity-60 blur-3xl transition-opacity duration-500"
@@ -45,10 +45,16 @@ function Lightbox({
           />
         )}
 
-        <div className="flex items-start gap-3">
+        {/* w-0 keeps this row out of the panel's width calculation, so the
+            artwork decides how wide the panel is and the credits cut to match */}
+        <div className="flex w-0 min-w-full items-start gap-3">
           <div className="min-w-0 flex-1">
-            <h2 className="type-title text-xl break-words">{title}</h2>
-            <p className="type-meta text-sm">{item.artistName}</p>
+            <h2 className="type-title line-clamp-2 text-xl break-words">
+              {title}
+            </h2>
+            <p className="type-meta truncate text-sm" title={item.artistName}>
+              {item.artistName}
+            </p>
             {resultLabel(item) && (
               <p className="type-eyebrow mt-1">{resultLabel(item)}</p>
             )}

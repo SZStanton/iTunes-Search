@@ -6,9 +6,8 @@ import {
 } from '../../../server/validation/authSchemas.js';
 import { fieldErrors } from '../../../server/validation/fieldErrors.js';
 
-// The rules exist twice, once here and once on the server, so they will drift.
-// Every awkward value goes through both and the messages must be identical, or
-// the form says one thing and the API says another for the same input
+// The rules exist here and on the server, so they drift. Every awkward value
+// goes through both, and the two messages must be identical
 
 // Each side is formatted by its own helper, not one shared one, or a change to
 // the server's fieldErrors would slip through with every parity test still green

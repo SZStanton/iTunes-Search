@@ -14,9 +14,8 @@ async function apiFetch(path, options) {
   try {
     res = await fetch(apiUrl(path), options);
   } catch (cause) {
-    // A rejected fetch is the connection, not the API. Nothing answered, so
-    // there is no status and no body, and the browser's own wording for it is
-    // 'Failed to fetch', which means nothing to anyone
+    // A rejected fetch is the connection, not the API, so there is no status
+    // and no body, and 'Failed to fetch' means nothing to anyone
     const error = new Error(
       'Could not reach the server. Try that again in a moment.',
     );

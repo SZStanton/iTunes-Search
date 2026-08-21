@@ -62,7 +62,6 @@ async function resetDemoData(user) {
   // tie, so the timestamps are set a minute apart rather than left to the clock
   const minuteApart = index => new Date(Date.now() - (10 - index) * 60 * 1000);
 
-  // No expiresAt on any of it, the demo account and its data never expire
   // Two demo logins at once interleave the delete and the insert, and a
   // duplicate just means the other login already wrote that exact row
   const ignoringDuplicates = async write => {
@@ -73,6 +72,7 @@ async function resetDemoData(user) {
     }
   };
 
+  // No expiresAt on any of it, the demo account and its data never expire
   await ignoringDuplicates(
     Favourite.insertMany(
       DEMO_FAVOURITES.map((favourite, index) => ({

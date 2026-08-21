@@ -33,9 +33,8 @@ async function authenticateToken(req, res, next) {
 
   req.user = user;
 
-  // Using the app is what keeps the account alive, so every guarded request
-  // counts as activity. Housekeeping though, so a failure here must not turn
-  // someone's read into a 500
+  // Using the app keeps the account alive, so every guarded request counts.
+  // Housekeeping though, so a failure must not turn a read into a 500
   try {
     await touchAccount(user);
   } catch (err) {

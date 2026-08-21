@@ -1,8 +1,7 @@
 import rateLimit from 'express-rate-limit';
 
-// Render runs one long-lived instance, so counting in memory actually works.
-// It would not survive a move to serverless, where each request can land on a
-// different instance with its own empty count
+// Render runs one long-lived instance, so counting in memory works. Serverless
+// would break it, each request landing on an instance with its own count
 
 const minutes = n => n * 60 * 1000;
 

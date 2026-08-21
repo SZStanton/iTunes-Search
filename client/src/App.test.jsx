@@ -567,6 +567,36 @@ describe('the library drawer', () => {
     });
   });
 
+  it('puts a search back when the server cannot be reached at all', async () => {
+    // The refetch talks to the same server, so restoring by asking it would
+    // leave the row gone on screen and present on the server
+    let reachable = true;
+
+    fetchMock.mockImplementation((url, options) => {
+      if (!reachable && String(url).includes('/api/searches')) {
+        return Promise.reject(new Error('Could not reach the server.'));
+      }
+
+      return Promise.resolve(respond(url, options));
+    });
+
+    const user = userEvent.setup();
+    renderApp();
+
+    const panel = await openHistory(user);
+    reachable = false;
+
+    await user.click(
+      within(panel).getByRole('button', { name: /forget beatles/i }),
+    );
+
+    expect(
+      await within(screen.getByRole('tabpanel')).findByRole('button', {
+        name: /^beatles/i,
+      }),
+    ).toBeInTheDocument();
+  });
+
   it('puts a search back when the server refuses to forget it', async () => {
     fetchMock.mockImplementation((url, options) => {
       if (

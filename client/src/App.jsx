@@ -96,12 +96,18 @@ function App() {
 
   const searchField = useRef(null);
 
+  useEffect(() => {
+    libraryNow.current = library;
+  }, [library]);
+
   // Every refetch takes the next ticket, so one that arrives late cannot
   // overwrite a newer list
   const historyTicket = useRef(0);
   // One request per row, the way favourites work, so forgetting one never
   // blocks forgetting another
   const forgetting = useRef(new Set());
+  // Where the drawer is now, not where it was when the click happened
+  const libraryNow = useRef(library);
   const overlayOpen = useOverlayOpen();
 
   // == LOADING WHAT THE ACCOUNT ALREADY HAS ==
@@ -113,6 +119,10 @@ function App() {
     // Settled, not all: these are two unrelated lists, and one failing used to
     // take the other down with it even though its own request had worked
     const load = async () => {
+      // Claimed before the request. Taken afterwards it would always look like
+      // the newest list even when a search has since written a fresher one
+      const ticket = (historyTicket.current += 1);
+
       const [saved, history] = await Promise.allSettled([
         authFetch('/api/favourites', token),
         authFetch('/api/searches', token),
@@ -126,10 +136,9 @@ function App() {
         console.error('Could not load your favourites:', saved.reason);
       }
 
-      if (history.status === 'fulfilled') {
-        historyTicket.current += 1;
+      if (history.status === 'fulfilled' && ticket === historyTicket.current) {
         setRecent(history.value?.searches ?? []);
-      } else {
+      } else if (history.status === 'rejected') {
         console.error('Could not load your searches:', history.reason);
       }
     };
@@ -227,6 +236,8 @@ function App() {
     if (forgetting.current.has(id)) return;
     if (!recent.some(search => search._id === id)) return;
 
+    const previous = recent;
+
     forgetting.current.add(id);
     setLibraryError('');
     setRecent(current => current.filter(search => search._id !== id));
@@ -235,13 +246,15 @@ function App() {
       await authFetch(`/api/searches/${id}`, token, { method: 'DELETE' });
     } catch (err) {
       console.error('Could not forget that search:', err);
+      // From the snapshot, not the server, which has just failed to answer
+      setRecent(previous);
       setLibraryError(err.message || 'Could not forget that search.');
     } finally {
       forgetting.current.delete(id);
     }
 
-    // Either way. It puts a failed one back in its own place without tracking
-    // an index, and settles the list after a successful one
+    // Reconciles either way when the server can be reached, so a snapshot
+    // cannot resurrect a row another delete removed
     await loadHistory();
   };
 
@@ -253,12 +266,13 @@ function App() {
 
     try {
       await authFetch('/api/searches', token, { method: 'DELETE' });
-      await loadHistory();
     } catch (err) {
       console.error('Could not clear your searches:', err);
       setRecent(previous);
       setLibraryError(err.message || 'Could not clear your searches.');
     }
+
+    await loadHistory();
   };
 
   // == FAVOURITES ==
@@ -272,7 +286,7 @@ function App() {
   // The heart is on the card and in the drawer, so the message has to follow
   // whichever of the two is being looked at
   const reportFavourite = message =>
-    library === null ? setError(message) : setLibraryError(message);
+    libraryNow.current === null ? setError(message) : setLibraryError(message);
 
   const addFavourite = async item => {
     if (inFlight.current.has(item.id)) return;

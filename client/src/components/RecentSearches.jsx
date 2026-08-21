@@ -1,9 +1,7 @@
 import { RotateCcw } from 'lucide-react';
 
-// The last few searches, newest first. Clicking one puts the form back where it
-// was and runs it again, which is the whole reason for storing the label rather
-// than the API's own media value.
-// Repeat only, since forgetting and clearing live in the history drawer
+// Newest first, and repeat only: forgetting and clearing live in the drawer.
+// The stored label is what lets a repeat put the form back as it was
 function RecentSearches({ searches, onRepeat }) {
   if (searches.length === 0) return null;
 

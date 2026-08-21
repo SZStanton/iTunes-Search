@@ -26,9 +26,8 @@ async function touchAccount(user) {
   user.expiresAt = target;
   await user.save();
 
-  // timestamps: false matters. Mongoose writes updatedAt on an updateMany by
-  // default, which would give every row the same one and destroy the order the
-  // history list and its ten-item trim both depend on
+  // timestamps: false matters. Mongoose writes updatedAt on an updateMany, and
+  // that would flatten the order the history list and its trim depend on
   await Promise.all([
     Favourite.updateMany(
       { user: user.id },

@@ -1,5 +1,5 @@
-// The dropdown, the chips and the query read this one list, so a type cannot
-// exist in the interface without a filter behind it. No movie or shortFilm
+// The chips and the query read this one list, so a type cannot exist in the
+// interface without a filter behind it. No movie or shortFilm
 const MEDIA_TYPES = [
   { value: 'all', label: 'All', filter: {} },
   { value: 'podcast', label: 'Podcast', filter: { media: 'podcast' } },

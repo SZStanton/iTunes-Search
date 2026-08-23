@@ -1,4 +1,4 @@
-import { SearchX } from 'lucide-react';
+import { MagnifyingGlassMinus } from '@phosphor-icons/react';
 import ResultCard from './ResultCard';
 
 function ResultsList({
@@ -12,7 +12,7 @@ function ResultsList({
     return (
       <div className="flex flex-col items-center gap-3 py-page text-center">
         <span className="grid size-14 place-items-center rounded-full bg-raised text-muted">
-          <SearchX size={26} />
+          <MagnifyingGlassMinus size={26} />
         </span>
         <p className="type-title text-lg">Nothing matched that search</p>
         <p className="type-meta max-w-xs text-sm">

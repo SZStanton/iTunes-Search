@@ -1,4 +1,4 @@
-import { Heart, X } from 'lucide-react';
+import { Heart, X } from '@phosphor-icons/react';
 import Artwork from './Artwork';
 import IconButton from './ui/IconButton';
 

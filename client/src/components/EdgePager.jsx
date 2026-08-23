@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { useOverlayOpen } from '../context/useOverlay';
 
 // As wide as the empty margin beside the content column, not a flat percentage
@@ -25,7 +25,7 @@ function EdgePager({ page, pageCount, onPage }) {
         tabIndex={-1}
         aria-hidden="true"
       >
-        <ChevronLeft className="opacity-0 transition group-hover:opacity-100" />
+        <CaretLeft className="opacity-0 transition group-hover:opacity-100" />
       </button>
 
       <button
@@ -36,7 +36,7 @@ function EdgePager({ page, pageCount, onPage }) {
         tabIndex={-1}
         aria-hidden="true"
       >
-        <ChevronRight className="opacity-0 transition group-hover:opacity-100" />
+        <CaretRight className="opacity-0 transition group-hover:opacity-100" />
       </button>
     </>
   );

@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp } from 'lucide-react';
+import { ArrowDown, ArrowUp } from '@phosphor-icons/react';
 import { SORT_FIELDS, fieldLabel, orderLabel } from '../sorting';
 import IconButton from './ui/IconButton';
 

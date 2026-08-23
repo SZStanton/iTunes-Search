@@ -106,8 +106,14 @@ async function searchFor(term = 'beatles', mediaLabel) {
 
   const input = screen.getByPlaceholderText(/search itunes/i);
 
+  // The term is still empty here, so picking a type does not run a search of
+  // its own the way it would with something already typed
   if (mediaLabel) {
-    await user.selectOptions(screen.getByRole('combobox'), mediaLabel);
+    await user.click(
+      screen
+        .getByRole('group', { name: /media type/i })
+        .querySelector(`[data-media="${mediaLabel}"]`),
+    );
   }
 
   await user.type(input, term);

@@ -1,4 +1,4 @@
-import { RotateCcw } from 'lucide-react';
+import { ArrowCounterClockwise } from '@phosphor-icons/react';
 
 // Newest first, and repeat only: forgetting and clearing live in the drawer.
 // The stored label is what lets a repeat put the form back as it was
@@ -24,7 +24,11 @@ function RecentSearches({ searches, onRepeat }) {
           title={`${search.term} (${search.media})`}
           onClick={() => onRepeat(search)}
         >
-          <RotateCcw className="shrink-0" size={12} aria-hidden="true" />
+          <ArrowCounterClockwise
+            className="shrink-0"
+            size={12}
+            aria-hidden="true"
+          />
           <span className="min-w-0 truncate">{search.term}</span>
           <span className="type-eyebrow shrink-0">{search.media}</span>
         </button>

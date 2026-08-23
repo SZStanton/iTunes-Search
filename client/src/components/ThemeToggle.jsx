@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun } from '@phosphor-icons/react';
 import { activeTheme, applyTheme } from '../themeMode';
 import IconButton from './ui/IconButton';
 

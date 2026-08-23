@@ -24,7 +24,7 @@ function ProtectedRoute({ children }) {
           Could not reach the server. The free tier can take a minute to wake.
         </p>
         <button
-          className="rounded-full bg-accent-strong px-5 py-2 font-medium text-accent-ink transition hover:brightness-110 active:brightness-95"
+          className="accent-fill rounded-full px-5 py-2 font-medium transition hover:brightness-110 active:translate-y-px active:brightness-95"
           type="button"
           onClick={retryCheck}
         >

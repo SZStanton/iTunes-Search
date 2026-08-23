@@ -1,8 +1,7 @@
 const variants = {
-  primary:
-    'bg-accent-strong text-accent-ink hover:brightness-110 active:brightness-95',
+  primary: 'accent-fill hover:brightness-110 active:brightness-95',
   secondary:
-    'border border-line bg-surface text-ink hover:border-accent-strong hover:bg-raised active:bg-raised',
+    'sheen border border-line bg-surface text-ink elev-1 hover:border-accent-strong hover:bg-raised active:bg-raised',
   ghost: 'text-muted hover:bg-raised hover:text-ink active:bg-raised',
   danger:
     'text-muted hover:bg-danger-surface hover:text-danger active:bg-danger-surface active:text-danger',
@@ -26,7 +25,7 @@ function Button({
   return (
     <button
       type={type}
-      className={`type-chrome focus-ring inline-flex items-center justify-center gap-2 rounded-full transition disabled:cursor-not-allowed disabled:opacity-60 ${variants[variant]} ${sizes[size]} ${full ? 'w-full' : ''} ${className}`}
+      className={`type-chrome focus-ring inline-flex items-center justify-center gap-2 rounded-full transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 ${variants[variant]} ${sizes[size]} ${full ? 'w-full' : ''} ${className}`}
       {...rest}
     >
       {children}

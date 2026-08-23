@@ -1,4 +1,4 @@
-import { CircleAlert } from 'lucide-react';
+import { WarningCircle } from '@phosphor-icons/react';
 import FavouriteList from './FavouriteList';
 import HistoryList from './HistoryList';
 import Badge from './ui/Badge';
@@ -12,7 +12,7 @@ function Tab({ id, tab, onTab, children, count }) {
     <button
       className={`type-chrome focus-ring flex items-center gap-2 rounded-full px-3 py-1.5 text-sm transition ${
         selected
-          ? 'bg-accent-strong text-accent-ink'
+          ? 'accent-fill'
           : 'text-muted hover:bg-raised hover:text-ink active:bg-raised'
       }`}
       type="button"
@@ -70,7 +70,7 @@ function LibraryDrawer({
           className="mx-3 mt-3 flex items-center gap-2 rounded-control bg-danger-surface px-3 py-2 text-sm text-danger"
           role="alert"
         >
-          <CircleAlert size={16} className="shrink-0" />
+          <WarningCircle size={16} className="shrink-0" />
           {error}
         </p>
       )}

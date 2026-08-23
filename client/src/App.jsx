@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ChevronLeft,
-  ChevronRight,
-  CircleAlert,
+  Books,
+  CaretLeft,
+  CaretRight,
   Clock,
   Heart,
-  Library,
-} from 'lucide-react';
+  WarningCircle,
+} from '@phosphor-icons/react';
 import { authFetch } from './api';
 import { typingIn } from './keys';
 import { mediaFilter } from './media';
@@ -393,17 +393,18 @@ function App() {
   }, [goToPage, page, overlayOpen]);
 
   // == UI ==
+  // No bg-page on the wrapper, or it paints over the body's ground gradient
   return (
-    <div className="min-h-screen bg-page">
+    <div className="min-h-screen">
       {/* Stays put while a page of results scrolls under it */}
       <header className="glass sticky top-0 z-10 border-b border-line">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-7xl items-center gap-x-2 px-4 py-3 sm:gap-x-4 sm:px-6">
           <h1 className="type-title mr-auto text-lg">iTunes Search</h1>
 
-          {/* Two ways in on a wide screen, one on a narrow one, so the search
-              stays the biggest thing in the bar */}
+          {/* max-sm rather than hidden, which loses to the inline-flex in the
+              button's own base and never hid anything */}
           <Button
-            className="hidden sm:inline-flex"
+            className="max-sm:hidden"
             onClick={() => setLibrary('history')}
             aria-label={`History, ${recent.length} searches`}
           >
@@ -413,7 +414,7 @@ function App() {
           </Button>
 
           <Button
-            className="hidden sm:inline-flex"
+            className="max-sm:hidden"
             onClick={() => setLibrary('favourites')}
             aria-label={`Favourites, ${favourites.length} saved`}
           >
@@ -422,19 +423,27 @@ function App() {
             <Badge>{favourites.length}</Badge>
           </Button>
 
+          {/* Both lists behind one control on a phone, and the count goes on it
+              so the drawer is not the only place either total is visible */}
           <IconButton
-            className="sm:hidden"
-            label="Favourites and history"
+            className="relative sm:hidden"
+            label={`Favourites and history, ${favourites.length} saved`}
             onClick={() => setLibrary('favourites')}
           >
-            <Library size={18} />
+            <Books size={20} />
+            {favourites.length > 0 && (
+              <Badge className="absolute -top-1 -right-1">
+                {favourites.length}
+              </Badge>
+            )}
           </IconButton>
 
           <span className="type-meta hidden text-sm sm:inline">
             {user?.email}
           </span>
 
-          <ShortcutsHelp />
+          {/* Nothing to press a key with, so it only exists where it works */}
+          <ShortcutsHelp className="max-sm:hidden" />
 
           <ThemeToggle />
 
@@ -464,7 +473,7 @@ function App() {
             className="mt-bay flex items-center gap-2 rounded-control bg-danger-surface px-4 py-3 text-sm text-danger"
             role="alert"
           >
-            <CircleAlert size={16} className="shrink-0" />
+            <WarningCircle size={16} className="shrink-0" />
             {error}
           </p>
         )}
@@ -504,7 +513,7 @@ function App() {
         {pageCount > 1 && (
           <div className="mt-section flex items-center justify-center gap-4">
             <Button disabled={page === 0} onClick={() => goToPage(page - 1)}>
-              <ChevronLeft size={16} />
+              <CaretLeft size={16} />
               Prev
             </Button>
 
@@ -517,7 +526,7 @@ function App() {
               onClick={() => goToPage(page + 1)}
             >
               Next
-              <ChevronRight size={16} />
+              <CaretRight size={16} />
             </Button>
           </div>
         )}

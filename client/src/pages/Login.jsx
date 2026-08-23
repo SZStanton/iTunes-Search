@@ -69,7 +69,7 @@ function Login() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center bg-page px-4 py-12">
+    <div className="relative flex min-h-screen flex-col items-center justify-center px-4 py-12">
       <ThemeToggle className="absolute top-4 right-4" />
 
       <div className="mb-8 text-center">

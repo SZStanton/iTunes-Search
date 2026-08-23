@@ -38,7 +38,7 @@ function WakeBanner() {
       role="status"
       aria-live="polite"
     >
-      <p className="flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 text-sm text-muted elev-2">
+      <p className="sheen flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 text-sm text-muted elev-2">
         <span className="size-2 animate-pulse rounded-full bg-accent-strong" />
         Getting things ready, the first load can take a moment.
       </p>

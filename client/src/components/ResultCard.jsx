@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Heart } from 'lucide-react';
+import { Heart } from '@phosphor-icons/react';
 import { dominantColour } from '../dominantColour';
 import { resultLabel } from '../media';
 import Artwork from './Artwork';
@@ -34,7 +34,7 @@ function ResultCard({
   return (
     <div className="group flex flex-col">
       {/* Only the artwork lifts, so forty cards do not all shift at once */}
-      <div className="duration-(--motion-panel) relative aspect-square overflow-hidden rounded-card bg-raised elev-1 transition group-hover:-translate-y-1 group-hover:elev-3">
+      <div className="art-edge duration-(--motion-panel) relative aspect-square overflow-hidden rounded-card bg-raised elev-1 transition group-hover:-translate-y-1 group-hover:elev-3">
         {/* Sampled on the way to the click, so the viewer opens with its
             colour rather than catching up a moment later */}
         <button
@@ -69,7 +69,7 @@ function ResultCard({
           aria-pressed={isFavourite}
           onClick={toggleFavourite}
         >
-          <Heart size={16} fill={isFavourite ? 'currentColor' : 'none'} />
+          <Heart size={16} weight={isFavourite ? 'fill' : 'regular'} />
         </IconButton>
       </div>
 

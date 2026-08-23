@@ -2,8 +2,10 @@ import { MEDIA_TYPES } from '../media';
 
 function MediaChips({ media, setMedia, className = '' }) {
   return (
+    // A rail on a phone, bleeding into the page padding so the last chip is
+    // visibly cut and reads as scrollable. It wraps once there is room
     <div
-      className={`flex flex-wrap gap-2 ${className}`}
+      className={`no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 ${className}`}
       role="group"
       aria-label="Media type"
     >
@@ -12,13 +14,16 @@ function MediaChips({ media, setMedia, className = '' }) {
 
         return (
           <button
-            className={`type-chrome focus-ring rounded-full border px-3 py-1.5 text-sm transition active:scale-95 ${
+            className={`type-chrome focus-ring shrink-0 rounded-full border px-3 py-1.5 text-sm transition active:scale-95 ${
               selected
-                ? 'border-accent-strong bg-accent-strong text-accent-ink'
-                : 'border-line bg-surface text-muted hover:border-accent-strong hover:text-ink active:bg-raised'
+                ? 'accent-fill border-accent-deep'
+                : 'sheen border-line bg-surface text-muted elev-1 hover:border-accent-strong hover:text-ink active:bg-raised'
             }`}
             type="button"
             key={type.value}
+            // The label is what is read, the value is what the query sends, and
+            // the mirrored test checks the values against the server's list
+            data-media={type.value}
             onClick={() => setMedia(type.value)}
             aria-pressed={selected}
           >

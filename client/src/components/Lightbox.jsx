@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Heart, X } from 'lucide-react';
+import { Heart, X } from '@phosphor-icons/react';
 import { cachedColour, dominantColour } from '../dominantColour';
 import { resultLabel } from '../media';
 import Artwork from './Artwork';
@@ -86,7 +86,7 @@ function Lightbox({
           iconSize={64}
           contain
           showTitle
-          className="self-center rounded-panel bg-raised elev-3"
+          className="art-edge self-center rounded-panel bg-raised elev-3"
         />
 
         <Button
@@ -95,7 +95,7 @@ function Lightbox({
           onClick={onFavourite}
           aria-pressed={isFavourite}
         >
-          <Heart size={16} fill={isFavourite ? 'currentColor' : 'none'} />
+          <Heart size={16} weight={isFavourite ? 'fill' : 'regular'} />
           {isFavourite ? 'Saved to favourites' : 'Save to favourites'}
         </Button>
       </div>

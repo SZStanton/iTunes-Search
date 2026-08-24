@@ -812,6 +812,98 @@ describe('sorting the results', () => {
   });
 });
 
+describe('paging by swiping', () => {
+  const ninety = Array.from({ length: 90 }, (_, i) => track(i + 1));
+
+  // Any card will do, since the gesture is bound to the grid around them and
+  // the events bubble. Whichever page is up has a first one
+  const grid = () => screen.getAllByRole('button', { name: /^View / })[0];
+
+  const swipe = (user, { from, to, touch = true }) =>
+    user.pointer([
+      {
+        keys: touch ? '[TouchA>]' : '[MouseLeft>]',
+        target: grid(),
+        coords: { clientX: from[0], clientY: from[1] },
+      },
+      {
+        pointerName: touch ? 'TouchA' : 'mouse',
+        coords: { clientX: to[0], clientY: to[1] },
+      },
+      { keys: touch ? '[/TouchA]' : '[/MouseLeft]' },
+    ]);
+
+  it('moves a page on a swipe either way', async () => {
+    whenSearchReturns({ results: ninety, resultCount: 90 });
+    const user = await searchFor();
+
+    await screen.findByText('Page 1 of 3');
+
+    await swipe(user, { from: [260, 400], to: [60, 405] });
+    expect(await screen.findByText('Page 2 of 3')).toBeInTheDocument();
+
+    await swipe(user, { from: [60, 400], to: [260, 405] });
+    expect(await screen.findByText('Page 1 of 3')).toBeInTheDocument();
+  });
+
+  it('leaves a scroll that drifted sideways alone', async () => {
+    whenSearchReturns({ results: ninety, resultCount: 90 });
+    const user = await searchFor();
+
+    await screen.findByText('Page 1 of 3');
+    await swipe(user, { from: [200, 600], to: [130, 180] });
+
+    expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
+  });
+
+  it('ignores a short drag, which is a tap that moved', async () => {
+    whenSearchReturns({ results: ninety, resultCount: 90 });
+    const user = await searchFor();
+
+    await screen.findByText('Page 1 of 3');
+    await swipe(user, { from: [200, 400], to: [160, 402] });
+
+    expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
+  });
+
+  it('ignores the same drag from a mouse', async () => {
+    whenSearchReturns({ results: ninety, resultCount: 90 });
+    const user = await searchFor();
+
+    await screen.findByText('Page 1 of 3');
+    await swipe(user, { from: [260, 400], to: [60, 405], touch: false });
+
+    expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
+  });
+
+  // jsdom has no pan handling, so nothing above would notice this going missing.
+  // A real browser cancels the pointer mid gesture without it and the swipe
+  // silently stops working
+  it('tells the browser the grid only pans vertically', async () => {
+    whenSearchReturns({ results: ninety, resultCount: 90 });
+    await searchFor();
+
+    await screen.findByText('Page 1 of 3');
+    const area = screen
+      .getAllByRole('button', { name: /^View / })[0]
+      .closest('.touch-pan-y');
+
+    expect(area).not.toBeNull();
+  });
+
+  it('leaves swiping alone while the artwork viewer is open', async () => {
+    whenSearchReturns({ results: ninety, resultCount: 90 });
+    const user = await searchFor();
+
+    await screen.findByText('Page 1 of 3');
+    await user.click(screen.getByRole('button', { name: 'View Track 1' }));
+    await swipe(user, { from: [260, 400], to: [60, 405] });
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
+  });
+});
+
 describe('paging by the keyboard', () => {
   const ninety = Array.from({ length: 90 }, (_, i) => track(i + 1));
 

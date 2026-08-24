@@ -25,7 +25,10 @@ function EdgePager({ page, pageCount, onPage }) {
         tabIndex={-1}
         aria-hidden="true"
       >
-        <CaretLeft className="opacity-0 transition group-hover:opacity-100" />
+        <CaretLeft
+          size={24}
+          className="opacity-0 transition group-hover:opacity-100"
+        />
       </button>
 
       <button
@@ -36,7 +39,10 @@ function EdgePager({ page, pageCount, onPage }) {
         tabIndex={-1}
         aria-hidden="true"
       >
-        <CaretRight className="opacity-0 transition group-hover:opacity-100" />
+        <CaretRight
+          size={24}
+          className="opacity-0 transition group-hover:opacity-100"
+        />
       </button>
     </>
   );

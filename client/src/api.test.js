@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-// The base is read once when the module loads, so each case needs a fresh import
+// The base is read once on load, so each case needs a fresh import.
 async function loadApi(base) {
   vi.resetModules();
   if (base === undefined) vi.stubEnv('VITE_API_URL', '');
@@ -44,8 +44,7 @@ describe('calling the api', () => {
 
   it('says the server could not be reached when nothing answers', async () => {
     const { apiFetch } = await loadApi(undefined);
-    // What a dropped connection looks like: the fetch itself rejects, so there
-    // is no response, no status and no body
+    // A dropped connection. The fetch rejects, so there is no status or body.
     vi.stubGlobal(
       'fetch',
       vi.fn().mockRejectedValue(new TypeError('Failed to fetch')),

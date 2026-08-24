@@ -1,6 +1,6 @@
 import Skeleton from './ui/Skeleton';
 
-// Two rows at the widest layout, without pretending to know what is coming
+// Two rows at the widest layout, without pretending to know what is coming.
 const PLACEHOLDERS = 10;
 
 function ResultsSkeleton() {
@@ -10,14 +10,12 @@ function ResultsSkeleton() {
       role="status"
       aria-label="Searching"
     >
-      {/* status takes no name from content, and a live region with nothing
-          readable in it announces nothing, so it needs both */}
+      {/* status takes no name from content, so it needs readable text too. */}
       <span className="sr-only">Searching</span>
 
       {Array.from({ length: PLACEHOLDERS }, (_, index) => (
         <div className="flex flex-col gap-3" key={index}>
-          {/* Repeats every five, so the shimmer sweeps a row rather than
-              queueing down the page */}
+          {/* Repeats every five, so the shimmer sweeps a row. */}
           <Skeleton
             className="aspect-square"
             style={{ animationDelay: `${(index % 5) * 90}ms` }}

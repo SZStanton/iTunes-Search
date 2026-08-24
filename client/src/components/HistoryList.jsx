@@ -1,4 +1,4 @@
-import { Clock, RotateCcw, X } from 'lucide-react';
+import { ArrowCounterClockwise, Clock, X } from '@phosphor-icons/react';
 import { MEDIA_TYPES } from '../media';
 import IconButton from './ui/IconButton';
 
@@ -31,7 +31,7 @@ function HistoryList({ searches, onRepeat, onForget }) {
             onClick={() => onRepeat(search)}
           >
             <span className="grid size-12 shrink-0 place-items-center rounded-control bg-raised text-muted">
-              <RotateCcw size={18} />
+              <ArrowCounterClockwise size={18} />
             </span>
 
             <span className="min-w-0 flex-1">

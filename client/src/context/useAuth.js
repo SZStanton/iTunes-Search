@@ -1,8 +1,8 @@
 import { useContext } from 'react';
 import { AuthContext } from './AuthContext';
 
-// Its own file so AuthContext.jsx exports nothing but the component, which is
-// what react-refresh needs to hot reload it
+// Its own file so AuthContext.jsx exports only the component, which is what
+// react-refresh needs to hot reload it.
 function useAuth() {
   const value = useContext(AuthContext);
 

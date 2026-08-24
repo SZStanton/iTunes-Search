@@ -8,8 +8,8 @@ const production = {
   CLIENT_URL: 'https://itunes-search.example',
 };
 
-// Only an explicit NODE_ENV=development counts as local, so a host that forgets
-// to set it is treated as production rather than waved through
+// Only an explicit NODE_ENV=development counts as local, so a host that
+// forgets it is treated as production.
 const local = {
   NODE_ENV: 'development',
   MONGODB_URI: 'mongodb://127.0.0.1/itunes-search',
@@ -66,8 +66,8 @@ describe('checking the environment in production', () => {
   );
 
   it('guards the code fallback and the one in .env.example, not just one', () => {
-    // These two drifted apart once already: the check knew about the code's
-    // fallback while .env.example told people to use a different placeholder
+    // These drifted apart once already, the check knowing one placeholder and
+    // .env.example offering another.
     expect(PUBLISHED_SECRETS).toContain(FALLBACK_SECRET);
     expect(PUBLISHED_SECRETS).toContain('change-me');
   });

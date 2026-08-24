@@ -1,4 +1,4 @@
-// Unreversed is newest first for a date, A to Z for a name
+// Unreversed is newest first for a date, A to Z for a name.
 const SORT_FIELDS = [
   { value: 'relevance', label: 'Relevance', order: ['Best match', 'Reversed'] },
   { value: 'released', label: 'Release date', order: ['Newest', 'Oldest'] },
@@ -6,8 +6,8 @@ const SORT_FIELDS = [
   { value: 'artist', label: 'Artist', order: ['A to Z', 'Z to A'] },
 ];
 
-// One collator rather than one per comparison. localeCompare with options
-// builds a new one on every call, which is 56x slower over a page of results
+// One collator, not one per comparison. localeCompare with options rebuilds
+// it every call, 56x slower over a page of results.
 const names = new Intl.Collator(undefined, {
   sensitivity: 'base',
   numeric: true,
@@ -19,12 +19,11 @@ const readers = {
   artist: item => item.artistName ?? '',
 };
 
-// ISO timestamps, so text order is date order down to the day, and only the
-// year is ever shown
+// ISO timestamps, so text order is date order and only the year is shown.
 function compareDates(left, right) {
   if (left === right) return 0;
 
-  // Newest first, so this pair is the other way round
+  // Newest first, so this pair is the other way round.
   return left > right ? -1 : 1;
 }
 
@@ -50,7 +49,7 @@ function sortResults(results, field, reversed = false) {
     const left = read(a);
     const right = read(b);
 
-    // Blanks stay at the bottom either way round, not at the top reversed
+    // Blanks stay at the bottom either way round.
     if (!left || !right) {
       if (!left && !right) return 0;
 

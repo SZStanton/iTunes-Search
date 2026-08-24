@@ -5,10 +5,10 @@ import { historySchema } from '../validation/searchSchemas.js';
 
 const router = express.Router();
 
-// Long enough to be useful, short enough to sit under the search bar
+// Long enough to be useful, short enough to sit under the search bar.
 const HISTORY_LIMIT = 10;
 
-// Mounted behind the auth middleware, so req.user is the person asking
+// Mounted behind the auth middleware, so req.user is the person asking.
 
 //== LIST ==
 router.get('/', async (req, res) => {
@@ -33,8 +33,8 @@ router.post('/', async (req, res) => {
   const { term, media } = parsed.data;
   const termKey = term.toLowerCase();
 
-  // Searching the same thing again moves it to the top rather than adding a
-  // second row, which is why the upsert matches on the key rather than the id
+  // A repeat moves the row to the top rather than adding a second, so the
+  // upsert matches on the key rather than the id.
   let search;
 
   try {
@@ -46,15 +46,15 @@ router.post('/', async (req, res) => {
           term,
           termKey,
           media,
-          // Deleted alongside the account rather than left behind
+          // Deleted alongside the account rather than left behind.
           expiresAt: req.user.expiresAt,
         },
       },
       { upsert: true, returnDocument: 'after', timestamps: true },
     );
   } catch (err) {
-    // Two identical searches at once both miss the match and both insert, and
-    // the index rejects the loser. Retrying finds the row the winner wrote
+    // Two identical searches at once both insert and the index rejects the
+    // loser. Retrying finds the row the winner wrote.
     if (err.code !== 11000) throw err;
 
     search = await Search.findOneAndUpdate(
@@ -64,7 +64,7 @@ router.post('/', async (req, res) => {
     );
   }
 
-  // Drop anything past the limit, oldest first
+  // Drop anything past the limit, oldest first.
   const stale = await Search.find({ user: req.user.id })
     .sort({ updatedAt: -1 })
     .skip(HISTORY_LIMIT)
@@ -88,7 +88,7 @@ router.delete('/:id', async (req, res) => {
     });
   } catch (err) {
     // A malformed id is a 404 like any other id that is not yours. Anything
-    // else is a real failure and must not be dressed up as a missing row
+    // else is a real failure and must not be dressed up as one.
     if (err.name !== 'CastError') throw err;
   }
 

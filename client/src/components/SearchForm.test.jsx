@@ -4,8 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import SearchForm from './SearchForm';
 
-// The input is controlled, so typing needs real state behind it or only the
-// first keystroke ever lands
+// The input is controlled, so typing needs real state or only the first
+// keystroke lands.
 function Harness({ searchMedia = vi.fn(), loading = false }) {
   const [term, setTerm] = useState('');
   const [media, setMedia] = useState('music');
@@ -57,48 +57,38 @@ describe('the search form', () => {
     expect(searchMedia).toHaveBeenCalledOnce();
   });
 
-  it('changes the media type', async () => {
-    const user = userEvent.setup();
-    render(<Harness />);
-
-    await user.selectOptions(screen.getByRole('combobox'), 'podcast');
-
-    expect(screen.getByRole('combobox')).toHaveValue('podcast');
-  });
+  // The chips are the only media control now. The dropdown they replaced left
+  // the field 94px wide on a phone.
+  const chipLabels = () =>
+    within(screen.getByRole('group', { name: /media type/i }))
+      .getAllByRole('button')
+      .map(chip => chip.textContent);
 
   it('offers every media type the app supports', () => {
     render(<Harness />);
 
-    const values = screen
-      .getAllByRole('option')
-      .map(option => option.getAttribute('value'));
-
-    expect(values).toEqual([
-      'all',
-      'podcast',
-      'music',
-      'album',
-      'music video',
-      'audiobook',
-      'tv show',
-      'software',
-      'ebook',
+    expect(chipLabels()).toEqual([
+      'All',
+      'Podcast',
+      'Music',
+      'Album',
+      'Music Video',
+      'Audiobook',
+      'TV Show',
+      'Software',
+      'Ebook',
     ]);
   });
 
   it('leaves out the two apple stopped answering', () => {
     render(<Harness />);
 
-    const values = screen
-      .getAllByRole('option')
-      .map(option => option.getAttribute('value'));
-
-    // media=movie and media=shortFilm return nothing in every storefront
-    expect(values).not.toContain('movie');
-    expect(values).not.toContain('short film');
+    // media=movie and media=shortFilm return nothing in every storefront.
+    expect(chipLabels()).not.toContain('Movie');
+    expect(chipLabels()).not.toContain('Short Film');
   });
 
-  it('offers the same types as chips, with the current one pressed', async () => {
+  it('changes the media type, and marks the current one pressed', async () => {
     const user = userEvent.setup();
     render(<Harness />);
 
@@ -113,8 +103,9 @@ describe('the search form', () => {
     expect(
       within(chips).getByRole('button', { name: 'Podcast' }),
     ).toHaveAttribute('aria-pressed', 'true');
-    // The dropdown is the same choice on a narrow screen, so it has to follow
-    expect(screen.getByRole('combobox')).toHaveValue('podcast');
+    expect(
+      within(chips).getByRole('button', { name: 'Music' }),
+    ).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('runs the search again when the type changes with a term already in', async () => {
@@ -130,7 +121,7 @@ describe('the search form', () => {
       ),
     );
 
-    // Changing a filter and showing the old results would read as a dead click
+    // Changing a filter and showing the old results reads as a dead click.
     expect(searchMedia).toHaveBeenCalledWith('beatles', 'album');
   });
 

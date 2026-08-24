@@ -13,7 +13,7 @@ function Surface({
 }) {
   return (
     <Tag
-      className={`rounded-card border border-line bg-surface ${elevations[elevation]} ${className}`}
+      className={`sheen rounded-card border border-line bg-surface ${elevations[elevation]} ${className}`}
       {...rest}
     >
       {children}

@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp } from 'lucide-react';
+import { ArrowDown, ArrowUp } from '@phosphor-icons/react';
 import { SORT_FIELDS, fieldLabel, orderLabel } from '../sorting';
 import IconButton from './ui/IconButton';
 
@@ -24,7 +24,7 @@ function SortControl({ field, reversed, onField, onReverse }) {
         ))}
       </select>
 
-      {/* An arrow on its own says nothing, so the label names the order */}
+      {/* An arrow on its own says nothing, so the label names the order. */}
       <IconButton
         label={`${order} first. Reverse the order`}
         size="sm"

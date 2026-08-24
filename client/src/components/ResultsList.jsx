@@ -1,4 +1,4 @@
-import { SearchX } from 'lucide-react';
+import { MagnifyingGlassMinus } from '@phosphor-icons/react';
 import ResultCard from './ResultCard';
 
 function ResultsList({
@@ -12,7 +12,7 @@ function ResultsList({
     return (
       <div className="flex flex-col items-center gap-3 py-page text-center">
         <span className="grid size-14 place-items-center rounded-full bg-raised text-muted">
-          <SearchX size={26} />
+          <MagnifyingGlassMinus size={26} />
         </span>
         <p className="type-title text-lg">Nothing matched that search</p>
         <p className="type-meta max-w-xs text-sm">
@@ -26,7 +26,7 @@ function ResultsList({
     <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {results.map((item, index) => {
         // A track's collectionId is its album, so every song on one album
-        // shared an id and the list blocked all but the first as a duplicate
+        // shared an id and all but the first were dropped as duplicates.
         const id = item.trackId ?? item.collectionId;
         const title = item.trackName ?? item.collectionName;
 

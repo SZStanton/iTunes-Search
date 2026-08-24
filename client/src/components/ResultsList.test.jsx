@@ -1,11 +1,11 @@
-// fireEvent rather than user-event for the one case below, since a failed
-// image load is the browser's event and not something anybody clicks
+// fireEvent rather than user-event below. A failed image load is the
+// browser's event, not something anybody clicks.
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import ResultsList from './ResultsList';
 
-// Two songs from one album, which is the case that used to collapse into one
+// Two songs from one album, the case that used to collapse into one.
 const sameAlbum = [
   {
     trackId: 1441164589,
@@ -153,11 +153,11 @@ describe('the results list', () => {
     ]);
 
     const artwork = screen.getByAltText('Low Tide');
-    // jsdom never loads an image, so the failure has to be fired by hand
+    // jsdom never loads an image, so the failure is fired by hand.
     fireEvent.error(artwork);
 
     expect(screen.queryByAltText('Low Tide')).not.toBeInTheDocument();
-    // Twice now: once in the tile that replaced the artwork, once underneath
+    // Twice now: once in the tile that replaced the artwork, once underneath.
     expect(screen.getAllByText('Low Tide')).toHaveLength(2);
   });
 
@@ -184,8 +184,8 @@ describe('the results list', () => {
     fireEvent.error(screen.getByAltText('Low Tide'));
     expect(screen.queryByAltText('Low Tide')).not.toBeInTheDocument();
 
-    // Neither result has an id of its own, so both land on the same index key
-    // and React hands the second one the card that just failed
+    // Neither result has its own id, so both land on the same index key and
+    // React hands the second the card that just failed.
     rerender(
       <ResultsList results={fine} favourites={[]} addFavourite={vi.fn()} />,
     );
@@ -227,7 +227,7 @@ describe('the results list', () => {
     ]);
 
     expect(screen.getByText('Music')).toBeInTheDocument();
-    // Stored as UTC midnight, so reading the year locally would say 1998 here
+    // Stored as UTC midnight, so reading the year locally would say 1998.
     expect(screen.getByText('1999')).toBeInTheDocument();
   });
 });

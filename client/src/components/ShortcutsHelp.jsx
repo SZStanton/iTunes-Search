@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Keyboard } from 'lucide-react';
+import { Keyboard } from '@phosphor-icons/react';
 import { typingIn } from '../keys';
 import { useOverlayOpen } from '../context/useOverlay';
 import IconButton from './ui/IconButton';
@@ -13,7 +13,7 @@ const shortcuts = [
   ['Esc', 'Close whatever is open'],
 ];
 
-function ShortcutsHelp() {
+function ShortcutsHelp({ className = '' }) {
   const [open, setOpen] = useState(false);
   const overlayOpen = useOverlayOpen();
 
@@ -21,8 +21,7 @@ function ShortcutsHelp() {
     const onKeyDown = event => {
       if (event.key !== '?' || typingIn(event.target)) return;
 
-      // Escape belongs to whatever is already over the page, so this sheet
-      // must not stack on top of the viewer or the drawer
+      // Escape belongs to whatever is already open, so do not stack on it.
       if (overlayOpen) return;
 
       event.preventDefault();
@@ -36,7 +35,11 @@ function ShortcutsHelp() {
 
   return (
     <>
-      <IconButton label="Keyboard shortcuts" onClick={() => setOpen(true)}>
+      <IconButton
+        className={className}
+        label="Keyboard shortcuts"
+        onClick={() => setOpen(true)}
+      >
         <Keyboard size={18} />
       </IconButton>
 

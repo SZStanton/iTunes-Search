@@ -8,8 +8,8 @@ import Search from '../models/Search.js';
 import User from '../models/User.js';
 import { resetDemoData } from '../config/demoSeed.js';
 
-// Run with "npm run seed:demo -w server". Safe to rerun, it updates the account
-// rather than making a second one
+// Run with "npm run seed:demo -w server". Safe to rerun, it updates rather
+// than making a second account.
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -35,8 +35,8 @@ console.log(`Connected to database: ${mongoose.connection.name}`);
 const email = DEMO_EMAIL.trim().toLowerCase();
 const password = await bcrypt.hash(DEMO_PASSWORD, 10);
 
-// Converting a real account into the shared public demo would hand out its
-// password and wipe its data, so refuse rather than upsert blindly
+// Converting a real account into the public demo would hand out its password
+// and wipe its data, so refuse rather than upsert blindly.
 const existing = await User.findOne({ email });
 
 if (existing && !existing.isDemo) {
@@ -46,15 +46,15 @@ if (existing && !existing.isDemo) {
   process.exit(1);
 }
 
-// isDemo and no expiresAt are what keep it exempt from the retention sweep
+// isDemo and no expiresAt keep it exempt from the retention sweep.
 const user = await User.findOneAndUpdate(
   { email },
   { $set: { email, password, isDemo: true }, $unset: { expiresAt: '' } },
   { upsert: true, returnDocument: 'after' },
 );
 
-// Changing DEMO_EMAIL would otherwise leave the old one flagged and immortal,
-// and the login route picks whichever it finds first
+// Changing DEMO_EMAIL would leave the old one flagged and immortal, and the
+// login route picks whichever it finds first.
 const retiring = await User.find(
   { isDemo: true, _id: { $ne: user._id } },
   { _id: 1 },
@@ -68,8 +68,8 @@ if (retiring.length) {
     { $set: { isDemo: false, expiresAt: new Date() } },
   );
 
-  // Their rows were seeded with no expiresAt, so the TTL index collects the
-  // user and leaves the favourites and searches behind pointing at nothing
+  // Seeded with no expiresAt, so the TTL index takes the user and leaves the
+  // rows behind pointing at nothing.
   await Promise.all([
     Favourite.deleteMany({ user: { $in: ids } }),
     Search.deleteMany({ user: { $in: ids } }),

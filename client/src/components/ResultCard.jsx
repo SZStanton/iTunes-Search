@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Heart } from 'lucide-react';
+import { Heart } from '@phosphor-icons/react';
 import { dominantColour } from '../dominantColour';
 import { resultLabel } from '../media';
 import Artwork from './Artwork';
@@ -25,7 +25,7 @@ function ResultCard({
           id,
           title,
           artistName: item.artistName,
-          // The big one, so a saved favourite is not stuck at 100px
+          // Save the big one, or a favourite is stuck at 100px.
           artworkUrl100: artwork,
           releaseDate: item.releaseDate,
           kind: item.kind,
@@ -33,10 +33,10 @@ function ResultCard({
 
   return (
     <div className="group flex flex-col">
-      {/* Only the artwork lifts, so forty cards do not all shift at once */}
-      <div className="duration-(--motion-panel) relative aspect-square overflow-hidden rounded-card bg-raised elev-1 transition group-hover:-translate-y-1 group-hover:elev-3">
-        {/* Sampled on the way to the click, so the viewer opens with its
-            colour rather than catching up a moment later */}
+      {/* Only the artwork lifts, so forty cards do not all shift at once. */}
+      <div className="art-edge duration-(--motion-panel) relative aspect-square overflow-hidden rounded-card bg-raised elev-1 transition group-hover:-translate-y-1 group-hover:elev-3">
+        {/* Sample on the way to the click, so the viewer opens already
+            coloured. */}
         <button
           className="focus-ring block h-full w-full cursor-zoom-in"
           type="button"
@@ -54,7 +54,7 @@ function ResultCard({
           />
         </button>
 
-        {/* A cover can be any colour, so darken the corner under the button */}
+        {/* A cover can be any colour, so darken the corner behind it. */}
         <div
           className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/45 to-transparent opacity-0 transition group-hover:opacity-100"
           aria-hidden="true"
@@ -69,12 +69,11 @@ function ResultCard({
           aria-pressed={isFavourite}
           onClick={toggleFavourite}
         >
-          <Heart size={16} fill={isFavourite ? 'currentColor' : 'none'} />
+          <Heart size={16} weight={isFavourite ? 'fill' : 'regular'} />
         </IconButton>
       </div>
 
-      {/* One line each, so every card is the same height and the rows line up.
-          The viewer has the full title for anything that gets cut */}
+      {/* One line each, so the rows line up. The viewer has the full title. */}
       <p className="type-title mt-2 truncate text-sm" title={title}>
         {title}
       </p>

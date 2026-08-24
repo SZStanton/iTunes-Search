@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
-// Called from server.js rather than app.js, so the tests can import the app
-// without needing a database or credentials
+// Called from server.js, not app.js, so tests can import the app without a
+// database or credentials.
 async function connectDB() {
   const uri = process.env.MONGODB_URI;
 
@@ -11,7 +11,7 @@ async function connectDB() {
 
   await mongoose.connect(uri);
 
-  // The name is worth logging, since a URI missing it quietly uses 'test'
+  // Worth logging, since a URI missing the name quietly uses 'test'.
   console.log(`Connected to database: ${mongoose.connection.name}`);
 }
 

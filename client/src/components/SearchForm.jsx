@@ -1,5 +1,4 @@
-import { Search, X } from 'lucide-react';
-import { MEDIA_TYPES } from '../media';
+import { MagnifyingGlass, X } from '@phosphor-icons/react';
 import MediaChips from './MediaChips';
 import Button from './ui/Button';
 import IconButton from './ui/IconButton';
@@ -14,8 +13,7 @@ function SearchForm({
   loading,
   fieldRef,
 }) {
-  // Changing the type with results already up shows them, rather than waiting
-  // for a second click on Search
+  // Re-run on a type change, or the filter needs a second click to apply.
   const changeMedia = next => {
     setMedia(next);
     if (term.trim()) searchMedia(term, next);
@@ -25,7 +23,7 @@ function SearchForm({
     <div className="flex flex-col gap-4">
       <div className="flex gap-3">
         <div className="relative min-w-0 flex-1">
-          <Search
+          <MagnifyingGlass
             className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-muted"
             size={18}
             aria-hidden="true"
@@ -57,21 +55,8 @@ function SearchForm({
           )}
         </div>
 
-        {/* The chips take too much room on a phone */}
-        <select
-          className="type-chrome focus-ring rounded-full border border-line bg-surface px-4 text-ink outline-none transition sm:hidden"
-          value={media}
-          onChange={e => changeMedia(e.target.value)}
-          aria-label="Media type"
-        >
-          {MEDIA_TYPES.map(type => (
-            <option value={type.value} key={type.value}>
-              {type.label}
-            </option>
-          ))}
-        </select>
-
         <Button
+          className="shrink-0"
           variant="primary"
           size="lg"
           onClick={() => searchMedia()}
@@ -82,11 +67,9 @@ function SearchForm({
         </Button>
       </div>
 
-      <MediaChips
-        media={media}
-        setMedia={changeMedia}
-        className="hidden sm:flex"
-      />
+      {/* One control at every width. The dropdown this replaced left the
+          field 94px wide on a phone. */}
+      <MediaChips media={media} setMedia={changeMedia} />
     </div>
   );
 }

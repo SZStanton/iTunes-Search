@@ -1,8 +1,8 @@
 import Favourite from '../models/Favourite.js';
 import Search from '../models/Search.js';
 
-// Real results pulled from the iTunes API, so the artwork actually loads and
-// the demo looks like someone has used it rather than like fixture data
+// Real iTunes results, so the artwork loads and the demo looks used rather
+// than like fixture data.
 
 const DEMO_FAVOURITES = [
   {
@@ -42,7 +42,7 @@ const DEMO_FAVOURITES = [
   },
 ];
 
-// Oldest first, so the newest ends up at the top of the list
+// Oldest first, so the newest ends up at the top of the list.
 const DEMO_SEARCHES = [
   { term: 'tolkien', media: 'ebook' },
   { term: '99% invisible', media: 'podcast' },
@@ -50,20 +50,20 @@ const DEMO_SEARCHES = [
   { term: 'the beatles', media: 'music' },
 ];
 
-// Wipes whatever the last visitor did and puts the seed back. Called by the
-// seed script and again on every demo login, so nobody inherits a mess
+// Wipe what the last visitor did and put the seed back. Runs on every demo
+// login, so nobody inherits a mess.
 async function resetDemoData(user) {
   await Promise.all([
     Favourite.deleteMany({ user: user.id }),
     Search.deleteMany({ user: user.id }),
   ]);
 
-  // Both lists are read newest first, and writes inside one millisecond would
-  // tie, so the timestamps are set a minute apart rather than left to the clock
+  // Both lists read newest first, and writes inside a millisecond would tie,
+  // so space the timestamps a minute apart.
   const minuteApart = index => new Date(Date.now() - (10 - index) * 60 * 1000);
 
-  // Two demo logins at once interleave the delete and the insert, and a
-  // duplicate just means the other login already wrote that exact row
+  // Two demo logins interleave the delete and insert. A duplicate just means
+  // the other login wrote that row first.
   const ignoringDuplicates = async write => {
     try {
       await write;
@@ -72,7 +72,7 @@ async function resetDemoData(user) {
     }
   };
 
-  // No expiresAt on any of it, the demo account and its data never expire
+  // No expiresAt on any of it, so the demo account and its data never expire.
   await ignoringDuplicates(
     Favourite.insertMany(
       DEMO_FAVOURITES.map((favourite, index) => ({

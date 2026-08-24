@@ -2,13 +2,13 @@ import express from 'express';
 
 const router = express.Router();
 
-// iTunes caps a search at 200 and ignores any offset, so paging has to happen
-// on whatever one request returns
+// iTunes caps a search at 200 and ignores offset, so paging happens over
+// whatever one request returns.
 const MAX_LIMIT = 200;
 const DEFAULT_LIMIT = 40;
 
-// Artwork comes back at 100px and the cards draw it at over twice that, but the
-// size is just a segment of the url, so ask for one that fits
+// Artwork comes back at 100px and the cards draw it larger. The size is just
+// a url segment, so ask for one that fits.
 function biggerArtwork(url) {
   return url.replace(/\/\d+x\d+bb\./, '/600x600bb.');
 }
@@ -19,13 +19,11 @@ function clampLimit(raw) {
   return Math.min(Math.floor(asked), MAX_LIMIT);
 }
 
-// Search iTunes API using search term and media type received from frontend.
-// Some filters need an entity as well, Album is media=music plus entity=album
+// Some filters need an entity too. Album is media=music plus entity=album.
 router.get('/search', async (req, res) => {
   const { term, media, entity } = req.query;
   const limit = clampLimit(req.query.limit);
 
-  // Ensure a search term was provided
   if (!term) {
     return res.status(400).json({
       message: 'Search term is required',
@@ -33,25 +31,23 @@ router.get('/search', async (req, res) => {
   }
 
   try {
-    // Build query parameters for iTunes API
     const params = new URLSearchParams({ term, limit });
     if (media) params.set('media', media);
     if (entity) params.set('entity', entity);
 
-    // Request data from iTunes Search API
     const response = await fetch(`https://itunes.apple.com/search?${params}`);
 
     const data = await response.json();
 
-    // iTunes answers a bad filter with a 200, an errorMessage and no results,
-    // which would otherwise reach the page as "Nothing matched that search"
+    // iTunes answers a bad filter with a 200 and an errorMessage, which would
+    // otherwise reach the page as "Nothing matched that search".
     if (!response.ok || data.errorMessage) {
       return res.status(502).json({
         message: 'The iTunes API could not answer that search.',
       });
     }
 
-    // Anything with no name or no artwork cannot be drawn as a card
+    // Anything with no name or artwork cannot be drawn as a card.
     const results = (data.results || [])
       .filter(item => {
         return (
@@ -63,7 +59,7 @@ router.get('/search', async (req, res) => {
         artworkUrl600: biggerArtwork(item.artworkUrl100),
       }));
 
-    // Count what is actually being sent, not what iTunes counted before filtering
+    // Count what is being sent, not what iTunes counted before filtering.
     res.json({ results, resultCount: results.length });
   } catch (err) {
     console.error(err);

@@ -8,8 +8,8 @@ import {
   vi,
 } from 'vitest';
 
-// Looking a user up needs a database, and these tests are about the search
-// route rather than the guard. auth.test.js covers the guard itself
+// Looking a user up needs a database, and these cover the search route rather
+// than the guard. auth.test.js covers that.
 vi.mock('../middleware/auth.js', () => ({
   default: (req, res, next) => {
     req.user = { id: 'test-user' };
@@ -19,8 +19,8 @@ vi.mock('../middleware/auth.js', () => ({
 
 const { default: app } = await import('../app.js');
 
-// The route calls fetch itself, so stubbing the global would swallow the test's
-// own requests too. Hold on to the real one first
+// The route calls fetch itself, so stubbing the global swallows the test's own
+// requests. Hold on to the real one first.
 const realFetch = globalThis.fetch;
 
 const itunesFetch = vi.fn();
@@ -212,8 +212,8 @@ describe('artwork', () => {
 
 describe('the result count', () => {
   it('reports an upstream failure rather than an empty page', async () => {
-    // iTunes answers a bad filter with a 200, an errorMessage and no results,
-    // which read as "Nothing matched that search" all the way to the page
+    // iTunes answers a bad filter with a 200 and an errorMessage, which reads
+    // as "Nothing matched that search" all the way to the page.
     itunesReply({ errorMessage: 'Invalid value(s) for key(s): [mediaType]' });
 
     const res = await realFetch(`${base}/api/itunes/search?term=beatles`);
@@ -232,7 +232,7 @@ describe('the result count', () => {
 
   it('counts what is sent back, not what itunes counted', async () => {
     itunesReply({
-      // The middle one has no artwork, so it cannot be drawn and is dropped
+      // The middle one has no artwork, so it cannot be drawn and is dropped.
       results: [
         {
           trackId: 1,

@@ -1,9 +1,9 @@
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
+import { X } from '@phosphor-icons/react';
 import IconButton from './IconButton';
 import { useFocusTrap } from './useFocusTrap';
 
-// Rendered when shut too, moved off screen, so it animates both ways
+// Rendered when shut too, moved off screen, so it animates both ways.
 function Drawer({ open, onClose, label, header, children }) {
   const panel = useFocusTrap(open, onClose);
 
@@ -23,7 +23,7 @@ function Drawer({ open, onClose, label, header, children }) {
         }`}
         aria-label={label}
         aria-hidden={open ? undefined : 'true'}
-        // Shut, it is still in the page, so inert keeps Tab out
+        // Still in the page when shut, so inert keeps Tab out.
         inert={!open}
         ref={panel}
       >

@@ -4,7 +4,7 @@ import { useRegisterOverlay } from '../../context/useOverlay';
 const FOCUSABLE =
   'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
-// Shared, so the drawer and the modal cannot drift on Escape or on focus
+// Shared, so the drawer and the modal cannot drift on Escape or focus.
 function useFocusTrap(open, onClose) {
   const panel = useRef(null);
   const returnTo = useRef(null);
@@ -25,7 +25,7 @@ function useFocusTrap(open, onClose) {
 
       if (event.key !== 'Tab') return;
 
-      // Without this, tabbing walks out and into the page behind
+      // Without this, tabbing walks out into the page behind.
       const stops = panel.current?.querySelectorAll(FOCUSABLE);
       if (!stops?.length) return;
 
@@ -45,7 +45,7 @@ function useFocusTrap(open, onClose) {
 
     return () => {
       window.removeEventListener('keydown', onKeyDown);
-      // Back to whatever opened it, rather than the top of the page
+      // Back to whatever opened it, rather than the top of the page.
       returnTo.current?.focus?.();
     };
   }, [open, onClose]);

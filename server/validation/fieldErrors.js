@@ -1,5 +1,5 @@
 // Every route answers a failed validation the same way, so a form can always
-// read errors[field]. First message per field only
+// read errors[field]. First message per field only.
 function fieldErrors(error) {
   const errors = {};
 

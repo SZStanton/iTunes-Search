@@ -44,7 +44,7 @@ function Register() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center bg-page px-4 py-12">
+    <div className="relative flex min-h-screen flex-col items-center justify-center px-4 py-12">
       <ThemeToggle className="absolute top-4 right-4" />
 
       <div className="mb-8 text-center">
@@ -102,8 +102,8 @@ function Register() {
           {busy ? 'Creating...' : 'Create account'}
         </Button>
 
-        {/* 60 matches RETENTION_DAYS in server/config/retention.js, so change
-            both or the page starts lying */}
+        {/* 60 matches RETENTION_DAYS in server/config/retention.js. Change
+            both or the page starts lying. */}
         <p className="type-meta mt-4 text-xs">
           An account that goes unused for 60 days is deleted, along with its
           favourites and searches. Using the app pushes that back out.

@@ -4,8 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthProvider, TOKEN_KEY } from './AuthContext';
 import { useAuth } from './useAuth';
 
-// The pages mock this hook, so nothing else exercises the provider itself.
-// A fresh login getting stuck on "checking" is invisible from those tests
+// The pages mock this hook, so nothing else exercises the provider. A login
+// stuck on "checking" is invisible from those tests.
 
 const fetchMock = vi.fn();
 
@@ -148,8 +148,8 @@ describe('with a stored token', () => {
   });
 
   it('keeps the token when the server could not be reached', async () => {
-    // The free tier waking up, not a rejection. Signing someone out here loses
-    // a perfectly good token
+    // The free tier waking up, not a rejection. Signing out here would lose a
+    // perfectly good token.
     fetchMock.mockRejectedValueOnce(
       Object.assign(new Error('Request failed: 502'), { status: 502 }),
     );

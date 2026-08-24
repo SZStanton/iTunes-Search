@@ -87,7 +87,7 @@ describe('the theme toggle', () => {
     systemPrefers('light');
     render(<ThemeToggle />);
 
-    // Nothing subscribes, because the system no longer decides anything
+    // Nothing subscribes, because the system no longer decides anything.
     expect(listeners).toHaveLength(0);
   });
 
@@ -98,7 +98,7 @@ describe('the theme toggle', () => {
     await user.click(screen.getByRole('button', { name: /switch to light/i }));
 
     // Cleared on a frame and again on a timeout, since a hidden tab throttles
-    // rAF to nothing and the class would otherwise stick
+    // rAF and the class would stick.
     await waitFor(() =>
       expect(
         document.documentElement.classList.contains('theme-swapping'),

@@ -1,5 +1,5 @@
-// fireEvent for the one case below, since a failed image load is the browser's
-// event and not something anybody clicks
+// fireEvent for the one case below. A failed image load is the browser's
+// event, not something anybody clicks.
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -43,7 +43,7 @@ describe('the favourites list', () => {
     fireEvent.error(screen.getByAltText('Here Comes the Sun'));
 
     expect(screen.queryByAltText('Here Comes the Sun')).not.toBeInTheDocument();
-    // The other one is untouched, so the failure is per row
+    // The other one is untouched, so the failure is per row.
     expect(screen.getByAltText('Windmills')).toBeInTheDocument();
     expect(screen.getByText('Here Comes the Sun')).toBeInTheDocument();
   });

@@ -1,5 +1,5 @@
-// The dropdown, the chips and the query read this one list, so a type cannot
-// exist in the interface without a filter behind it. No movie or shortFilm
+// The chips and the query read this one list, so no type can exist without
+// a filter behind it. No movie or shortFilm.
 const MEDIA_TYPES = [
   { value: 'all', label: 'All', filter: {} },
   { value: 'podcast', label: 'Podcast', filter: { media: 'podcast' } },
@@ -24,7 +24,7 @@ function mediaFilter(value) {
   return MEDIA_TYPES.find(type => type.value === value)?.filter ?? {};
 }
 
-// Unrecognised gets nothing rather than a raw slug like 'tv-episode'
+// Unrecognised gets nothing rather than a raw slug like 'tv-episode'.
 const KIND_LABELS = {
   song: 'Music',
   album: 'Album',
@@ -38,8 +38,7 @@ const KIND_LABELS = {
   'feature-movie': 'Film',
 };
 
-// A date-only value is UTC midnight, so a local year puts anyone west of UTC
-// a year early
+// A date-only value is UTC midnight, so a local year reads early west of UTC.
 function releaseYear(releaseDate) {
   if (!releaseDate) return '';
 
@@ -48,7 +47,7 @@ function releaseYear(releaseDate) {
   return Number.isNaN(year) ? '' : String(year);
 }
 
-// 'MUSIC · 2024', or whichever half of it exists
+// 'MUSIC · 2024', or whichever half exists.
 function resultLabel(item) {
   return [KIND_LABELS[item.kind], releaseYear(item.releaseDate)]
     .filter(Boolean)

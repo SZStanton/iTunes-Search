@@ -1,21 +1,20 @@
-// Empty in development, where the Vite proxy forwards /api to localhost:5000.
-// In production the API is on Render, a different origin, so it needs the base
+// Empty in development, where the Vite proxy forwards /api. In production
+// the API is a different origin and needs the base.
 const BASE = import.meta.env.VITE_API_URL ?? '';
 
 function apiUrl(path) {
   return `${BASE}${path}`;
 }
 
-// An error response still parses as JSON, so the status has to be checked
-// before the body is trusted
+// An error still parses as JSON, so check the status before trusting the body.
 async function apiFetch(path, options) {
   let res;
 
   try {
     res = await fetch(apiUrl(path), options);
   } catch (cause) {
-    // A rejected fetch is the connection, not the API, so there is no status
-    // and no body, and 'Failed to fetch' means nothing to anyone
+    // A rejected fetch is the connection, not the API. 'Failed to fetch'
+    // means nothing to anyone.
     const error = new Error(
       'Could not reach the server. Try that again in a moment.',
     );
@@ -30,8 +29,8 @@ async function apiFetch(path, options) {
     const body = await res.json().catch(() => ({}));
     const error = new Error(body.message || `Request failed: ${res.status}`);
 
-    // The API answers a failed validation with errors keyed by field, and a
-    // form needs those next to the inputs rather than one message at the top
+    // Validation errors come back keyed by field, so a form can put each one
+    // beside its input.
     error.status = res.status;
     error.errors = body.errors ?? {};
 
@@ -41,8 +40,7 @@ async function apiFetch(path, options) {
   return res.json();
 }
 
-// Same thing with the session's token attached, which is every call the app
-// makes once someone is signed in
+// The same with the session's token attached, which is every signed in call.
 function authFetch(path, token, options = {}) {
   return apiFetch(path, {
     ...options,

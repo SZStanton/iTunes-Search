@@ -7,10 +7,10 @@ import {
 import { fieldErrors } from '../../../server/validation/fieldErrors.js';
 
 // The rules exist here and on the server, so they drift. Every awkward value
-// goes through both, and the two messages must be identical
+// goes through both, and the messages must be identical.
 
-// Each side is formatted by its own helper, not one shared one, or a change to
-// the server's fieldErrors would slip through with every parity test still green
+// Each side uses its own formatter, not a shared one, or a change to the
+// server's fieldErrors would slip through with every parity test green.
 function messagesFrom(schema, value) {
   const result = schema.safeParse(value);
   return result.success ? null : rulesErrors(result.error);

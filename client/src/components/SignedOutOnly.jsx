@@ -1,8 +1,8 @@
 import { Navigate } from 'react-router';
 import { useAuth } from '../context/useAuth';
 
-// The other side of ProtectedRoute. Someone already signed in who opens a
-// bookmarked /login would otherwise get a form with no way back to the app
+// The other side of ProtectedRoute. A bookmarked /login would otherwise
+// strand someone already signed in.
 function SignedOutOnly({ children }) {
   const { signedIn, checking } = useAuth();
 

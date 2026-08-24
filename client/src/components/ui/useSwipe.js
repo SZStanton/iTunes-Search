@@ -1,14 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { swipeDirection } from '../../swipe';
 
-// Touch only, on purpose. A mouse dragged across a page of artwork is someone
-// selecting, and a trackpad has its own gesture already
+// Touch only. A mouse dragged across artwork is someone selecting.
 function useSwipe(ref, { onLeft, onRight, enabled = true }) {
-  // Read at the end of the gesture rather than closed over, so the listeners
-  // are bound once instead of on every render the page number changes
+  // Read at the end of the gesture, so the listeners bind once.
   const handlers = useRef({ onLeft, onRight });
 
-  // No dependency list, so it keeps up with a caller that rebuilds these
+  // No dependency list, so it keeps up with a caller that rebuilds these.
   useEffect(() => {
     handlers.current = { onLeft, onRight };
   });
@@ -21,11 +19,14 @@ function useSwipe(ref, { onLeft, onRight, enabled = true }) {
 
     const down = event => {
       if (event.pointerType !== 'touch') return;
-      start = { x: event.clientX, y: event.clientY };
+      // The first finger owns the gesture, or a second one moves the origin.
+      if (start) return;
+
+      start = { id: event.pointerId, x: event.clientX, y: event.clientY };
     };
 
     const up = event => {
-      if (!start) return;
+      if (!start || event.pointerId !== start.id) return;
 
       const direction = swipeDirection(
         event.clientX - start.x,
@@ -37,10 +38,10 @@ function useSwipe(ref, { onLeft, onRight, enabled = true }) {
       if (direction === 'right') handlers.current.onRight?.();
     };
 
-    // The browser takes the gesture over once it decides the page is scrolling,
-    // and no pointerup follows it
-    const cancel = () => {
-      start = null;
+    // The browser takes over once it decides the page is scrolling, and no
+    // pointerup follows.
+    const cancel = event => {
+      if (start && event.pointerId === start.id) start = null;
     };
 
     node.addEventListener('pointerdown', down);

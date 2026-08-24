@@ -2,8 +2,8 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// App reads the session rather than fetching its own token now, so the hook is
-// stubbed and every fetch the test sees is a search
+// App reads the session rather than fetching a token, so the hook is stubbed
+// and every fetch a test sees is a search.
 const logout = vi.fn();
 
 vi.mock('./context/useAuth', () => ({
@@ -17,8 +17,8 @@ vi.mock('./context/useAuth', () => ({
 const { default: App } = await import('./App.jsx');
 const { OverlayProvider } = await import('./context/OverlayContext.jsx');
 
-// Wrapped the way main.jsx wraps it, so the drawer and the viewer can say they
-// are open and the arrow keys can stay out of their way
+// Wrapped the way main.jsx wraps it, so the drawer and viewer can say they
+// are open and the arrow keys stay out of the way.
 function renderApp() {
   return render(
     <OverlayProvider>
@@ -29,8 +29,8 @@ function renderApp() {
 
 const fetchMock = vi.fn();
 
-// App asks for favourites and history the moment it mounts, so a queue of
-// replies no longer lines up. Answer by URL instead
+// App asks for favourites and history on mount, so a queue of replies no
+// longer lines up. Answer by URL instead.
 let favouritesReply = [];
 let searchesReply = [];
 let searchReply = {
@@ -62,8 +62,7 @@ function respond(url, options = {}) {
   }
 
   if (address.includes('/api/searches')) {
-    // A delete has to actually remove it, or the refetch that follows every
-    // history write hands the row straight back
+    // A delete has to actually remove it, or the refetch hands the row back.
     if (method === 'DELETE') {
       const id = address.split('/api/searches/')[1];
       searchesReply = id ? searchesReply.filter(s => s._id !== id) : [];
@@ -106,8 +105,7 @@ async function searchFor(term = 'beatles', mediaLabel) {
 
   const input = screen.getByPlaceholderText(/search itunes/i);
 
-  // The term is still empty here, so picking a type does not run a search of
-  // its own the way it would with something already typed
+  // The term is still empty, so picking a type does not run its own search.
   if (mediaLabel) {
     await user.click(
       screen
@@ -211,7 +209,7 @@ describe('running a search', () => {
     expect(
       await screen.findByRole('status', { name: /searching/i }),
     ).toBeInTheDocument();
-    // The empty state belongs to a finished search, not a running one
+    // The empty state belongs to a finished search, not a running one.
     expect(screen.queryByText(/nothing matched/i)).not.toBeInTheDocument();
 
     release();
@@ -239,8 +237,8 @@ describe('running a search', () => {
   });
 
   it('ends the session when the token has stopped working', async () => {
-    // Every later search would fail the same way, so showing "Invalid token"
-    // over and over is worse than sending them back to the login page
+    // Every later search fails the same way, so repeating "Invalid token" is
+    // worse than sending them back to login.
     whenSearchReturns({ message: 'Invalid token' }, false, 403);
     await searchFor();
 
@@ -324,7 +322,7 @@ describe('saving a favourite', () => {
   it('sends one request however fast the heart is clicked', async () => {
     whenSearchReturns({ results: [track(1)], resultCount: 1 });
 
-    // Held open, so every click below lands while the first one is still out
+    // Held open, so every click below lands while the first is still out.
     let release;
     fetchMock.mockImplementation((url, options) => {
       if (
@@ -348,15 +346,15 @@ describe('saving a favourite', () => {
     await user.click(screen.getByRole('button', { name: /remove favourite/i }));
     await user.click(screen.getByRole('button', { name: /remove favourite/i }));
 
-    // The load on mount sends no method at all, so match the two that write
+    // The load on mount sends no method, so match the two that write.
     const writes = fetchMock.mock.calls.filter(
       call =>
         String(call[0]).includes('/api/favourites') &&
         ['POST', 'DELETE'].includes(call[1]?.method),
     );
 
-    // An add and a delete racing each other is how the server ends up holding
-    // the opposite of what is on screen
+    // An add racing a delete is how the server ends up holding the opposite
+    // of what is on screen.
     expect(writes).toHaveLength(1);
     expect(writes[0][1].method).toBe('POST');
 
@@ -412,8 +410,8 @@ describe('saving a favourite', () => {
       await screen.findByRole('button', { name: /add favourite/i }),
     );
 
-    // It appears at once, then goes when the save fails, rather than the click
-    // doing nothing for a whole round trip
+    // It appears at once and goes when the save fails, rather than the click
+    // doing nothing for a round trip.
     expect(await screen.findByRole('alert')).toHaveTextContent(
       /already a favourite/i,
     );
@@ -467,7 +465,7 @@ describe('when part of the account will not load', () => {
 
     renderApp();
 
-    // Two unrelated lists, so one failing must not take the other with it
+    // Two unrelated lists, so one failing must not take the other with it.
     expect(
       await screen.findByRole('button', { name: /^beatles/i }),
     ).toBeInTheDocument();
@@ -561,7 +559,7 @@ describe('the library drawer', () => {
       within(panel).getByRole('button', { name: /forget queen/i }),
     );
 
-    // A guard over the whole list would make the second click do nothing
+    // A guard over the whole list would make the second click do nothing.
     await waitFor(() => {
       const deleted = fetchMock.mock.calls.filter(
         call =>
@@ -574,8 +572,8 @@ describe('the library drawer', () => {
   });
 
   it('puts a search back when the server cannot be reached at all', async () => {
-    // The refetch talks to the same server, so restoring by asking it would
-    // leave the row gone on screen and present on the server
+    // The refetch talks to the same server, so asking it would leave the row
+    // gone on screen and present on the server.
     let reachable = true;
 
     fetchMock.mockImplementation((url, options) => {
@@ -627,10 +625,10 @@ describe('the library drawer', () => {
       within(panel).getByRole('button', { name: /forget beatles/i }),
     );
 
-    // Gone from the screen but still on the server is the worst of both
+    // Gone from the screen but still on the server is the worst of both.
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent(/could not forget/i);
-    // Inside the drawer, or it renders under the drawer's own backdrop
+    // Inside the drawer, or it renders under the drawer's own backdrop.
     expect(alert.closest('aside')).toHaveAttribute('aria-label', 'Library');
     expect(
       within(screen.getByRole('tabpanel')).getByRole('button', {
@@ -644,11 +642,11 @@ describe('the library drawer', () => {
     renderApp();
 
     const panel = await openHistory(user);
-    // Anchored, or it also matches the Forget button beside it
+    // Anchored, or it also matches the Forget button beside it.
     await user.click(within(panel).getByRole('button', { name: /^beatles/i }));
 
     await waitFor(() => expect(searchCalls()).toHaveLength(1));
-    // Leaving the panel over the results it just fetched would be odd
+    // Leaving the panel over the results it just fetched would be odd.
     expect(screen.queryByRole('tabpanel')).not.toBeInTheDocument();
   });
 });
@@ -677,7 +675,7 @@ describe('saying where you are', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('1 result')).toBeInTheDocument();
 
-    // Typing again must not rewrite the heading over results it did not fetch
+    // Typing again must not rewrite the heading over older results.
     await user.type(screen.getByPlaceholderText(/search itunes/i), ' live');
     expect(screen.getByText(/results for hey jude/i)).toBeInTheDocument();
   });
@@ -713,8 +711,8 @@ describe('the shortcuts sheet', () => {
     const sheet = screen.getByRole('dialog', { name: /keyboard shortcuts/i });
 
     expect(sheet).toHaveTextContent('Jump to the search box');
-    // The header has a backdrop-filter, which would make it the containing
-    // block for a fixed child and put the sheet up in the header's own box
+    // backdrop-filter on the header would make it the containing block and
+    // trap the sheet in the header's own box.
     expect(sheet.closest('header')).toBeNull();
     expect(sheet.parentElement).toBe(document.body);
   });
@@ -736,7 +734,7 @@ describe('the shortcuts sheet', () => {
 });
 
 describe('sorting the results', () => {
-  // Reverse alphabetical as they arrive, so relevance and title differ
+  // Reverse alphabetical as they arrive, so relevance and title differ.
   const backwards = [
     { ...track(1), trackName: 'Zephyr' },
     { ...track(2), trackName: 'Marigold' },
@@ -774,8 +772,8 @@ describe('sorting the results', () => {
   });
 
   it('sorts every page, not the forty on screen', async () => {
-    // Named so the last one to arrive is the first one alphabetically, and it
-    // is on page three until the sort moves it
+    // Named so the last to arrive is first alphabetically, sitting on page
+    // three until the sort moves it.
     const ninety = Array.from({ length: 90 }, (_, i) =>
       i === 89
         ? { ...track(90), trackName: 'Aardvark' }
@@ -815,8 +813,7 @@ describe('sorting the results', () => {
 describe('paging by swiping', () => {
   const ninety = Array.from({ length: 90 }, (_, i) => track(i + 1));
 
-  // Any card will do, since the gesture is bound to the grid around them and
-  // the events bubble. Whichever page is up has a first one
+  // Any card will do. The gesture is bound to the grid and the events bubble.
   const grid = () => screen.getAllByRole('button', { name: /^View / })[0];
 
   const swipe = (user, { from, to, touch = true }) =>
@@ -876,9 +873,8 @@ describe('paging by swiping', () => {
     expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
   });
 
-  // jsdom has no pan handling, so nothing above would notice this going missing.
-  // A real browser cancels the pointer mid gesture without it and the swipe
-  // silently stops working
+  // Without it a real browser cancels the pointer mid gesture and the swipe
+  // quietly stops working.
   it('tells the browser the grid only pans vertically', async () => {
     whenSearchReturns({ results: ninety, resultCount: 90 });
     await searchFor();
@@ -928,7 +924,7 @@ describe('paging by the keyboard', () => {
     await user.click(screen.getByPlaceholderText(/search itunes/i));
     await user.keyboard('{ArrowRight}');
 
-    // Moving the caret through a term must not throw the page away
+    // Moving the caret through a term must not throw the page away.
     expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
   });
 
@@ -950,7 +946,7 @@ describe('paging by the keyboard', () => {
     const user = await searchFor();
 
     await screen.findByText('Page 1 of 3');
-    // Exact, or it also matches Track 10 through Track 19
+    // Exact, or it also matches Track 10 through Track 19.
     await user.click(screen.getByRole('button', { name: 'View Track 1' }));
     await user.keyboard('{ArrowRight}');
 
@@ -969,7 +965,7 @@ describe('paging by the keyboard', () => {
     await user.keyboard('/');
 
     expect(field).toHaveFocus();
-    // The slash itself belongs to the shortcut, not to the term
+    // The slash belongs to the shortcut, not to the term.
     expect(field).toHaveValue('beatles');
   });
 });
@@ -1050,7 +1046,7 @@ describe('the favourites drawer', () => {
     const user = userEvent.setup();
     renderApp();
 
-    // Shut, the drawer is aria-hidden, so nothing inside it is reachable
+    // Shut, the drawer is aria-hidden, so nothing inside is reachable.
     expect(
       screen.queryByRole('button', { name: /close library/i }),
     ).not.toBeInTheDocument();

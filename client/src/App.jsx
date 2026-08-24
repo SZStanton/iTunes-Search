@@ -29,13 +29,11 @@ import Badge from './components/ui/Badge';
 import Button from './components/ui/Button';
 import IconButton from './components/ui/IconButton';
 
-// iTunes ignores an offset, so one search asks for as much as it will give and
-// the pages are cut from that
+// iTunes ignores offset, so one request fetches the lot and pages come from it.
 const FETCH_LIMIT = 200;
 const PAGE_SIZE = 40;
 
-// The API stores a favourite in its own shape. The cards were written against
-// the iTunes field names, so the translation happens here rather than in both
+// Map a stored favourite onto the iTunes field names the cards expect.
 function toCard(favourite) {
   return {
     id: favourite.itemId,
@@ -43,7 +41,7 @@ function toCard(favourite) {
     artistName: favourite.artist,
     artworkUrl100: favourite.artwork,
     releaseDate: favourite.releaseDate,
-    // Only read when the artwork fails, to pick the placeholder icon
+    // Only read when the artwork fails, to pick the placeholder icon.
     kind: favourite.kind,
   };
 }
@@ -60,35 +58,34 @@ function toStored(item) {
 }
 
 function App() {
-  // The token comes from the session now, so there is nothing to wait for
+  // The session already holds the token, so there is nothing to wait for.
   const { token, user, logout } = useAuth();
 
   // == STATE ==
   const [term, setTerm] = useState('');
   const [media, setMedia] = useState('music');
-  // Everything the last search returned, not just the page on screen
+  // Everything the last search returned, not just the page on screen.
   const [allResults, setAllResults] = useState([]);
   const [favourites, setFavourites] = useState([]);
   const [loading, setLoading] = useState(false);
-  // Whatever went wrong last, shown above the results
+  // Whatever went wrong last, shown above the results.
   const [error, setError] = useState('');
-  // Tells an empty list apart from not having searched yet
+  // Tells an empty result set apart from not having searched yet.
   const [searched, setSearched] = useState(false);
-  // What is on screen, not what is in the form, which changes on every keypress
+  // What is on screen, not what is in the form.
   const [ran, setRan] = useState({ term: '', media: '' });
 
   const [page, setPage] = useState(0);
 
-  // Session only, on purpose. How someone wants one search ordered says
-  // nothing about the next one
+  // Session only. How one search is ordered says nothing about the next.
   const [sort, setSort] = useState('relevance');
   const [reversed, setReversed] = useState(false);
 
-  // The last few searches, newest first
+  // The last few searches, newest first.
   const [recent, setRecent] = useState([]);
-  // One panel holding both lists. null when shut, otherwise the tab it is on
+  // One panel for both lists. null when shut, otherwise the tab it is on.
   const [library, setLibrary] = useState(null);
-  // Its own, because the page banner sits under the drawer's backdrop
+  // Separate from the page banner, which sits under the drawer's backdrop.
   const [libraryError, setLibraryError] = useState('');
   const closeLibrary = useCallback(() => {
     setLibrary(null);
@@ -96,35 +93,29 @@ function App() {
   }, []);
 
   const searchField = useRef(null);
-  // The grid only. The chips above it are their own horizontal scroller, and a
-  // flick along those must not also turn the page
+  // The grid only. A flick along the chip rail must not also turn the page.
   const resultsArea = useRef(null);
 
   useEffect(() => {
     libraryNow.current = library;
   }, [library]);
 
-  // Every refetch takes the next ticket, so one that arrives late cannot
-  // overwrite a newer list
+  // Ticket every refetch so a late reply cannot overwrite a newer list.
   const historyTicket = useRef(0);
-  // One request per row, the way favourites work, so forgetting one never
-  // blocks forgetting another
+  // One request per row, so forgetting one never blocks forgetting another.
   const forgetting = useRef(new Set());
-  // Where the drawer is now, not where it was when the click happened
+  // Where the drawer is now, not where it was when the click happened.
   const libraryNow = useRef(library);
   const overlayOpen = useOverlayOpen();
 
   // == LOADING WHAT THE ACCOUNT ALREADY HAS ==
-  // A failure here is not worth an error banner. The app still works, it just
-  // starts empty, and the next action will surface anything that is really wrong
+  // A failure here is not worth a banner. The app just starts empty.
   useEffect(() => {
     let cancelled = false;
 
-    // Settled, not all: these are two unrelated lists, and one failing used to
-    // take the other down with it even though its own request had worked
+    // allSettled, so one list failing does not take the other down with it.
     const load = async () => {
-      // Claimed before the request. Taken afterwards it would always look like
-      // the newest list even when a search has since written a fresher one
+      // Claim the ticket first, or a late reply always looks like the newest.
       const ticket = (historyTicket.current += 1);
 
       const [saved, history] = await Promise.allSettled([
@@ -178,14 +169,12 @@ function App() {
       setAllResults(data.results || []);
       setRan({ term: searchTerm, media: searchMediaLabel });
 
-      // Remembered only once the search worked, so a typo that errors does not
-      // take one of the ten slots
+      // Only remember a search that worked, so a failed typo takes no slot.
       rememberSearch(searchTerm, searchMediaLabel);
     } catch (err) {
       console.error('Search failed:', err);
 
-      // An expired token, or an account the retention sweep has removed. Every
-      // later search would fail the same way, so end the session instead
+      // Expired token, or a swept account. Every later call fails the same way.
       if (err.status === 401 || err.status === 403) {
         logout();
         return;
@@ -199,8 +188,7 @@ function App() {
   };
 
   // == SEARCH HISTORY ==
-  // The server owns the order and the ten item cap, so every write ends by
-  // asking it rather than guessing
+  // The server owns the order and the ten item cap, so every write refetches.
   const loadHistory = async () => {
     const ticket = (historyTicket.current += 1);
 
@@ -221,7 +209,7 @@ function App() {
         body: JSON.stringify({ term: searchTerm, media: searchMediaLabel }),
       });
     } catch (err) {
-      // Not being remembered is not worth interrupting anyone over
+      // Not being remembered is not worth interrupting anyone over.
       console.error('Could not remember that search:', err);
       return;
     }
@@ -229,7 +217,7 @@ function App() {
     await loadHistory();
   };
 
-  // Clicking one puts the form back where it was and runs it again
+  // Clicking one puts the form back where it was and runs it again.
   const repeatSearch = search => {
     setTerm(search.term);
     setMedia(search.media);
@@ -250,15 +238,14 @@ function App() {
       await authFetch(`/api/searches/${id}`, token, { method: 'DELETE' });
     } catch (err) {
       console.error('Could not forget that search:', err);
-      // From the snapshot, not the server, which has just failed to answer
+      // Restore from the snapshot, not the server that just failed to answer.
       setRecent(previous);
       setLibraryError(err.message || 'Could not forget that search.');
     } finally {
       forgetting.current.delete(id);
     }
 
-    // Reconciles either way when the server can be reached, so a snapshot
-    // cannot resurrect a row another delete removed
+    // Reconcile either way, so a snapshot cannot resurrect a deleted row.
     await loadHistory();
   };
 
@@ -280,15 +267,12 @@ function App() {
   };
 
   // == FAVOURITES ==
-  // Shown straight away and undone if the server refuses, since waiting for a
-  // round trip to tick a button reads as a broken click
+  // Update the screen first and undo it if the server refuses.
 
-  // One request per item at a time, or a spammed heart sends an add and a
-  // delete that can land in either order
+  // One request per item, or a spammed heart races an add against a delete.
   const inFlight = useRef(new Set());
 
-  // The heart is on the card and in the drawer, so the message has to follow
-  // whichever of the two is being looked at
+  // Route the error to whichever of the card or drawer is being looked at.
   const reportFavourite = message =>
     libraryNow.current === null ? setError(message) : setLibraryError(message);
 
@@ -317,7 +301,7 @@ function App() {
   const removeFavourite = async id => {
     if (inFlight.current.has(id)) return;
 
-    // Where it was, so a failed delete puts it back in its own place
+    // Keep the index so a failed delete puts it back in place.
     const index = favourites.findIndex(item => item.id === id);
     if (index === -1) return;
 
@@ -339,13 +323,12 @@ function App() {
   };
 
   // == SORTING AND PAGING ==
-  // One request filled allResults, so this reorders the whole set rather than
-  // the forty on screen
+  // Sort the whole set, not just the forty on screen.
   const sorted = sortResults(allResults, sort, reversed);
   const pageCount = Math.ceil(sorted.length / PAGE_SIZE);
   const results = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
-  // Page four of the old order has nothing to do with the new one
+  // Page four of the old order means nothing in the new one.
   const changeSort = next => {
     setSort(next);
     setPage(0);
@@ -356,7 +339,7 @@ function App() {
     setPage(0);
   };
 
-  // Forty new cards under a scrolled window looks like nothing happened
+  // Scroll up, or new cards under a scrolled window look like nothing happened.
   const goToPage = useCallback(
     next => {
       if (next < 0 || next >= pageCount) return;
@@ -374,8 +357,7 @@ function App() {
   );
 
   // == SWIPING ==
-  // Same gates as the arrows: nothing to page through, or something is over
-  // the page and owns the gesture
+  // Same gates as the arrow keys.
   useSwipe(resultsArea, {
     enabled: pageCount > 1 && !overlayOpen && !loading,
     onLeft: () => goToPage(page + 1),
@@ -393,7 +375,7 @@ function App() {
         return;
       }
 
-      // The arrows belong to whatever is over the page while one is open
+      // An open overlay owns the arrow keys.
       if (overlayOpen) return;
 
       if (event.key === 'ArrowLeft') goToPage(page - 1);
@@ -406,20 +388,19 @@ function App() {
   }, [goToPage, page, overlayOpen]);
 
   // == UI ==
-  // No bg-page on the wrapper, or it paints over the body's ground gradient
+  // No bg-page here, or it paints over the body's ground gradient.
   return (
     <div className="min-h-screen">
-      {/* Stays put while a page of results scrolls under it */}
+      {/* Stays put while a page of results scrolls under it. */}
       <header className="glass sticky top-0 z-10 border-b border-line">
         <div className="mx-auto flex max-w-7xl items-center gap-x-2 px-4 py-3 sm:gap-x-4 sm:px-6">
-          {/* Nowrap and a step down at 320, where the row is otherwise exactly
-              the viewport wide and the labels start breaking mid word */}
+          {/* Nowrap and a size down, or the row breaks mid word at 320. */}
           <h1 className="type-title mr-auto whitespace-nowrap text-base sm:text-lg">
             iTunes Search
           </h1>
 
-          {/* max-sm rather than hidden, which loses to the inline-flex in the
-              button's own base and never hid anything */}
+          {/* A max-* variant, since plain hidden loses to the button's own
+              inline-flex. */}
           <Button
             className="max-md:hidden"
             onClick={() => setLibrary('history')}
@@ -441,7 +422,7 @@ function App() {
           </Button>
 
           {/* Both lists behind one control on a phone. It opens on favourites,
-              so that is the count it badges, and history stays uncounted */}
+              so badge those. */}
           <IconButton
             className="relative md:hidden"
             label={`Favourites and history, ${favourites.length} favourites saved`}
@@ -455,19 +436,17 @@ function App() {
             )}
           </IconButton>
 
-          {/* Capped rather than free, so an unusually long address cuts itself
-              instead of pushing Sign out off the row */}
+          {/* Cap it, or a long address pushes Sign out off the row. */}
           <span className="type-meta max-w-[26ch] truncate text-sm max-lg:hidden">
             {user?.email}
           </span>
 
-          {/* Nothing to press a key with, so it only exists where it works */}
+          {/* No keyboard on a phone, so this only shows above sm. */}
           <ShortcutsHelp className="max-sm:hidden" />
 
           <ThemeToggle />
 
-          {/* Narrower below sm purely to buy slack at 320, where the row
-              otherwise lands on exactly the viewport width */}
+          {/* Narrower below sm, purely to buy back the last few pixels. */}
           <Button variant="ghost" className="max-sm:px-2.5" onClick={logout}>
             Sign out
           </Button>
@@ -517,9 +496,9 @@ function App() {
           />
         )}
 
-        {/* touch-pan-y, or the browser claims the gesture as a pan the moment
-            it moves sideways and cancels the pointer before it ends */}
-        <div className="mt-snug touch-pan-y" ref={resultsArea}>
+        {/* pan-y stops the browser claiming a sideways drag. pinch-zoom keeps
+            the artwork zoomable. */}
+        <div className="mt-snug touch-pan-y touch-pinch-zoom" ref={resultsArea}>
           {loading ? (
             <ResultsSkeleton />
           ) : (

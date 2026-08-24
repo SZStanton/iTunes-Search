@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-// The labels the dropdown offers. Movie and Short Film are absent on purpose,
-// Apple returns nothing for either
+// The labels the chips offer. Movie and Short Film are absent on purpose,
+// Apple returns nothing for either.
 const MEDIA_LABELS = [
   'all',
   'podcast',

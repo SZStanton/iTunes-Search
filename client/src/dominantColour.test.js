@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { averageColour } from './dominantColour';
 
-// Four bytes per pixel, so a run of these builds a fake sample
+// Four bytes per pixel, so a run of these builds a fake sample.
 function pixels(...colours) {
   return Uint8ClampedArray.from(
     colours.flatMap(([r, g, b, a = 255]) => [r, g, b, a]),
@@ -22,8 +22,8 @@ describe('picking a colour off a cover', () => {
   });
 
   it('takes the colour over the greys around it', () => {
-    // A sleeve that is mostly black with one bright panel. Averaging the lot
-    // gives near black, which is no bloom at all
+    // Mostly black with one bright panel. Averaging the lot gives near black,
+    // which is no bloom at all.
     const mostlyGrey = Array.from({ length: 9 }, () => [10, 10, 10]);
 
     expect(averageColour(pixels(...mostlyGrey, [220, 20, 60]))).toEqual([

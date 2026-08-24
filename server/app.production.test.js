@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // The production block only runs when NODE_ENV says so, and a bad wildcard
-// throws while the route is being registered, so importing is the whole test
+// throws at registration, so importing is the whole test.
 
 afterEach(() => {
   vi.unstubAllEnvs();

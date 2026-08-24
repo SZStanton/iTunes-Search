@@ -23,7 +23,7 @@ describe('reading a swipe', () => {
     expect(swipeDirection(0, 0)).toBeNull();
   });
 
-  // Scrolling a long page with a thumb is never perfectly vertical
+  // Scrolling a long page with a thumb is never perfectly vertical.
   it('ignores a scroll that drifted sideways', () => {
     expect(swipeDirection(-70, 300)).toBeNull();
     expect(swipeDirection(70, -300)).toBeNull();

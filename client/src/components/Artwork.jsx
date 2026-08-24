@@ -11,7 +11,7 @@ import {
   VinylRecord,
 } from '@phosphor-icons/react';
 
-// A collection carries no kind, so anything unrecognised falls to the disc
+// A collection carries no kind, so anything unrecognised falls to the disc.
 const icons = {
   song: MusicNotes,
   album: VinylRecord,
@@ -25,8 +25,8 @@ const icons = {
   'feature-movie': FilmSlate,
 };
 
-// Fills whatever it is put in, so the caller owns the size and the corners.
-// Apple's artwork does 404, and a broken image glyph reads as a broken app
+// Fills its container, so the caller owns the size and corners. Apple's
+// artwork does 404, and a broken image glyph looks like a broken app.
 function Artwork({
   src,
   title,
@@ -36,13 +36,12 @@ function Artwork({
   contain = false,
   className = '',
 }) {
-  // The url that failed rather than a flag, so a card reused for the next
-  // page corrects itself
+  // Store the failed url, not a flag, so a reused card corrects itself.
   const [failedSrc, setFailedSrc] = useState(null);
   const Icon = icons[kind] ?? VinylRecord;
 
-  // Never cover. A 600x600bb url keeps the artwork's own shape, so an ebook
-  // comes back portrait and covering a square tile would cut its title off
+  // Never cover. Artwork keeps its own shape, and a portrait ebook would
+  // lose its title to a square crop.
   const box = contain
     ? 'max-h-[74vh] max-w-full object-contain'
     : 'h-full w-full object-contain';

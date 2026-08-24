@@ -1,7 +1,6 @@
 import Input from './ui/Input';
 
-// One labelled input with its error underneath. The label is tied to the input
-// by id, so clicking it focuses the field and a screen reader reads the pair
+// A labelled input with its error underneath, tied together by id.
 function FormField({
   id,
   label,

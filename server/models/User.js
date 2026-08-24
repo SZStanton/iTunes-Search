@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-// Stores login details. Email and password only, no display name or handle
+// Login details only. No display name, no handle.
 const userSchema = new mongoose.Schema(
   {
     email: {
@@ -12,9 +12,9 @@ const userSchema = new mongoose.Schema(
     },
     password: { type: String, required: true },
     // Mongo deletes the document once this passes. No date means never, which
-    // is exactly how the demo account is exempt without a special case
+    // is how the demo account is exempt without a special case.
     expiresAt: { type: Date, index: { expireAfterSeconds: 0 } },
-    // The shared account whose data resets on login. Never expires
+    // The shared account whose data resets on login. Never expires.
     isDemo: { type: Boolean, default: false },
   },
   { timestamps: true },

@@ -13,8 +13,7 @@ function SearchForm({
   loading,
   fieldRef,
 }) {
-  // Changing the type with results already up shows them, rather than waiting
-  // for a second click on Search
+  // Re-run on a type change, or the filter needs a second click to apply.
   const changeMedia = next => {
     setMedia(next);
     if (term.trim()) searchMedia(term, next);
@@ -68,8 +67,8 @@ function SearchForm({
         </Button>
       </div>
 
-      {/* One control at every width. The dropdown that used to stand in for
-          these on a phone left the field 94px wide */}
+      {/* One control at every width. The dropdown this replaced left the
+          field 94px wide on a phone. */}
       <MediaChips media={media} setMedia={changeMedia} />
     </div>
   );

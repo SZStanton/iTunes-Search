@@ -21,8 +21,7 @@ function ShortcutsHelp({ className = '' }) {
     const onKeyDown = event => {
       if (event.key !== '?' || typingIn(event.target)) return;
 
-      // Escape belongs to whatever is already over the page, so this sheet
-      // must not stack on top of the viewer or the drawer
+      // Escape belongs to whatever is already open, so do not stack on it.
       if (overlayOpen) return;
 
       event.preventDefault();

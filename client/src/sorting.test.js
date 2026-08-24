@@ -57,8 +57,7 @@ describe('sorting the results', () => {
   });
 
   it('sorts titles without caring about case', () => {
-    // A plain sort puts every capital ahead of every lowercase, so blackbird
-    // would land after Come Together
+    // A plain sort puts capitals first, so blackbird lands after Come Together.
     expect(titles(sortResults(results, 'title'))).toEqual([
       'Aubade',
       'blackbird',
@@ -75,8 +74,7 @@ describe('sorting the results', () => {
   });
 
   it('separates two records from the same year by month and day', () => {
-    // The card only ever shows the year, so without this they would look
-    // interchangeable and sit in whatever order the api sent
+    // The card only shows the year, so without this they look interchangeable.
     const sameYear = [
       { trackName: 'March', releaseDate: '1969-03-04T07:00:00Z' },
       { trackName: 'November', releaseDate: '1969-11-02T07:00:00Z' },
@@ -105,8 +103,7 @@ describe('sorting the results', () => {
   });
 
   it('falls back to the collection name when there is no track', () => {
-    // Sorted on Abbey Road rather than treated as having no title at all,
-    // which would drop it to the bottom
+    // Sorted on Abbey Road rather than treated as untitled and dropped.
     const album = [{ trackName: 'Zephyr' }, { collectionName: 'Abbey Road' }];
 
     expect(sortResults(album, 'title')[0].collectionName).toBe('Abbey Road');

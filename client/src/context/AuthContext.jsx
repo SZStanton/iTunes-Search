@@ -7,7 +7,7 @@ import {
 } from 'react';
 import { apiFetch } from '../api';
 
-// Only an explicit login is stored. Nothing else is kept about the person
+// Only an explicit login is stored. Nothing else is kept about the person.
 const TOKEN_KEY = 'itunes-search:token';
 
 const AuthContext = createContext(null);
@@ -16,8 +16,7 @@ function readStoredToken() {
   try {
     return localStorage.getItem(TOKEN_KEY) ?? '';
   } catch {
-    // Storage can be blocked entirely in a locked-down browser, and that should
-    // mean signing in again rather than a blank page
+    // Blocked storage should mean signing in again, not a blank page.
     return '';
   }
 }
@@ -26,20 +25,20 @@ function AuthProvider({ children }) {
   const [token, setToken] = useState(readStoredToken);
   const [user, setUser] = useState(null);
   const [checked, setChecked] = useState(false);
-  // Set when the check could not reach the server, as opposed to being refused
+  // Set when the check could not reach the server, not when it was refused.
   const [unreachable, setUnreachable] = useState(false);
-  // Bumped to run the check again, since nothing else in its deps changes
+  // Bumped to run the check again, since nothing else in its deps changes.
   const [attempt, setAttempt] = useState(0);
 
   // A stored token is only a guess until the server agrees. 'user' ends the
-  // wait too, or a fresh login sits waiting for a check that never runs
+  // wait too, or a fresh login waits on a check that never runs.
   const checking = Boolean(token) && !user && !checked;
 
   const saveSession = useCallback(session => {
     try {
       localStorage.setItem(TOKEN_KEY, session.token);
     } catch {
-      // Not being able to remember them is survivable, being logged out is not
+      // Not remembering them is survivable. Being logged out is not.
     }
 
     setToken(session.token);
@@ -50,18 +49,17 @@ function AuthProvider({ children }) {
     try {
       localStorage.removeItem(TOKEN_KEY);
     } catch {
-      // Nothing to do, the state below is what the app actually reads
+      // Nothing to do. The state below is what the app actually reads.
     }
 
     setToken('');
     setUser(null);
   }, []);
 
-  // A stored token may be expired, or belong to an account the retention sweep
-  // has since deleted, so it gets checked once on load
+  // A stored token may be expired or belong to a swept account, so check it
+  // once on load.
   useEffect(() => {
-    // Nothing to check with no token, and nothing to check again once a login
-    // has already provided the account
+    // Nothing to check without a token, or once a login has provided one.
     if (!token || user) return;
 
     let cancelled = false;
@@ -80,7 +78,7 @@ function AuthProvider({ children }) {
         if (cancelled) return;
 
         // Only the server saying no means the token is bad. Anything else is
-        // the free tier waking up, and that must not cost someone their token
+        // the free tier waking up.
         const rejected = err.status === 401 || err.status === 403;
 
         if (rejected) logout();
@@ -97,8 +95,8 @@ function AuthProvider({ children }) {
     };
   }, [token, user, logout, attempt]);
 
-  // Offered to someone stuck behind an unreachable server, so a cold start does
-  // not leave them on the login page with a token that is perfectly good
+  // Offered when the server is unreachable, so a cold start does not strand
+  // a perfectly good token on the login page.
   const retryCheck = useCallback(() => {
     setChecked(false);
     setUnreachable(false);
@@ -125,7 +123,7 @@ function AuthProvider({ children }) {
       token,
       user,
       checking,
-      // A stored token that could not be verified, not a rejected one
+      // Could not be verified, as opposed to rejected.
       unreachable: unreachable && Boolean(token) && !user,
       retryCheck,
       signedIn: Boolean(token && user),

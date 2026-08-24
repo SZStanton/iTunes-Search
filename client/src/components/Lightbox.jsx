@@ -19,12 +19,11 @@ function Lightbox({
 }) {
   const [sampled, setSampled] = useState(null);
 
-  // Read every render, not once on mount: this is mounted with the card, long
-  // before the hover that fills the cache
+  // Read every render. This mounts with the card, long before the hover
+  // that fills the cache.
   const bloom = sampled ?? cachedColour(sample);
 
-  // The 100px artwork, not the 600px one on screen. Sampling asks for its own
-  // copy, so the small one lands in a fraction of the time
+  // Sample the 100px copy, not the 600px one on screen. It lands sooner.
   useEffect(() => {
     if (!open) return;
 
@@ -41,11 +40,11 @@ function Lightbox({
 
   return (
     <Modal open={open} onClose={onClose} label={title}>
-      {/* isolate, or the bloom's negative z-index escapes and paints behind
-          the modal backdrop instead of behind the artwork */}
+      {/* isolate, or the bloom's negative z-index paints behind the backdrop
+          instead of the artwork. */}
       <div className="relative isolate flex max-h-[90vh] w-fit max-w-[92vw] min-w-72 flex-col gap-3">
-        {/* Mounted before the colour arrives so a cold one can fade in. A
-            cached colour is there on the first paint and never fades */}
+        {/* Mounted before the colour arrives, so a cold one fades in and a
+            cached one is simply there. */}
         <div
           className={`duration-(--motion-overlay) pointer-events-none absolute -inset-16 -z-10 rounded-full blur-3xl transition-opacity ${
             bloom ? 'opacity-60' : 'opacity-0'
@@ -54,8 +53,8 @@ function Lightbox({
           aria-hidden="true"
         />
 
-        {/* w-0 keeps this row out of the width calculation, so the artwork
-            sets the width and the credits cut to match */}
+        {/* w-0 keeps this row out of the width, so the artwork sets it and
+            the credits cut to match. */}
         <div className="flex w-0 min-w-full items-start gap-3">
           <div className="min-w-0 flex-1">
             <h2 className="type-title line-clamp-2 text-xl break-words text-overlay-ink">

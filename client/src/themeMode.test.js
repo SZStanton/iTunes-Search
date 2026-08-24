@@ -7,7 +7,7 @@ import {
   storedTheme,
 } from './themeMode';
 
-// Stubbed only to prove nothing reads it any more
+// Stubbed only to prove nothing reads it any more.
 function systemPrefers(scheme) {
   vi.stubGlobal(
     'matchMedia',
@@ -100,8 +100,8 @@ describe('choosing one', () => {
   });
 
   it('never stores anything until someone actually chooses', () => {
-    // Persisting the inferred default would freeze the system preference and a
-    // later OS switch would be ignored forever
+    // Persisting the inferred default would freeze it, and a later OS switch
+    // would be ignored forever.
     activeTheme();
 
     expect(localStorage.getItem(THEME_KEY)).toBeNull();

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-// Mirrors server/validation/authSchemas.js so the form can check before asking.
-// authRules.test.js asserts both produce the same message, word for word
+// Mirrors server/validation/authSchemas.js so the form can check first.
+// authRules.test.js asserts both produce the same message, word for word.
 
 const emailField = z
   .string({ error: 'Email is required.' })
@@ -10,7 +10,7 @@ const emailField = z
   .toLowerCase()
   .pipe(z.email('Please enter a valid email address.'));
 
-// 72 is bcrypt's limit. Anything longer is silently truncated, so reject it instead
+// 72 is bcrypt's limit. Anything longer is silently truncated, so reject it.
 const passwordField = z
   .string({ error: 'Password is required.' })
   .min(1, 'Password is required.')
@@ -22,8 +22,8 @@ const registerRules = z.object({
   password: passwordField,
 });
 
-// Only checks something was typed, matching the server. Applying the length
-// rules here would lock out anyone who signed up under different ones
+// Only checks something was typed, matching the server. The length rules
+// would lock out anyone who signed up under different ones.
 const loginRules = z.object({
   email: emailField,
   password: z
@@ -31,8 +31,7 @@ const loginRules = z.object({
     .min(1, 'Password is required.'),
 });
 
-// Turns a failed parse into { field: message }, the same shape the API returns,
-// so a form reads both from one place
+// Turns a failed parse into the { field: message } shape the API returns.
 function rulesErrors(error) {
   const errors = {};
 

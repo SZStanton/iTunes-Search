@@ -1,8 +1,8 @@
-// Only an explicit choice is stored, so an empty slot always means the default
+// Only an explicit choice is stored, so an empty slot means the default.
 const THEME_KEY = 'itunes-search:theme';
 
-// The app picks a side rather than following the system. Artwork is the point,
-// and it sits better on black
+// The app picks a side rather than following the system. Artwork sits
+// better on black.
 const DEFAULT_THEME = 'dark';
 
 function storedTheme() {
@@ -10,8 +10,7 @@ function storedTheme() {
     const stored = localStorage.getItem(THEME_KEY);
     return stored === 'light' || stored === 'dark' ? stored : null;
   } catch {
-    // Storage can be blocked outright, and that should mean the default rather
-    // than breaking
+    // Blocked storage should mean the default, not a break.
     return null;
   }
 }
@@ -26,7 +25,7 @@ function applyTheme(theme) {
   try {
     localStorage.setItem(THEME_KEY, theme);
   } catch {
-    // Not remembering it is survivable, the page is already the right colour
+    // Not remembering it is survivable. The page is already the right colour.
   }
 }
 

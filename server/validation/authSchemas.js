@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// Emails are lowercased so lookups match regardless of how they were typed
+// Lowercased, so lookups match however the email was typed.
 const emailField = z
   .string({ error: 'Email is required.' })
   .trim()
@@ -8,7 +8,7 @@ const emailField = z
   .toLowerCase()
   .pipe(z.email('Please enter a valid email address.'));
 
-// 72 is bcrypt's limit. Anything longer is silently truncated, so reject it instead
+// 72 is bcrypt's limit. Anything longer is silently truncated, so reject it.
 const passwordField = z
   .string({ error: 'Password is required.' })
   .min(1, 'Password is required.')
@@ -22,8 +22,8 @@ const registerSchema = z.object({
 });
 
 //== LOGIN ==
-// Only checks something was typed. The length rules belong to registration, or
-// changing them would lock out everyone who signed up under the old ones
+// Only checks something was typed. The length rules belong to registration,
+// or changing them locks out everyone who signed up under the old ones.
 const loginSchema = z.object({
   email: emailField,
   password: z

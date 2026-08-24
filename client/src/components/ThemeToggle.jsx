@@ -3,16 +3,15 @@ import { Moon, Sun } from '@phosphor-icons/react';
 import { activeTheme, applyTheme } from '../themeMode';
 import IconButton from './ui/IconButton';
 
-// Suppressing transitions for a moment stops every element animating between
-// the two palettes at once, which reads as a flash rather than a change
+// Suppress transitions for a moment, or the whole palette animates at once
+// and reads as a flash.
 function swapWithoutFlashing(next) {
   const root = document.documentElement;
 
   root.classList.add('theme-swapping');
   applyTheme(next);
 
-  // A hidden tab throttles rAF to nothing and the class would stick, so a
-  // timeout clears it as well
+  // A hidden tab throttles rAF, so a timeout clears the class as well.
   const done = () => root.classList.remove('theme-swapping');
 
   requestAnimationFrame(done);

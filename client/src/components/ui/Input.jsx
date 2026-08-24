@@ -3,8 +3,8 @@ const shapes = {
   field: 'rounded-control px-3',
 };
 
-// A size prop rather than an overriding className, since py-3.5 and py-2.5 are
-// the same kind of utility and CSS order picks the winner, not class order
+// A size prop rather than a className override. CSS order picks the winner
+// between two padding utilities, not class order.
 const sizes = {
   md: 'py-2.5',
   lg: 'py-3.5 text-base',

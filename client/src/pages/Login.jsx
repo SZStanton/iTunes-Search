@@ -15,18 +15,15 @@ function Login() {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState('');
-  // The demo button sits below the form, so its failure needs its own slot
-  // beside it. Put in the form's banner it reads as a message about the fields
+  // Keep demo errors separate from form validation errors.
   const [demoMessage, setDemoMessage] = useState('');
-  // Which button is waiting, not just that something is. The demo sign in can
-  // take most of a minute on a cold server, so it has to say so on itself
+  // Track which action is loading so the right button can show its state.
   const [busy, setBusy] = useState('');
 
   const handleSubmit = async event => {
     event.preventDefault();
 
-    // Checked here first so an obvious mistake never costs a round trip. The
-    // server checks the same rules again, since this one can be skipped
+    // Validate before making the request. The server validates again.
     const parsed = loginRules.safeParse({ email, password });
 
     if (!parsed.success) {

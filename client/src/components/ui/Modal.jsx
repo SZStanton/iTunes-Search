@@ -6,8 +6,8 @@ function Modal({ open, onClose, label, children }) {
 
   if (!open) return null;
 
-  // Into the body, because backdrop-filter makes an element the containing
-  // block for fixed children and the header this can open from has one
+  // Portal to the body. backdrop-filter on the header would otherwise become
+  // the containing block for this fixed child.
   return createPortal(
     <div
       className="fixed inset-0 z-30 flex items-center justify-center p-3"

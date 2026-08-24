@@ -28,7 +28,7 @@ function Tab({ id, tab, onTab, children, count }) {
   );
 }
 
-// Both lists in one panel, so one action opens either on a narrow screen
+// Both lists in one panel, so one control opens either on a narrow screen.
 function LibraryDrawer({
   open,
   tab,

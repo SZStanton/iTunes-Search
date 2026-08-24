@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
-// What the client is allowed to save. Anything else iTunes sends is dropped,
-// so a change at their end cannot quietly widen what gets stored
+// What the client may save. Anything else iTunes sends is dropped, so a
+// change at their end cannot widen what gets stored.
 const favouriteSchema = z.object({
-  // Only a number, or a string that is entirely digits. z.coerce would take
-  // true as 1 and ['5'] as 5, either of which squats a real item's slot
+  // A number, or a string of digits. z.coerce would take true as 1 and ['5']
+  // as 5, either of which squats a real item's slot.
   itemId: z.preprocess(
     value =>
       typeof value === 'string' && value.trim() !== '' ? Number(value) : value,
@@ -30,7 +30,7 @@ const favouriteSchema = z.object({
     .max(500, 'Artwork url must be 500 characters or less.')
     .optional()
     .default(''),
-  // iTunes sends an ISO string, and an item without one is allowed
+  // iTunes sends an ISO string, and an item without one is allowed.
   releaseDate: z.iso
     .datetime({ error: 'Release date must be a date.' })
     .optional(),

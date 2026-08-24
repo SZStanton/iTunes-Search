@@ -1,15 +1,15 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/inter';
 
-/* Dark is the default, so a dark: utility is anything not explicitly light */
+/* Dark is the default, so a dark: utility is anything not explicitly light. */
 @custom-variant dark (&:where(:root:not([data-theme='light']) *));
 
 @theme {
   --font-sans:
     'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-  /* Every colour in the app is one of these. Components name a token, never a
-     value, because the light and dark blocks below swap what they point at */
+  /* Every colour is one of these. Components name a token, never a value,
+     since the blocks below swap what they point at. */
   --color-page: var(--page);
   --color-surface: var(--surface);
   --color-raised: var(--raised);
@@ -25,7 +25,7 @@
   --color-overlay-ink: var(--overlay-ink);
   --color-overlay-muted: var(--overlay-muted);
 
-  /* Line height and tracking travel with the size, tightening as it grows */
+  /* Line height and tracking travel with the size, tightening as it grows. */
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 1.45;
   --text-2xs--letter-spacing: 0.02em;
@@ -54,7 +54,7 @@
   --text-4xl--line-height: 1.05;
   --text-4xl--letter-spacing: -0.03em;
 
-  /* Layout rhythm, every one a multiple of eight */
+  /* Layout rhythm, every one a multiple of eight. */
   --spacing-tight: 0.5rem;
   --spacing-snug: 1rem;
   --spacing-bay: 1.5rem;
@@ -65,38 +65,37 @@
   --radius-card: 0.875rem;
   --radius-panel: 1.25rem;
 
-  /* Three speeds and nothing else */
+  /* Three speeds and nothing else. */
   --motion-micro: 140ms;
   --motion-panel: 220ms;
   --motion-overlay: 260ms;
 
-  /* Decelerating hard, no overshoot anywhere */
+  /* Decelerating hard, no overshoot anywhere. */
   --ease-soft: cubic-bezier(0.32, 0.72, 0, 1);
   --default-transition-duration: var(--motion-micro);
   --default-transition-timing-function: var(--ease-soft);
 }
 
 /* DARK, on bare :root, so it is what anyone gets without choosing. The system
-   preference is deliberately not consulted */
+   preference is deliberately not consulted. */
 :root {
-  /* Neutrals carry a little of the accent's hue rather than sitting at zero
-     saturation, or the only colour on the page is the artwork */
+  /* Neutrals lean towards the accent rather than sitting at zero saturation. */
   --page: #000000;
   --surface: #1a1618;
   --raised: #262024;
   --line: #3a3236;
   --ink: #f7f4f5;
   --muted: #a8a0a3;
-  /* Apple's own red carries white text at only 3.79:1, so it is for ornament
-     and large graphics. Anything with words on it uses accent-strong */
+  /* Apple's own red carries white at only 3.79:1, so it is for ornament.
+     Anything with words on it uses accent-strong. */
   --accent: #fa2d48;
   --accent-strong: #e51d3c;
   --accent-deep: #b8102b;
   --accent-ink: #ffffff;
   --danger: #ff6961;
   --danger-surface: #3b1113;
-  /* One light source, at the top of the viewport. Everything raised takes a lit
-     top edge, and the shadow under it leans red rather than dead black */
+  /* One light source, top of the viewport. Everything raised takes a lit edge,
+     and its shadow leans red rather than dead black. */
   --edge-lit: rgb(255 255 255 / 0.08);
   --edge: rgb(255 255 255 / 0.1);
   --sheen: linear-gradient(
@@ -116,26 +115,24 @@
   --elev-3:
     inset 0 1px 0 rgb(255 255 255 / 0.1), 0 4px 10px rgb(10 0 4 / 0.6),
     0 28px 70px rgb(8 0 3 / 0.7);
-  /* The accent lights itself, so a primary button reads as the warm thing on
-     the page instead of a red rectangle */
+  /* The accent lights itself, so a primary button is not a flat rectangle. */
   --elev-accent:
     inset 0 1px 0 rgb(255 255 255 / 0.22), 0 2px 10px rgb(229 29 60 / 0.34);
   --glass: rgb(24 19 21 / 0.66);
-  /* The artwork viewer sits on a dark backdrop in both themes, so its text
-     does not swap with the rest */
+  /* Dark backdrop in both themes, so the viewer text never swaps. */
   --overlay-ink: #f5f5f7;
   --overlay-muted: #c7c7cc;
 
   color-scheme: dark;
 }
 
-/* LIGHT, only for someone who has asked for it. One block rather than two,
-   since nothing has to beat a media query any more */
+/* LIGHT, only for someone who asked for it. One block rather than two, since
+   nothing has to beat a media query any more. */
 :root[data-theme='light'] {
   --page: #f6f2f1;
   --surface: #ffffff;
   /* Was #ffffff, the same as surface, which collapsed the ladder to two steps
-     and left every hover and press with nothing to show */
+     and left every hover and press with nothing to show. */
   --raised: #efe9e8;
   --line: #dfd6d5;
   --ink: #1c1719;
@@ -148,8 +145,7 @@
   --danger-surface: #f8d7da;
   --edge-lit: rgb(255 255 255 / 0.9);
   --edge: rgb(28 23 25 / 0.09);
-  /* White on near white does nothing, so the sheen darkens towards the foot
-     instead of lightening the head */
+  /* White on near white does nothing, so the sheen darkens towards the foot. */
   --sheen: linear-gradient(
     180deg,
     rgb(255 255 255 / 0.6),
@@ -160,8 +156,7 @@
     rgb(250 45 72 / 0.09),
     transparent 60%
   );
-  /* Shadows pick up the neutral's warmth, since pure black on a warm page is
-     what reads as grey */
+  /* Shadows take the neutral's warmth. Pure black on a warm page reads grey. */
   --elev-1:
     inset 0 1px 0 rgb(255 255 255 / 0.9), 0 1px 2px rgb(60 30 36 / 0.07);
   --elev-2:
@@ -172,15 +167,15 @@
     0 26px 60px rgb(55 25 32 / 0.16);
   --elev-accent:
     inset 0 1px 0 rgb(255 255 255 / 0.28), 0 2px 10px rgb(204 15 42 / 0.28);
-  /* Lower alpha and more blur than dark, or 72% white over a near white page
-     is a 3% difference and the header stops reading as a material */
+  /* Lower alpha and more blur than dark, or 72% white on a near white page is
+     a 3% difference and stops reading as a material. */
   --glass: rgb(255 255 255 / 0.58);
 
   color-scheme: light;
 }
 
-/* The ground is sized rather than fixed, so it scrolls away with the header
-   instead of repainting on every frame the way attachment: fixed would */
+/* Sized rather than fixed, so it scrolls away with the header instead of
+   repainting every frame the way attachment: fixed would. */
 body {
   margin: 0;
   background-color: var(--page);
@@ -193,7 +188,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* An outline follows the border radius on its own, a box-shadow ring does not */
+/* An outline follows the border radius, a box-shadow ring does not. */
 @utility focus-ring {
   &:focus-visible {
     outline: 2px solid var(--accent-strong);
@@ -201,7 +196,7 @@ body {
   }
 }
 
-/* The gradient is three times the box, and the animation moves it across */
+/* The gradient is three times the box, and the animation moves it across. */
 @utility skeleton {
   background-image: linear-gradient(
     90deg,
@@ -222,7 +217,7 @@ body {
   }
 }
 
-/* 1 rests on the page, 2 is a card or panel, 3 is over everything else */
+/* 1 rests on the page, 2 is a card or panel, 3 is over everything else. */
 @utility elev-1 {
   box-shadow: var(--elev-1);
 }
@@ -235,7 +230,7 @@ body {
   box-shadow: var(--elev-3);
 }
 
-/* The saturation lift stops the blur behind it turning grey */
+/* The saturation lift stops the blur behind it turning grey. */
 @utility glass {
   background-color: var(--glass);
   background-image: var(--sheen);
@@ -244,13 +239,13 @@ body {
   box-shadow: inset 0 1px 0 var(--edge-lit);
 }
 
-/* Composes with a bg-* utility, which sets the colour and leaves the image */
+/* Composes with a bg-* utility, which sets the colour and leaves the image. */
 @utility sheen {
   background-image: var(--sheen);
 }
 
-/* Deep at the foot, so the button is lit from the same place as everything
-   else. Both stops carry white text at 4.5:1 */
+/* Deep at the foot, lit from the same place as everything else. Both stops
+   carry white text at 4.5:1. */
 @utility accent-fill {
   background-color: var(--accent-strong);
   background-image: linear-gradient(
@@ -262,8 +257,7 @@ body {
   box-shadow: var(--elev-accent);
 }
 
-/* For a rail that is obviously scrollable from its cut off last item, where a
-   bar under it would only eat height */
+/* The cut off last chip already says it scrolls, so a bar would eat height. */
 @utility no-scrollbar {
   scrollbar-width: none;
   &::-webkit-scrollbar {
@@ -271,24 +265,24 @@ body {
   }
 }
 
-/* An inset outline rather than a box-shadow, which the elevation already owns.
-   Keeps a pale cover from bleeding into a pale page */
+/* An inset outline, since the elevation already owns box-shadow. Keeps a pale
+   cover from bleeding into a pale page. */
 @utility art-edge {
   outline: 1px solid var(--edge);
   outline-offset: -1px;
 }
 
 /* Content and chrome should not sound alike, so a title takes the weight,
-   the tracking and the contrast */
+   the tracking and the contrast. */
 /* No text-wrap here. It expands to text-wrap-mode, which beats the nowrap
-   that truncate and line-clamp rely on */
+   that truncate and line-clamp rely on. */
 @utility type-title {
   font-weight: 600;
   letter-spacing: -0.015em;
   color: var(--ink);
 }
 
-/* Never tightens, which is what keeps a button from reading as a title */
+/* Never tightens, which keeps a button from reading as a title. */
 @utility type-chrome {
   font-weight: 500;
   letter-spacing: 0;
@@ -300,7 +294,7 @@ body {
   color: var(--muted);
 }
 
-/* Tracking has to open up as size drops or the letters close into a block */
+/* Tracking has to open up as size drops, or the letters close into a block. */
 @utility type-eyebrow {
   font-size: var(--text-2xs);
   font-weight: 600;
@@ -309,13 +303,13 @@ body {
   color: var(--muted);
 }
 
-/* Swapping the palette animates every transition at once and reads as a flash,
-   so they are suppressed for a moment while it happens */
+/* Swapping the palette animates every transition at once and reads as a
+   flash, so suppress them for a moment. */
 .theme-swapping * {
   transition: none !important;
 }
 
-/* Nothing here depends on an animation finishing */
+/* Nothing here depends on an animation finishing. */
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,

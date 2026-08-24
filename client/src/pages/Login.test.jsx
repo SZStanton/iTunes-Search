@@ -151,8 +151,8 @@ describe('the demo account', () => {
   });
 
   it('says it is working while the server takes its time', async () => {
-    // A cold server can take most of a minute, so an unchanged button reads as
-    // a click that did nothing
+    // A cold server takes most of a minute, so an unchanged button reads as a
+    // dead click.
     let finish;
     loginAsDemo.mockReturnValue(
       new Promise(resolve => {
@@ -202,8 +202,8 @@ describe('the demo account', () => {
 
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent(/could not reach the server/i);
-    // The form is a sibling of the block the demo button sits in, so a message
-    // inside it would be the wrong side of the page from the click
+    // The form is a sibling of the demo block, so a message inside it lands on
+    // the wrong side of the page.
     expect(demo.closest('form')).toBeNull();
     expect(alert.closest('form')).toBeNull();
   });

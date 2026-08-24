@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { loginSchema, registerSchema } from './authSchemas.js';
 
-// Returns the first message for a field, or undefined when it passed
+// The first message for a field, or undefined when it passed.
 function messageFor(schema, value, field) {
   const result = schema.safeParse(value);
   if (result.success) return undefined;

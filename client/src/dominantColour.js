@@ -1,8 +1,7 @@
-// Averaged from a 16px downscale rather than a real palette pass, since the
-// result is only a bloom behind the artwork and nearest is good enough
+// Averaged from a 16px downscale rather than a real palette pass. It only
+// feeds a bloom behind the artwork.
 const SAMPLE = 16;
-// Below this spread between channels a pixel is grey, and greys average out to
-// mud that reads as no colour at all
+// Below this spread a pixel counts as grey, and greys average out to mud.
 const COLOURFUL = 30;
 
 function averageColour(data) {
@@ -26,8 +25,7 @@ function averageColour(data) {
     }
   }
 
-  // A cover with almost no colour in it still gets its own grey rather than
-  // nothing, so the bloom follows a black and white sleeve too
+  // A near colourless cover still gets its own grey, so mono sleeves bloom too.
   const [r, g, b, count] = colourful[3] >= all[3] / 10 ? colourful : all;
 
   if (!count) return null;
@@ -41,8 +39,8 @@ function read(src) {
 
     const image = new Image();
 
-    // Apple sends Access-Control-Allow-Origin, but a plain img is used for the
-    // display so a host that stops would only lose the bloom
+    // Apple sends the CORS header. The display uses a plain img, so losing it
+    // would only cost the bloom.
     image.crossOrigin = 'anonymous';
     image.onerror = () => resolve(null);
 
@@ -59,7 +57,7 @@ function read(src) {
 
         resolve(averageColour(context.getImageData(0, 0, SAMPLE, SAMPLE).data));
       } catch {
-        // A tainted canvas throws here, and a missing bloom is not worth saying
+        // A tainted canvas throws here, and a lost bloom is not worth saying.
         resolve(null);
       }
     };
@@ -68,8 +66,7 @@ function read(src) {
   });
 }
 
-// Keyed on the url, so a cover sampled once is never fetched again and a
-// second viewer opens with the colour already in hand
+// Keyed on the url, so a cover is sampled once and later viewers open with it.
 const resolved = new Map();
 const pending = new Map();
 

@@ -16,8 +16,7 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <AuthProvider>
         <OverlayProvider>
-          {/* Outside the routes, so opening or refreshing any page wakes the
-              api, signed in or not */}
+          {/* Outside the routes, so any page wakes the api. */}
           <WakeBanner />
           <Routes>
             <Route
@@ -44,7 +43,7 @@ createRoot(document.getElementById('root')).render(
                 </ProtectedRoute>
               }
             />
-            {/* Anything else goes home, which bounces to login when signed out */}
+            {/* Anything else goes home, which bounces to login. */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </OverlayProvider>

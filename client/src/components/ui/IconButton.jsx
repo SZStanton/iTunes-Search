@@ -3,7 +3,7 @@ const variants = {
   danger:
     'text-muted hover:bg-danger-surface hover:text-danger active:bg-danger-surface active:text-danger',
   solid: 'accent-fill hover:brightness-110 active:brightness-95',
-  // No flat colour is readable against every cover
+  // No flat colour is readable against every cover.
   glass: 'glass text-ink hover:brightness-105 active:brightness-95',
 };
 

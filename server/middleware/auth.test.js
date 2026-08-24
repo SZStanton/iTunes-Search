@@ -4,7 +4,7 @@ import authenticateToken from './auth.js';
 import { jwtSecret } from '../config/jwtSecret.js';
 
 // A rejected request never reaches the database, so these need no connection.
-// The accepted path does, and belongs in the local route sweep instead
+// The accepted path does, and lives in the local route sweep.
 
 function fakeRes() {
   const res = {

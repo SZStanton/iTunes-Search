@@ -4,8 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import SearchForm from './SearchForm';
 
-// The input is controlled, so typing needs real state behind it or only the
-// first keystroke ever lands
+// The input is controlled, so typing needs real state or only the first
+// keystroke lands.
 function Harness({ searchMedia = vi.fn(), loading = false }) {
   const [term, setTerm] = useState('');
   const [media, setMedia] = useState('music');
@@ -57,8 +57,8 @@ describe('the search form', () => {
     expect(searchMedia).toHaveBeenCalledOnce();
   });
 
-  // The chips are the only media control now. The dropdown they used to share
-  // the job with on a phone left the field 94px wide
+  // The chips are the only media control now. The dropdown they replaced left
+  // the field 94px wide on a phone.
   const chipLabels = () =>
     within(screen.getByRole('group', { name: /media type/i }))
       .getAllByRole('button')
@@ -83,7 +83,7 @@ describe('the search form', () => {
   it('leaves out the two apple stopped answering', () => {
     render(<Harness />);
 
-    // media=movie and media=shortFilm return nothing in every storefront
+    // media=movie and media=shortFilm return nothing in every storefront.
     expect(chipLabels()).not.toContain('Movie');
     expect(chipLabels()).not.toContain('Short Film');
   });
@@ -121,7 +121,7 @@ describe('the search form', () => {
       ),
     );
 
-    // Changing a filter and showing the old results would read as a dead click
+    // Changing a filter and showing the old results reads as a dead click.
     expect(searchMedia).toHaveBeenCalledWith('beatles', 'album');
   });
 

@@ -1,13 +1,12 @@
-// Every secret that is published in the repo: the code's own fallback, and the
-// placeholder in .env.example. Either would let anyone sign a valid token
+// Every secret published in the repo. Either would let anyone sign a token.
 const FALLBACK_SECRET = 'dev-secret-key';
 const PUBLISHED_SECRETS = [FALLBACK_SECRET, 'change-me'];
 
-// Reports everything that is wrong at once. Finding out about a second missing
-// variable only after fixing the first is a slow way to configure a host
+// Report everything wrong at once. One variable at a time is a slow way to
+// configure a host.
 function checkEnv({ env = process.env } = {}) {
-  // Anything not explicitly development is production, so a host that forgets
-  // to set NODE_ENV fails loudly rather than booting on the placeholder secret
+  // Anything not explicitly development is production, so a forgotten
+  // NODE_ENV fails loudly rather than booting on the placeholder.
   const production = env.NODE_ENV !== 'development';
   const problems = [];
   const warnings = [];
@@ -17,8 +16,8 @@ function checkEnv({ env = process.env } = {}) {
   }
 
   if (production) {
-    // Falling back here is the dangerous one, because nothing looks broken:
-    // the app runs, and anyone can sign tokens with the published placeholder
+    // The dangerous one, because nothing looks broken. The app runs and anyone
+    // can sign tokens with the published placeholder.
     if (!env.JWT_SECRET || PUBLISHED_SECRETS.includes(env.JWT_SECRET)) {
       problems.push(
         'JWT_SECRET must be set to a real value in production, not one of the placeholders in the repo',

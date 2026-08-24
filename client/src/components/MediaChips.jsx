@@ -2,11 +2,11 @@ import { MEDIA_TYPES } from '../media';
 
 function MediaChips({ media, setMedia, className = '' }) {
   return (
-    // A rail on a phone, bleeding into the page padding so the last chip is
-    // visibly cut and reads as scrollable. It wraps once there is room
+    // A rail on a phone, bleeding past the page padding so the cut last chip
+    // reads as scrollable. It wraps once there is room.
     <div
-      // The padding nets to nothing against the margin, but gives the scroll box
-      // room, or it clips the focus outline and the shadow off every chip
+      // Padding cancels the margin, but gives the scroll box room. Without it
+      // every chip loses its focus outline and shadow.
       className={`no-scrollbar -mx-4 -my-1.5 flex gap-2 overflow-x-auto px-4 py-1.5 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 ${className}`}
       role="group"
       aria-label="Media type"
@@ -23,8 +23,8 @@ function MediaChips({ media, setMedia, className = '' }) {
             }`}
             type="button"
             key={type.value}
-            // The label is what is read, the value is what the query sends, and
-            // the mirrored test checks the values against the server's list
+            // The label is read, the value is sent. The mirrored test checks
+            // these against the server's list.
             data-media={type.value}
             onClick={() => setMedia(type.value)}
             aria-pressed={selected}

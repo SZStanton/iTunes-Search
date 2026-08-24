@@ -24,7 +24,7 @@ function SortControl({ field, reversed, onField, onReverse }) {
         ))}
       </select>
 
-      {/* An arrow on its own says nothing, so the label names the order */}
+      {/* An arrow on its own says nothing, so the label names the order. */}
       <IconButton
         label={`${order} first. Reverse the order`}
         size="sm"

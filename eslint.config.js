@@ -7,7 +7,7 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 export default defineConfig([
   globalIgnores(['**/dist', '**/build', '**/coverage', '**/.vite']),
 
-  // Frontend, browser globals and the React rules
+  // Frontend, browser globals and the React rules.
   {
     files: ['client/**/*.{js,jsx}'],
     extends: [
@@ -21,7 +21,7 @@ export default defineConfig([
     },
   },
 
-  // Backend, node globals and no React rules
+  // Backend, node globals and no React rules.
   {
     files: ['server/**/*.js'],
     extends: [js.configs.recommended],
@@ -30,8 +30,8 @@ export default defineConfig([
       sourceType: 'module',
     },
     rules: {
-      // Express spots error handlers by their four arguments, so an unused
-      // trailing 'next' is required. Leading underscore marks that on purpose
+      // Express counts four arguments to spot an error handler, so the unused
+      // trailing next has to stay. The underscore marks it deliberate.
       'no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
@@ -39,7 +39,7 @@ export default defineConfig([
     },
   },
 
-  // Config files sitting at the root, which run in node
+  // Config files at the root, which run in node.
   {
     files: ['*.js'],
     extends: [js.configs.recommended],

@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../api';
 
-// The first request wakes a sleeping API, so it is fired on open and the wait
-// lands while someone is still reading rather than after they click
+// Ping on open, so a sleeping API wakes while someone is still reading.
 const SLOW_AFTER_MS = 2000;
 
 function WakeBanner() {
@@ -11,13 +10,13 @@ function WakeBanner() {
   useEffect(() => {
     let cancelled = false;
 
-    // A warm server answers well inside this, so it never mentions a wait
+    // A warm server answers well inside this, so it never mentions a wait.
     const timer = setTimeout(() => {
       if (!cancelled) setSlow(true);
     }, SLOW_AFTER_MS);
 
     apiFetch('/api/health')
-      // The next real request surfaces a failure itself
+      // The next real request surfaces a failure itself.
       .catch(() => {})
       .finally(() => {
         clearTimeout(timer);

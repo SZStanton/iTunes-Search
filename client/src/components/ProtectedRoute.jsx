@@ -1,8 +1,7 @@
 import { Navigate } from 'react-router';
 import { useAuth } from '../context/useAuth';
 
-// Sends anyone without a session to the login page, waiting on the token check
-// rather than bouncing someone who is actually signed in
+// Send anyone without a session to login, once the token check has finished.
 function ProtectedRoute({ children }) {
   const { signedIn, checking, unreachable, retryCheck } = useAuth();
 
@@ -12,8 +11,7 @@ function ProtectedRoute({ children }) {
     );
   }
 
-  // A held token that could not be verified. Sending them to the login page
-  // would be wrong, the session is probably fine and the server is just waking
+  // Unverified, not rejected. The server is probably just waking up.
   if (unreachable) {
     return (
       <div

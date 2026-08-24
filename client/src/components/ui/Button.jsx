@@ -25,7 +25,7 @@ function Button({
   return (
     <button
       type={type}
-      className={`type-chrome focus-ring inline-flex items-center justify-center gap-2 rounded-full transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 ${variants[variant]} ${sizes[size]} ${full ? 'w-full' : ''} ${className}`}
+      className={`type-chrome focus-ring inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 ${variants[variant]} ${sizes[size]} ${full ? 'w-full' : ''} ${className}`}
       {...rest}
     >
       {children}

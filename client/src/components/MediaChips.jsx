@@ -5,7 +5,9 @@ function MediaChips({ media, setMedia, className = '' }) {
     // A rail on a phone, bleeding into the page padding so the last chip is
     // visibly cut and reads as scrollable. It wraps once there is room
     <div
-      className={`no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 ${className}`}
+      // The padding nets to nothing against the margin, but gives the scroll box
+      // room, or it clips the focus outline and the shadow off every chip
+      className={`no-scrollbar -mx-4 -my-1.5 flex gap-2 overflow-x-auto px-4 py-1.5 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 ${className}`}
       role="group"
       aria-label="Media type"
     >

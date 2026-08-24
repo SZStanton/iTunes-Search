@@ -13,6 +13,7 @@ import { mediaFilter } from './media';
 import { sortResults } from './sorting';
 import { useAuth } from './context/useAuth';
 import { useOverlayOpen } from './context/useOverlay';
+import { useSwipe } from './components/ui/useSwipe';
 import SearchForm from './components/SearchForm';
 import EdgePager from './components/EdgePager';
 import FirstVisit from './components/FirstVisit';
@@ -95,6 +96,9 @@ function App() {
   }, []);
 
   const searchField = useRef(null);
+  // The grid only. The chips above it are their own horizontal scroller, and a
+  // flick along those must not also turn the page
+  const resultsArea = useRef(null);
 
   useEffect(() => {
     libraryNow.current = library;
@@ -369,6 +373,15 @@ function App() {
     [pageCount],
   );
 
+  // == SWIPING ==
+  // Same gates as the arrows: nothing to page through, or something is over
+  // the page and owns the gesture
+  useSwipe(resultsArea, {
+    enabled: pageCount > 1 && !overlayOpen && !loading,
+    onLeft: () => goToPage(page + 1),
+    onRight: () => goToPage(page - 1),
+  });
+
   // == KEYBOARD ==
   useEffect(() => {
     const onKeyDown = event => {
@@ -399,12 +412,16 @@ function App() {
       {/* Stays put while a page of results scrolls under it */}
       <header className="glass sticky top-0 z-10 border-b border-line">
         <div className="mx-auto flex max-w-7xl items-center gap-x-2 px-4 py-3 sm:gap-x-4 sm:px-6">
-          <h1 className="type-title mr-auto text-lg">iTunes Search</h1>
+          {/* Nowrap and a step down at 320, where the row is otherwise exactly
+              the viewport wide and the labels start breaking mid word */}
+          <h1 className="type-title mr-auto whitespace-nowrap text-base sm:text-lg">
+            iTunes Search
+          </h1>
 
           {/* max-sm rather than hidden, which loses to the inline-flex in the
               button's own base and never hid anything */}
           <Button
-            className="max-sm:hidden"
+            className="max-md:hidden"
             onClick={() => setLibrary('history')}
             aria-label={`History, ${recent.length} searches`}
           >
@@ -414,7 +431,7 @@ function App() {
           </Button>
 
           <Button
-            className="max-sm:hidden"
+            className="max-md:hidden"
             onClick={() => setLibrary('favourites')}
             aria-label={`Favourites, ${favourites.length} saved`}
           >
@@ -423,11 +440,11 @@ function App() {
             <Badge>{favourites.length}</Badge>
           </Button>
 
-          {/* Both lists behind one control on a phone, and the count goes on it
-              so the drawer is not the only place either total is visible */}
+          {/* Both lists behind one control on a phone. It opens on favourites,
+              so that is the count it badges, and history stays uncounted */}
           <IconButton
-            className="relative sm:hidden"
-            label={`Favourites and history, ${favourites.length} saved`}
+            className="relative md:hidden"
+            label={`Favourites and history, ${favourites.length} favourites saved`}
             onClick={() => setLibrary('favourites')}
           >
             <Books size={20} />
@@ -438,7 +455,9 @@ function App() {
             )}
           </IconButton>
 
-          <span className="type-meta hidden text-sm sm:inline">
+          {/* Capped rather than free, so an unusually long address cuts itself
+              instead of pushing Sign out off the row */}
+          <span className="type-meta max-w-[26ch] truncate text-sm max-lg:hidden">
             {user?.email}
           </span>
 
@@ -447,7 +466,9 @@ function App() {
 
           <ThemeToggle />
 
-          <Button variant="ghost" onClick={logout}>
+          {/* Narrower below sm purely to buy slack at 320, where the row
+              otherwise lands on exactly the viewport width */}
+          <Button variant="ghost" className="max-sm:px-2.5" onClick={logout}>
             Sign out
           </Button>
         </div>
@@ -496,7 +517,9 @@ function App() {
           />
         )}
 
-        <div className="mt-snug">
+        {/* touch-pan-y, or the browser claims the gesture as a pan the moment
+            it moves sideways and cancels the pointer before it ends */}
+        <div className="mt-snug touch-pan-y" ref={resultsArea}>
           {loading ? (
             <ResultsSkeleton />
           ) : (

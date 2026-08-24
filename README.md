@@ -50,15 +50,15 @@ inactivity. Nothing personal is kept indefinitely.
 
 ## Tech Stack
 
-| Area       | Technologies                            |
-| ---------- | --------------------------------------- |
-| Frontend   | React, Vite, React Router, Context API  |
-| Backend    | Node.js, Express, Mongoose              |
-| Database   | MongoDB Atlas                           |
-| Styling    | Tailwind, CSS custom properties, lucide |
-| Validation | Zod                                     |
-| Testing    | Vitest, Testing Library                 |
-| Deployment | Vercel, Render                          |
+| Area       | Technologies                              |
+| ---------- | ----------------------------------------- |
+| Frontend   | React, Vite, React Router, Context API    |
+| Backend    | Node.js, Express, Mongoose                |
+| Database   | MongoDB Atlas                             |
+| Styling    | Tailwind, CSS custom properties, Phosphor |
+| Validation | Zod                                       |
+| Testing    | Vitest, Testing Library                   |
+| Deployment | Vercel, Render                            |
 
 ## Getting Started
 

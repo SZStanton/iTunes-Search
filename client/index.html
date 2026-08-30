@@ -3,12 +3,48 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- PNG fallback for anything that ignores SVG icons, and the icon
+         iOS uses when the site is added to a home screen. -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
       content="Search the iTunes catalogue, filter by media type and keep your favourites."
     />
     <title>iTunes Search</title>
+    <!-- Dark is the default regardless of the system setting, so this is one
+         value rather than a pair behind media queries. -->
+    <meta name="theme-color" content="#000000" />
+
+    <!-- What LinkedIn, Slack and the rest show when the link is shared.
+         Without these a shared link is just a bare URL. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="iTunes Search" />
+    <!-- LinkedIn wants at least 100 characters here or it warns. -->
+    <meta
+      property="og:description"
+      content="A full-stack media search app built on Apple's iTunes Search API, with saved favourites, search history and an artwork viewer tinted from the cover it is showing."
+    />
+    <meta property="og:site_name" content="Sebastian Stanton" />
+    <meta property="og:url" content="https://itunes-search.szstanton.com/" />
+    <!-- Full https:// address, not a path. Some platforms refuse to
+         resolve a relative one. -->
+    <meta
+      property="og:image"
+      content="https://itunes-search.szstanton.com/og-image.jpg"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="iTunes Search, a media browser, shown beside album artwork from a search"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:image"
+      content="https://itunes-search.szstanton.com/og-image.jpg"
+    />
     <script>
       // Runs before first paint, or a chosen light theme flashes dark while
       // the app boots. Nothing stored means the dark default in index.css.

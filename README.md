@@ -4,7 +4,7 @@ A full-stack media search app built on Apple's iTunes Search API, with JWT
 authentication, saved favourites and search history, an artwork viewer tinted
 from the cover it is showing, and light and dark themes.
 
-**[Live demo](https://itunes-search-szstanton.vercel.app/)**
+**[Live demo](https://itunes-search.szstanton.com/)**
 
 The login page has a one click demo sign in, so you can look around without
 creating an account. The API is on a free tier that sleeps when idle, so the

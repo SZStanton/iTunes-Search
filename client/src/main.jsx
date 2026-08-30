@@ -1,6 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import './index.css';
 import App from './App.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
@@ -18,6 +20,10 @@ createRoot(document.getElementById('root')).render(
         <OverlayProvider>
           {/* Outside the routes, so any page wakes the api. */}
           <WakeBanner />
+          {/* Page views and Core Web Vitals. Inside the router, or a route
+              change is never counted. Both stay quiet off Vercel. */}
+          <Analytics />
+          <SpeedInsights />
           <Routes>
             <Route
               path="/login"
